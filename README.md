@@ -6,13 +6,13 @@
 ### setup Flask virtual environment
 > python -m venv .venv
 
-> .\.venv\Scripts\activate
+> .\\.venv\Scripts\activate
 
 > pip install Flask
 
 
 ### run app
-> .\.venv\Scripts\activate
+> .\\.venv\Scripts\activate
 
 > flask --app web_server run
 
