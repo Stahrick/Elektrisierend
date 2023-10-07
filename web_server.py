@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 app = Flask(__name__)
 app.secret_key = 'hihihihihihihi'
 
-#todo: login, register, logout logic; fingerprint, 
+#todo: login, register, logout logic; fingerprint, css, database
 
 def check_session(request_data):
     uuid = request_data.cookies.get('UUID')
@@ -16,18 +16,24 @@ def check_session(request_data):
 
     return False
 
+def check_login(username, password):
+    return True
+
+def check_register(username, password, email):
+    return True
+
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
-        valid = True
+        valid = check_login(username, password)
         if valid:
             response = make_response(redirect(url_for('home')))
             response.set_cookie('UUID', username+"test"+password)
             return response
 
-    return render_template('login.html', testo='thihihi')
+    return render_template('login.html', error='invalid login')
 
 @app.route('/logout', methods=['GET','POST'])
 def logout():
@@ -37,7 +43,13 @@ def logout():
 
 @app.route('/register', methods=['GET','POST'])
 def register():
-    return render_template('register.html', testo='ich ficke deine mutter yo')
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        if check_register(username, password, email):
+            return redirect(url_for(login))
+    return render_template('register.html', error='invalid data')
 
 @app.route('/home', methods=['GET','POST'])
 def home():

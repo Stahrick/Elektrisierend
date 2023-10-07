@@ -13,6 +13,7 @@
 				<a href="{{ url_for('register') }}">Register</a>
 				<a href="{{ url_for('home') }}">Home</a>
 			</div>
+			<div class="error">{{ error }}</div>
 			<form action="{{ url_for('register') }}" method="post" autocomplete="off">
 				<label for="username"><p>Username</p></label>
 				<input type="text" name="username" placeholder="Username" id="username" required>

@@ -13,12 +13,12 @@
 				<a href="{{ url_for('register') }}">Register</a>
 				<a href="{{ url_for('home') }}">Home</a>
 			</div>
+			<div clas="error">{{ error }}</div>
 			<form action="{{ url_for('login') }}" method="post" autocomplete="off">
 				<label for="username"><p></p></label>
 				<input type="text" name="username" placeholder="Username" id="username" required>
 				<label for="password"><p></p></label>
 				<input type="password" name="password" placeholder="Password" id="password" required>
-				<div class="error">{{ error }}</div>
 				<input type="submit" value="Login">
 			</form>
 		</div>
