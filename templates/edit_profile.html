@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2>Home Page</h2>
+<form action="{{ url_for('edit_profile') }}" method="post">
+</form>
+<form action="{{ url_for('edit_profile') }}" method="post" autocomplete="off">
+    <label for="adress"><p>Address</p></label>
+    <input type="text" name="address" value="{{ address }}" id="username">
+    <label for="iban"><p>IBAN</p></label>
+    <input type="text" name="iban" value="{{ iban }}" id="iban">
+    <div class="error">{{ error }}</div>
+    <input type="submit" value="Submit Changes">
+</form>
+<form action="{{ url_for('profile') }}">
+    <input type="submit" value="Cancel">
+</form>
+{% endblock %}
