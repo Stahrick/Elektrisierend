@@ -4,8 +4,6 @@
 
 {% block content %}
 <h2>Home Page</h2>
-<form action="{{ url_for('edit_profile') }}" method="post">
-</form>
 <form action="{{ url_for('edit_profile') }}" method="post" autocomplete="off">
     <label for="adress"><p>Address</p></label>
     <input type="text" name="address" value="{{ address }}" id="username">
