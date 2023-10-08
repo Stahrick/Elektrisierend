@@ -16,11 +16,25 @@
 			<div class="error">{{ error }}</div>
 			<form action="{{ url_for('register') }}" method="post" autocomplete="off">
 				<label for="username"><p>Username</p></label>
-				<input type="text" name="username" placeholder="Username" id="username" required>
+				<input type="text" name="username" placeholder="name used to login with" required>
 				<label for="password"><p>Password</p></label>
-				<input type="password" name="password" placeholder="Password" id="password" required>
-				<label for="email"><p>Email</p></label>
-				<input type="email" name="email" placeholder="Email" id="email" required>
+				<input type="password" name="password" placeholder="Password" required>
+				<label for="first_name"><p>First name</p></label>
+				<input type="text" name="firt_name" placeholder="your lovely first name" required>
+				<label for="last_name"><p>Last name</p></label>
+				<input type="text" name="last_name" placeholder="your very special last name" required>
+				<label for="email"><p>Email adress</p></label>
+				<input type="email" name="email" placeholder="Email" required>
+				<label for="iban"><p>IBAN</p></label>
+				<input type="text" name="iban" placeholder="Bank details" required>
+				<label for="phone"><p>Phone number</p></label>
+				<input type="text" name="phone" placeholder="tiktok screen" required>
+				<label for="city"><p>City</p></label>
+				<input type="text" name="city" placeholder="Baldurs Gate" required>
+				<label for="address"><p>Address</p></label>
+				<input type="text" name="address" placeholder="where are you fapping" required>
+				<label for="em_id"><p>Eletricity meter ID</p></label>
+				<input type="text" name="em_id" placeholder="counts your electrons" required>
 				<input type="submit" value="Register">
 			</form>
 		</div>
