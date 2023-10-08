@@ -1,0 +1,17 @@
+#control {
+    margin: 5px 5px;
+    padding: 5px 5px;
+    border: black 1px solid;
+}
+
+#info {
+    margin: 5px 5px;
+    padding: 5px 5px;
+    border: black 1px solid;
+
+}
+
+#info_content {
+    height: 300px;
+    width: 80%;
+}
