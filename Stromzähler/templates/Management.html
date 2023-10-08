@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Service Worker</title>
+    <link rel="stylesheet" href="/static/Management.css">
+</head>
+<body>
+    <h1>Service Worker</h1>
+    <text style="color:darkred">Only available for simulation purposes.</text>
+    <div>
+        <label for="meter_selection">Wähle Stromzähler</label>
+        <select id="meter_selection" name="meter_uuid">
+        </select>
+    </div>
+    <div id="info">
+        <p>Messages</p>
+        <scrollbar id="info_scrollbar">
+            <div id="info_content"></div>
+        </scrollbar>
+    </div>
+    <div id="control">
+        <button onclick="create_meter()">Bestelle Smartmeter</button>
+        <button onclick="setup_meter()">Beginne Einrichtung</button>
+    </div>
+    <script src="/static/Management.js"></script>
+</body>
+</html>
