@@ -1,8 +1,8 @@
 # Functions/View for the maintainer
 from flask import Blueprint, render_template, request, make_response
 
-from Stromzähler.GlobalStorage import add_meter, list_meters, get_meter
-from Stromzähler.SmartMeter import Meter
+from GlobalStorage import add_meter, list_meters, get_meter
+from SmartMeter import Meter
 
 management = Blueprint("service-worker", __name__)
 
@@ -11,7 +11,7 @@ in_transit_mails = []
 
 @management.route("/", methods=["GET"])
 def index():
-    return render_template("management.html")
+    return render_template("management.html", meter_list=list_meters())
 
 
 @management.route("/list/", methods=["GET"])
