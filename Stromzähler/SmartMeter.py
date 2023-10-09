@@ -1,9 +1,6 @@
-import os
 import random
-import math
 import logging
-import sys
-
+import requests
 
 from datetime import datetime
 from flask import make_response
@@ -17,18 +14,22 @@ average_kwh_per_sec = 2050 / 365 / 24 / 60 / 60  # Average 2050kwh per person pe
 class Meter:
     uuid = None
     meter = None
-    last_request = None
+    last_update = None
     maintenance_activation_time = None
     maintainer_cert = None
 
     def __init__(self, uuid=None):
         self.uuid = str(uuid4()) if uuid is None else uuid
 
-
     def setup_meter(self, registration_code):
+        # TODO Check signature and hash verification
+        # Check uuid in registration_code with device uuid
+        if self.uuid != registration_code["uuid"]:
+            logging.info(f"Invalid registration code provided for device({self.uuid}): {registration_code}")
+            return "Invalid registration code provided", 400
         self.meter = random.randrange(0, 50)
-        self.last_request = datetime.now()
-        logging.info(f"Initialized meter with {self.meter} KWH and last_request {self.last_request}")
+        logging.info(f"Initialized meter with {self.meter} KWH")
+
     def activate_maintenance(self, req):
         self.maintenance_activation_time = datetime.now()
         logging.info(f"Activated maintenance from host {req.host}")
@@ -50,15 +51,26 @@ class Meter:
         self.maintainer_cert = req.json["Certificate"]
         return make_response("Certificate renewed", 200)
 
+    def send_meter(self):
+        global average_kwh_per_sec
+        cur_time = datetime.now()
+        passed_sec = (cur_time - self.last_update).total_seconds()
+        amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
+        self.meter += passed_sec * amount_added
+        # TODO Add url
+        requests.post("", {"uuid": self.uuid, "meter": self.meter})
+        logging.info(f"SEND meter data {self.meter} Kwh")
 
-web_access_functions = [method for method in dir(Meter) if
-                        method.startswith('__') is False and method.endswith("__") is False]
+
+    def is_in_maintenance(self):
+        cur_time = datetime.now()
+        return (self.maintenance_activation_time is not None
+                and ((cur_time - self.maintenance_activation_time).total_seconds() / 60) < 5)
 
 
 def send_meter():
     update_meter()
-    logging.info(f"SEND meter to host {request.host}")
-    return {"Meter": round(meter, 4)}
+
 
 
 def set_meter():
