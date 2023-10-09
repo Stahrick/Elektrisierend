@@ -11,13 +11,14 @@
     <div>
         <label for="meter_selection">Wähle Stromzähler</label>
         <select id="meter_selection" name="meter_uuid">
+            {% for meter in meter_list %}
+                <option>{{ meter }}</option>
+            {% endfor %}
         </select>
     </div>
     <div id="info">
-        <p>Messages</p>
-        <scrollbar id="info_scrollbar">
-            <div id="info_content"></div>
-        </scrollbar>
+        <text>Messages</text>
+        <div id="info_content"></div>
     </div>
     <div id="control">
         <button onclick="create_meter()">Bestelle Smartmeter</button>

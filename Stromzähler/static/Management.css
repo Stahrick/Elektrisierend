@@ -13,5 +13,7 @@
 
 #info_content {
     height: 300px;
-    width: 80%;
+    width: 100%;
+    white-space: pre;
+    overflow-y: auto;
 }

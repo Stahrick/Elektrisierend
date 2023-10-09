@@ -2,7 +2,8 @@ const info_screen = document.getElementById("info_content");
 const meter_selection = document.getElementById("meter_selection");
 
 let url_prefix = "/service-worker"
-setInterval(function (){
+
+const pull_meter_list = () => {
     let xhr = new XMLHttpRequest();
     xhr.open('GET', url_prefix + '/list/', true);
     xhr.send();
@@ -18,7 +19,7 @@ setInterval(function (){
             })
         }
     }
-}, 5000);
+}
 
 let create_meter = () => {
     let xhr = new XMLHttpRequest();
@@ -26,7 +27,8 @@ let create_meter = () => {
     xhr.send();
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            info_screen.textContent += xhr.responseText + "\n";
+            info_screen.textContent += xhr.responseText + "\r\n";
+            pull_meter_list()
         }
     }
 }
@@ -43,11 +45,15 @@ let setup_meter = () => {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             if(xhr.status === 200) {
-                info_screen.textContent += xhr.responseText + "\n";
+                info_screen.textContent += xhr.responseText + "\r\n";
             }else{
-                info_screen.textContent += xhr.responseText + "\n";
+                info_screen.textContent += xhr.responseText + "\r\n";
             }
         }
 
     }
 }
+
+setInterval(function (){
+    pull_meter_list()
+}, 10000);
