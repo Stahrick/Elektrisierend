@@ -2,7 +2,7 @@ from flask import Flask
 from os.path import exists
 
 from views.ServiceWorker import management
-from views.RevProxy import revproxy
+from views.RevProxy import meter_management
 from GlobalStorage import export_meters, import_meters
 
 import logging
@@ -11,7 +11,7 @@ import atexit
 app = Flask(__name__)
 
 app.register_blueprint(management, url_prefix="/service-worker")
-app.register_blueprint(revproxy, url_prefix="/meter")
+app.register_blueprint(meter_management, url_prefix="/meter")
 
 
 def start_server():

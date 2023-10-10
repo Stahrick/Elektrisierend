@@ -19,14 +19,15 @@ def clearance_level_required(level):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            uuid = str(kwargs.get("device_uuid"))
             if level == ClearanceLevel.LOW:
                 return func(*args, **kwargs)
             elif level == ClearanceLevel.MEDIUM and request.headers.get('X-Client-Certificate'):
                 # Perform certificate verification logic here
                 cert = request.headers.get('X-Client-Certificate')
                 return func(*args, **kwargs)
-            elif level == ClearanceLevel.HIGH and "maintainer" in request.cookies:
-                cookie = request.cookies["maintainer"]
+            elif level == ClearanceLevel.HIGH and ("maintainer-"+uuid) in request.cookies:
+                cookie = request.cookies["maintainer-"+uuid]
                 # Check maintainer session cookie
                 return func(*args, **kwargs)
             elif level == ClearanceLevel.LOCAL:
