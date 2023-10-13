@@ -1,6 +1,8 @@
 const info_screen = document.getElementById("info_content");
 const meter_selection = document.getElementById("meter_selection");
 
+const toastLive = document.getElementById('liveToast')
+
 let url_prefix = "/service-worker"
 
 const pull_meter_list = () => {
@@ -27,6 +29,10 @@ let create_meter = () => {
     xhr.send();
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+            toastBootstrap.getElementsByClassName("me-auto").text = "Create meter"
+            toastBootstrap.getElementsByClassName("toast-body").text = xhr.responseText
+            toastBootstrap.show()
             info_screen.textContent += xhr.responseText + "\r\n";
             pull_meter_list()
         }
@@ -45,6 +51,10 @@ let setup_meter = () => {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             if(xhr.status === 200) {
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+                toastBootstrap.getElementsByClassName("me-auto").text = "Setup meter"
+                toastBootstrap.getElementsByClassName("toast-body").text = xhr.responseText
+                toastBootstrap.show()
                 info_screen.textContent += xhr.responseText + "\r\n";
             }else{
                 info_screen.textContent += xhr.responseText + "\r\n";
