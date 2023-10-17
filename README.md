@@ -14,7 +14,7 @@
 ### run app
 > .\\.venv\Scripts\activate
 
-> flask --app web_server run
+> flask --app ./webportal/web_server.py run
 
 ### use website
 
