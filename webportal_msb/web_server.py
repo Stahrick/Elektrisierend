@@ -49,27 +49,6 @@ def logout():
     session.clear()
     return response
 
-@app.route('/register', methods=['GET','POST'])
-def register():
-    #{"username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'email' in request.form and 'iban' in request.form and 'phone' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
-        username = request.form['username']
-        password = request.form['password']
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        iban = request.form['iban']
-        phone = request.form['phone']
-        city = request.form['city']
-        zip_code = request.form['zip_code']
-        address = request.form['address']
-        em_id = request.form['em_id']
-        if check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
-            return redirect(url_for(login))
-        else:
-            return render_template('register.html', error='invalid data')
-    return render_template('register.html')
-
 @app.route('/home', methods=['GET','POST'])
 def home():
     user_data = check_session(session.get('uuid'))
