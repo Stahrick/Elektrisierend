@@ -20,9 +20,23 @@
 
 visit [localhost:5000/login]
 
-## HIER MUSST DU (PATRICK) DAS FÜR DEINEN COOLEN STROMZÄHLER HINMACHEN
+## Start Stromzähler
+Similar setup to the Web App
 
+
+### run app
+> .\\.venv\Scripts\activate
+
+> flask -app ./Stromzähler/app.py run
+ 
+### use website
+Service-Worker: [localhost:25565/service-worker/]   
+Order meter: [localhost:25565/meter/order/]   
+Meter actions: [localhost:25565/meter/\*meter-uuid4\*/\*action\*/]
 
 
 
 [localhost:5000/login]:<http://localhost:5000/login>
+[localhost:25565/service-worker/]:<http://localhost:25565/service-worker/>
+[localhost:25565/meter/order/]:<http://localhost:25565/meter/order/>
+[localhost:25565/meter/\*meter-uuid4\*/\*action\*/]:http://localhost:25565/meter/<meter-uuid>/<action>/
