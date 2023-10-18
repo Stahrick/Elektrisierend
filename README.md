@@ -30,8 +30,8 @@ Similar setup to the Web App
 > flask -app ./Stromzähler/app.py run
  
 ### use website
-Service-Worker: [localhost:25565/service-worker/]
-Order meter: [localhost:25565/meter/order/]
+Service-Worker: [localhost:25565/service-worker/]   
+Order meter: [localhost:25565/meter/order/]   
 Meter actions: [localhost:25565/meter/<meter-uuid4>/<action>/]
 
 
