@@ -19,7 +19,7 @@ def start_server():
         # TODO load old data
         pass
     logging.info("Start webserver")
-    app.run(host="0.0.0.0", debug=True, port=80)
+    app.run(host="0.0.0.0", debug=True, port=25565)
 
 
 def stop_server():
