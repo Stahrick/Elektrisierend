@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="edit_profile">
+<h2>Home Page</h2>
+<form action="{{ url_for('edit_contract') }}" method="post" autocomplete="off">
+    <label for="contract_id"><p>Contract ID</p></label>
+    <input type="text" name="contract_id" value="{{ contract_id }}">
+    <label for="username"><p>Username</p></label>
+    <input type="text" name="username" value="{{ username }}">
+    <label for="first_name"><p>First name</p></label>
+    <input type="text" name="first_name" value="{{ first_name }}">
+    <label for="last_name"><p>Last name</p></label>
+    <input type="text" name="last_name" value="{{ last_name }}">
+    <label for="em_id"><p>Electricity Meter ID</p></label>
+    <input type="text" name="em_id" value="{{ em_id }}">
+    <label for="state"><p>State</p></label>
+    <input type="text" name="state" value="{{ state }}">
+    <label for="zip_code"><p>ZIP Code</p></label>
+    <input type="text" name="zip_code" value="{{ zip_code }}">
+    <label for="city"><p>City</p></label>
+    <input type="text" name="city" value="{{ city }}">
+    <label for="address"><p>Address</p></label>
+    <input type="text" name="address" value="{{ address }}">
+    <label for="iban"><p>IBAN</p></label>
+    <input type="text" name="iban" value="{{ iban }}">
+    <label for="email"><p>Email address</p></label>
+    <input type="email" name="email" value="{{ email }}">
+    <label for="phone"><p>Phone number</p></label>
+    <input type="tel" name="phone" value="{{ phone }}">
+    <div class="error">{{ error }}</div>
+    <input type="submit" value="Submit Changes">
+</form>
+<form action="{{ url_for('home') }}">
+    <input type="submit" value="Cancel">
+</form>
+</div>
+{% endblock %}

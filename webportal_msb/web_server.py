@@ -12,6 +12,7 @@ app.register_blueprint(meter, url_prefix="/meter")
 app.register_blueprint(meter, url_prefix="/provider")
 #todo: login, register, logout logic; fingerprint, css, database, password requirements
 #support, "email confirm"
+#
 
 def check_session(uuid):
     
@@ -19,19 +20,23 @@ def check_session(uuid):
     if uuid == None:
         return False
     if "uuid" in uuid:
+        print(uuid)
         #hier muss noch die datenbank zuordnung kommen, und check ob es die uuid gibt
-        return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
+        return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet", "house": "3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
 
     return False
 
 def check_login(username, password):
-    return {'uuid':'uuid'}
+    return {'uuid':'uuid', 'role': 'office'}
 
 def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
     return True
 
 def update_user_data(username, email, phone, iban):
     return True
+
+def get_contract_data(contract_id):
+    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -42,6 +47,7 @@ def login():
         if valid:
             response = make_response(redirect(url_for('home')))
             session['uuid'] = valid['uuid']
+            session['role'] = valid['role']
             return response
         else:
             session.clear()
@@ -58,18 +64,33 @@ def logout():
 def home():
     user_data = check_session(session.get('uuid'))
     if user_data:
-        return render_template('home.html')
+        if session.get('role')=='office':
+            if request.args.get('error')=='ici':
+                error = 'your contract ID is invalid'
+                return render_template('office.html', error=error)
+            return render_template('office.html')
+        elif session.get('get')=='technician':
+            return render_template('technician.html')
+        else:
+            return redirect(url_for('login'))
     return redirect(url_for('login'))
 
-@app.route('/profile', methods=['GET','POST'])
-def profile():
+@app.route('/show_contract', methods=['POST'])
+def show_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
-        return render_template('profile.html', first_name=user_data['first_name'], last_name=user_data['last_name'], em_id=user_data['em_id'], em_reading=user_data['em_reading'], iban=user_data['iban'], phone=user_data['phone'], email=user_data['email'] )
+        if 'contract_id' in request.form:
+            contract_id = request.form['contract_id']
+            contract_data = get_contract_data(contract_id) 
+            if contract_data:
+                return render_template('show_contract.html', contract_id=contract_data['contract_id'], em_id=contract_data['em_id'], em_reading = contract_data['em_reading'], state = contract_data['state'], zip_code = contract_data['zip_code'], city = contract_data['city'], address = contract_data['address'], iban = contract_data['iban'], phone = contract_data['phone'], email = contract_data['email'], username = contract_data['username'], first_name = contract_data['first_name'], last_name = contract_data['last_name'])
+            else:
+                #das lässt gerade template injections zu
+                return redirect(url_for('login'))
     return redirect(url_for('login'))
 
-@app.route('/edit_profile', methods=['GET','POST'])
-def edit_profile():
+@app.route('/edit_contract', methods=['GET','POST'])
+def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
         if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
@@ -85,7 +106,11 @@ def edit_profile():
             else:
                 #returns error if it cant update
                 return render_template('edit_profile', username=username, email=email, phone=phone, iban=iban, error='Cant update your Profile')
-        return render_template('edit_profile.html', username=user_data['username'], email=user_data['email'], phone=user_data['phone'], iban=user_data['iban'])
+        if request.args.get('contract_id') is not None:
+            print(request.args.get('contract_id'))
+            contract_data = get_contract_data(request.args.get('contract_id'))
+            return render_template('edit_contract.html', contract_id=contract_data['contract_id'], em_id=contract_data['em_id'], em_reading = contract_data['em_reading'], state = contract_data['state'], zip_code = contract_data['zip_code'], city = contract_data['city'], address = contract_data['address'], iban = contract_data['iban'], phone = contract_data['phone'], email = contract_data['email'], username = contract_data['username'], first_name = contract_data['first_name'], last_name = contract_data['last_name'])
+        return redirect(url_for('home')+'?error=ici')
     return redirect(url_for('login'))
 
 print('running')

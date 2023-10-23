@@ -100,7 +100,7 @@ def edit_profile():
                 return redirect(url_for('profile'))
             else:
                 #returns error if it cant update
-                return render_template('edit_profile', username=username, email=email, phone=phone, iban=iban, error='Cant update your Profile')
+                return render_template('edit_profile', username=username, email=email, phone=phone, error='Cant update your Profile')
         return render_template('edit_profile.html', username=user_data['username'], email=user_data['email'], phone=user_data['phone'], iban=user_data['iban'])
     return redirect(url_for('login'))
 
