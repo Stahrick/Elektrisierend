@@ -54,8 +54,8 @@ body {
 }
 
 .navbar img {
-    border-radius: 8px;
-    width: 150px;   
+    border-radius: 200px;
+    width: 200px;   
 }
 
 .navbar img:hover {
@@ -70,5 +70,17 @@ body {
 #nav-container {
     display: flex;
     justify-content: space-around;
+    height: 200px;
 }
 
+#navbar-placeholder {
+    display: none;
+    height: 200px;
+}
+
+#content-img {
+    float: left;
+    margin: 10px;
+    width: 200px;
+    height: auto;
+}
