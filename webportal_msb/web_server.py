@@ -23,7 +23,7 @@ def check_session(uuid):
     if "uuid" in uuid:
         print(uuid)
         #hier muss noch die datenbank zuordnung kommen, und check ob es die uuid gibt
-        return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet", "house": "3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
+        return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet", "house": "3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "{{ 7*7 }}"}
 
     return False
 
@@ -142,4 +142,4 @@ def maintenance():
     else:
         return redirect(url_for('home')+'?msg=invalid')
 
-print('running')
+app.run(debug=True, port=5000)

@@ -15,7 +15,7 @@
         <tr>
             <td>{{ em_ids[0][i] }}</td>
             <td>{{ em_ids[1][i] }}</td>
-            <td><a href="{{ url_for('maintenance')+'?id='+em_ids[0][i]}}">Maintance</a></td>
+            <td><a href="{{ url_for('maintenance')+'?id='+em_ids[0][i]}}"><button type="button">Maintance</button></a></td>
         </tr>
     {% endfor %}
 </table>
