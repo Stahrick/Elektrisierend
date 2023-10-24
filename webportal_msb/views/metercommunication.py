@@ -1,8 +1,8 @@
-from flask import Blueprints, request, make_response
+from flask import Blueprint, request, make_response
 
 import requests
 
-meter = Blueprints("metercommunication", __name__)
+meter = Blueprint("metercommunication", __name__)
 
 @meter.route("/register/", methods=["POST"])
 def register_meter():
