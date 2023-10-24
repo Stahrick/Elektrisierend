@@ -2,7 +2,7 @@ import enum
 from functools import wraps
 from flask import request
 
-from GlobalStorage import list_meters
+from GlobalStorage import list_meters, get_meter
 
 import re
 
@@ -12,7 +12,7 @@ class ClearanceLevel(enum.Enum):
     MEDIUM = "Medium"
     HIGH = "High"
 
-local_ip_pattern = re.compile("^192\.168\.")
+local_ip_pattern = re.compile("^(192\\.168\\.|localhost)")
 
 
 def clearance_level_required(level):
@@ -46,7 +46,7 @@ def device_required(f):
     def decorated(*args, **kwargs):
         uuid = str(kwargs.get("device_uuid"))
         if uuid is not None and uuid in list_meters():
-            device = list_meters()[uuid]
+            device = get_meter(uuid)
             kwargs["device"] = device  # Pass the device object to the route handler
             return f(*args, **kwargs)
         else:
