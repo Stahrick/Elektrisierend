@@ -85,3 +85,8 @@ body {
     width: 200px;
     height: auto;
 }
+
+#head {
+    background-color: #57CC99;
+    text-align: center;
+}

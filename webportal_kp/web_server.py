@@ -104,4 +104,4 @@ def edit_profile():
         return render_template('edit_profile.html', username=user_data['username'], email=user_data['email'], phone=user_data['phone'], iban=user_data['iban'])
     return redirect(url_for('login'))
 
-print('running')
+app.run(debug=True, port=4000)
