@@ -4,6 +4,7 @@ const meter_selection = document.getElementById("meter_selection");
 const toastLive = document.getElementById('liveToast')
 
 let url_prefix = "/service-worker"
+let meter_prefix = "/meter"
 
 const pull_meter_list = () => {
     let xhr = new XMLHttpRequest();
@@ -29,10 +30,6 @@ let create_meter = () => {
     xhr.send();
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
-            toastBootstrap.getElementsByClassName("me-auto").text = "Create meter"
-            toastBootstrap.getElementsByClassName("toast-body").text = xhr.responseText
-            toastBootstrap.show()
             info_screen.textContent += xhr.responseText + "\r\n";
             pull_meter_list()
         }
@@ -40,21 +37,20 @@ let create_meter = () => {
 }
 
 let setup_meter = () => {
+    let uuid = meter_selection.options[ meter_selection.selectedIndex ].value
+
     let xhr = new XMLHttpRequest();
-    xhr.open('POST', url_prefix + '/setup/', true);
+    xhr.open('POST', `${meter_prefix}/${uuid}/setup/`, true);
     xhr.setRequestHeader("Content-Type", "application/json");
+    let reg_code = {"uuid": uuid, "code": 1234}
     let body = JSON.stringify({
-      uuid: meter_selection.options[ meter_selection.selectedIndex ].value,
-      registrationCode: 10
+      uuid: uuid,
+      registrationCode: JSON.stringify(reg_code)
     });
     xhr.send(body);
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
+        if (xhr.readyState === 4) {
             if(xhr.status === 200) {
-                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
-                toastBootstrap.getElementsByClassName("me-auto").text = "Setup meter"
-                toastBootstrap.getElementsByClassName("toast-body").text = xhr.responseText
-                toastBootstrap.show()
                 info_screen.textContent += xhr.responseText + "\r\n";
             }else{
                 info_screen.textContent += xhr.responseText + "\r\n";

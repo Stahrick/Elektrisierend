@@ -6,6 +6,9 @@ from datetime import datetime
 from flask import make_response
 from uuid import uuid4
 
+from Config import msb_url
+from security.Certificate import create_X509_csr
+
 logging.getLogger(__name__)
 
 average_kwh_per_sec = 2050 / 365 / 24 / 60 / 60  # Average 2050kwh per person per year
@@ -21,14 +24,21 @@ class Meter:
     def __init__(self, uuid=None):
         self.uuid = str(uuid4()) if uuid is None else uuid
 
-    def setup_meter(self, registration_code):
+    def setup_meter(self, registration_config):
         # TODO Check signature and hash verification
         # Check uuid in registration_code with device uuid
-        if self.uuid != registration_code["uuid"]:
-            logging.info(f"Invalid registration code provided for device({self.uuid}): {registration_code}")
+        if self.uuid != registration_config["uuid"]:
+            logging.info(f"Invalid registration config provided for device({self.uuid}): {registration_config}")
             return make_response("Invalid registration code provided", 400)
-        # TODO Generate own certificate
-
+        code = registration_config["code"]
+        own_cert = create_X509_csr(self.uuid)
+        req_data = {"uuid": self.uuid, "code": code, "cert": own_cert}
+        try:
+            r = requests.post(f"{msb_url}/register/", json=req_data)
+            if r.status_code != 200:
+                return make_response("Meter registration failed", 406)
+        except requests.exceptions.InvalidSchema as e:
+            return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
         logging.info(f"Initialized meter with {self.meter} KWH")
         return make_response("Meter setup complete", 200)

@@ -1,5 +1,7 @@
 # This a virtual reverse proxy to distribute requests to the wanted meter
+import json
 
+import requests
 from flask import Flask, Blueprint, make_response, request
 
 from GlobalStorage import list_meters, get_meter, add_meter
@@ -18,7 +20,7 @@ clearances = {
     "company_portal": ["activate_maintenance"],
     "maintenance": ["restart", "cert_renew", "set_meter"]
 }
-local_ip_pattern = re.compile("^192\.168\.")
+local_ip_pattern = re.compile("^192\\.168\\.")
 
 
 @meter_management.route("/order/", methods=["POST"])
@@ -39,7 +41,9 @@ def meter_setup(device_uuid, device: Meter):
     data = request.json
     if "registrationCode" not in data:
         return "No registrationCode provided", 400
-    reg_code = data["registrationCode"]
+
+    # TODO Check if json can parse it
+    reg_code = json.loads(data["registrationCode"])
     return device.setup_meter(reg_code)
 
 
@@ -80,4 +84,8 @@ def meter_restart(device_uuid, device: Meter):
 @device_required
 def meter_swap_certificate(device_uuid, device: Meter):
     # TODO Check certificate
-    return device.swap_certificate()
+    data = request.json
+    if "cert" not in data:
+        return "Certificate missing", 401
+    new_cert = data["cert"]
+    return device.swap_certificate(new_cert)
