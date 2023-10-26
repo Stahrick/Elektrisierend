@@ -12,7 +12,7 @@ class ClearanceLevel(enum.Enum):
     MEDIUM = "Medium"
     HIGH = "High"
 
-local_ip_pattern = re.compile("^(192\\.168\\.|localhost)")
+local_ip_pattern = re.compile("^(192\\.168\\.|localhost|127\\.0\\.0\\.1)")
 
 
 def clearance_level_required(level):

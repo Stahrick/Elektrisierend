@@ -11,6 +11,7 @@ def register_meter():
     code = data["code"]
     meter_cert = data["meter-cert"]
 
+    # TODO Sign cert sign request and send signed back
     # TODO Send contract data
     return f"Registration complete with uuid ({uuid})", 200
 
