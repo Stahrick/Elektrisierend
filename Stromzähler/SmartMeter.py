@@ -32,7 +32,7 @@ class Meter:
             return make_response("Invalid registration code provided", 400)
         code = registration_config["code"]
         own_cert = create_X509_csr(self.uuid)
-        req_data = {"uuid": self.uuid, "code": code, "cert": own_cert}
+        req_data = {"uuid": self.uuid, "code": code, "meter-cert": own_cert}
         try:
             r = requests.post(f"{msb_url}/register/", json=req_data)
             if r.status_code != 200:
