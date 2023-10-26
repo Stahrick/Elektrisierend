@@ -1,5 +1,8 @@
 # Functions/View for the maintainer
+
+
 from flask import Blueprint, render_template, request, make_response
+import time
 
 from GlobalStorage import add_meter, list_meters, get_meter
 from SmartMeter import Meter
@@ -44,13 +47,16 @@ def recv_mails():
     # Receive mails from Messstellenbetreiber
     global in_transit_mails
     data = request.json
+    cur_time = time.time()
     if len(data) == 0:
         return make_response("No mails provided", 401)
-    in_transit_mails.extend(data)
+    for mail in data:
+        in_transit_mails.append([mail, cur_time])
+    #in_transit_mails.extend(data)
     return make_response("Mails received", 200)
 
 
-@management.route("/transfer_mails/", methods=["GET"])
+@management.route("/transfer-mails/", methods=["GET"])
 def transfer_mails():
     global in_transit_mails
     new_mails = in_transit_mails

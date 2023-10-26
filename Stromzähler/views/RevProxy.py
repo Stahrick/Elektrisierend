@@ -1,5 +1,8 @@
 # This a virtual reverse proxy to distribute requests to the wanted meter
 import json
+import threading
+import time
+import logging
 
 import requests
 from flask import Flask, Blueprint, make_response, request
@@ -8,7 +11,7 @@ from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
 from security.Decorator import clearance_level_required, device_required, ClearanceLevel
 
-import re
+logging.getLogger(__name__)
 
 meter_management = Blueprint("metermanagement", __name__)
 revproxy = Blueprint("revproxy", __name__)
@@ -20,7 +23,6 @@ clearances = {
     "company_portal": ["activate_maintenance"],
     "maintenance": ["restart", "cert_renew", "set_meter"]
 }
-local_ip_pattern = re.compile("^192\\.168\\.")
 
 
 @meter_management.route("/order/", methods=["POST"])
@@ -55,7 +57,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     resp = make_response("Maintenance activated for you for next 5 minutes", 200)
     # TODO Cookies
     resp.set_cookie("maintenance-"+device_uuid, 123)
-    return "Maintenance activated for 5 minutes", 200
+    return resp
 
 
 @revproxy.route("/set/", methods=["POST"])
@@ -89,3 +91,10 @@ def meter_swap_certificate(device_uuid, device: Meter):
         return "Certificate missing", 401
     new_cert = data["cert"]
     return device.swap_certificate(new_cert)
+
+
+def send_meters():
+    for meter_uuid in list_meters():
+        get_meter(meter_uuid).send_meter()
+    logging.info("Send all meter information")
+    threading.Timer(1*60, send_meters).start()

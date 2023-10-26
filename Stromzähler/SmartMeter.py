@@ -31,21 +31,23 @@ class Meter:
             logging.info(f"Invalid registration config provided for device({self.uuid}): {registration_config}")
             return make_response("Invalid registration code provided", 400)
         code = registration_config["code"]
-        own_cert = create_X509_csr(self.uuid)
-        req_data = {"uuid": self.uuid, "code": code, "meter-cert": own_cert}
+        self.configuration["own_cert"] = create_X509_csr(self.uuid)
+        req_data = {"uuid": self.uuid, "code": code, "meter-cert": self.configuration["own_cert"]}
         try:
-            r = requests.post(f"{msb_url}/register/", json=req_data)
+            r = requests.post(f"{registration_config["url"]}/register/", json=req_data)
             if r.status_code != 200:
                 return make_response("Meter registration failed", 406)
         except requests.exceptions.InvalidSchema as e:
             return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
+        self.last_update = datetime.now()
+        self.configuration["maintainer_url"] = registration_config["url"]
         logging.info(f"Initialized meter with {self.meter} KWH")
         return make_response("Meter setup complete", 200)
 
     def activate_maintenance(self):
         self.maintenance_activation_time = datetime.now()
-        logging.info(f"Activated maintenance from host {req.host}")
+        logging.info(f"Activated maintenance mode")
 
     def set_meter(self, amount):
         self.meter = amount
@@ -59,17 +61,18 @@ class Meter:
     def swap_certificate(self, new_cert):
         # Swap the maintainer certificate
         logging.warning("Certificate swap triggered")
-        self.configuration["cert"] = new_cert
+        self.configuration["maintainer_cert"] = new_cert
         return make_response("Certificate renewed", 200)
 
     def send_meter(self):
         global average_kwh_per_sec
+        if self.configuration["maintainer_url"] is None:
+            return
         cur_time = datetime.now()
         passed_sec = (cur_time - self.last_update).total_seconds()
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
         self.meter += passed_sec * amount_added
-        # TODO Add url
-        requests.post(self.configuration["url"], {"uuid": self.uuid, "meter": self.meter})
+        requests.post(f"{self.configuration["maintainer_url"]}/data/", json={"uuid": self.uuid, "meter": self.meter})
         logging.info(f"SEND meter data {self.meter} Kwh")
 
     def is_in_maintenance(self):
