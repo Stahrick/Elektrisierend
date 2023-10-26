@@ -20,4 +20,5 @@ def get_meter_data():
     data = request.json
     uuid = data["uuid"]
     consumption_data = data["consumption"]
+    return "Received data", 200
 
