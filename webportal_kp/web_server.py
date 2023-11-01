@@ -39,7 +39,7 @@ def check_register(username, password, first_name, last_name, email, iban, phone
     if db_handler.get_account_by_username(acc.username):
         return False
     
-    return db_handler.create_account(acc)
+    return True
 
 def update_user_data(username, email, phone, iban, id = None):#PLASE GIVE ME ID PLEAAAAAASE
     #if new requested username is already reserved, dont update!
