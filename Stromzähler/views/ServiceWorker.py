@@ -59,6 +59,6 @@ def recv_mails():
 @management.route("/transfer-mails/", methods=["GET"])
 def transfer_mails():
     global in_transit_mails
-    new_mails = in_transit_mails
+    new_mails = in_transit_mails.copy()
     in_transit_mails.clear()
     return new_mails

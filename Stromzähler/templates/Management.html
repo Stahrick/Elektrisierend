@@ -30,17 +30,17 @@
     <div class="accordion" id="accordionExample">
         <div class="accordion-item">
              <h2 class="accordion-header">
-                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                      Mails  <span id="amount-new-mails" class="badge text-bg-secondary">4</span>
+                  <button id="mail-open-button" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                      Mails  <span id="amount-new-mails" class="badge text-bg-secondary">0</span>
                   </button>
              </h2>
             <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                 <div class="accordion-body">
-                    <ul class="list-group">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <ul id="mail-list" class="list-group">
+                        <!-- <li class="list-group-item d-flex justify-content-between align-items-center">
                             Email Inhalt
                             <span class="badge bg-primary">vor 10 Minuten</span>
-                        </li>
+                        </li> -->
                     </ul>
                 </div>
             </div>

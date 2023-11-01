@@ -32,16 +32,23 @@ const pull_mails = () => {
         if (xhr.readyState === 4) {
             if(xhr.status === 200) {
                 let mails_arr = JSON.parse(this.responseText);
+                if(mails_arr.length <= 0) {
+                    return
+                }
                 document.getElementById("amount-new-mails").textContent = "" + mails_arr.length
+                let mailWrapper = document.getElementById("mail-list")
                 mails_arr.forEach(mail => {
                     let mail_elem = document.createElement('li');
                     mail_elem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-                    mail_elem.value = mail[0];
+                    mail_elem.textContent = mail[0];
+                    let d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+                    d.setUTCSeconds(mail[1]);
+                    let options = {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: 'false' }
                     let since_elem = document.createElement("span");
-                    since_elem.textContent = mail[1];
+                    since_elem.textContent = d.toLocaleTimeString("de-DE");
                     since_elem.classList.add("badge", "bg-primary");
                     mail_elem.appendChild(since_elem);
-                    meter_selection.appendChild(mail_elem);
+                    mailWrapper.appendChild(mail_elem);
                 })
             }else{
                 console.log(xhr.responseText)
@@ -90,3 +97,7 @@ setInterval(function (){
     pull_meter_list()
     pull_mails()
 }, 10000);
+
+document.getElementById("mail-open-button").addEventListener("click", (e) => {
+    document.getElementById("amount-new-mails").textContent = "" + 0
+});
