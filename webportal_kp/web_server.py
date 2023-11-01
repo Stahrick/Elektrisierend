@@ -2,11 +2,12 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.InternalDataclasses import Account, Contract
-
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
+load_dotenv()
 pw = getenv('StromiPW')
 username = getenv('StromiUser')
 dbname = getenv('StromiDB')
@@ -30,9 +31,10 @@ def check_login(username, password):
         return {'uuid':'uuid'}
 
 def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
-    contract = Contract(em_id,"date","info",[0],0,0)
-    acc = Account(username,password, "salt",first_name,last_name,email,iban,phone,city,zip_code,address,contract)
+    contract = Contract(em_id,"date","info",[0],"0","0")
+    acc = Account(username,password, 123,first_name,last_name,email,iban,phone,city,zip_code,address,contract)
     #Check if username is already in use, TODO check for the rest of bs
+    print("acc:" + acc)
     if db_handler.get_account_by_username(acc.username):
         return False
     
@@ -54,10 +56,12 @@ def login():
         password = request.form['password']
         valid = check_login(username, password)
         if valid:
+            print("valid")
             response = make_response(redirect(url_for('home')))
             session['uuid'] = valid['uuid']
             return response
         else:
+            print("invalid")
             session.clear()
             return render_template('login.html', error='invalid login')
     return render_template('login.html')
@@ -71,6 +75,7 @@ def logout():
 @app.route('/register', methods=['GET','POST'])
 def register():
     #{"username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
+    print( [i for i in  request.form])
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'email' in request.form and 'iban' in request.form and 'phone' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
         username = request.form['username']
         password = request.form['password']
@@ -83,6 +88,7 @@ def register():
         zip_code = request.form['zip_code']
         address = request.form['address']
         em_id = request.form['em_id']
+        print(iban)
         if check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
             return redirect(url_for(login))
         else:
