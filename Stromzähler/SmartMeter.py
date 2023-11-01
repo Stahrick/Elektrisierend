@@ -37,7 +37,7 @@ class Meter:
             r = requests.post(f"{registration_config["url"]}/register/", json=req_data)
             if r.status_code != 200:
                 return make_response("Meter registration failed", 406)
-        except requests.exceptions.InvalidSchema as e:
+        except (requests.exceptions.InvalidSchema, requests.exceptions.ConnectionError) as e:
             return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
         self.last_update = datetime.now()
