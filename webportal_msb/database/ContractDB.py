@@ -12,7 +12,7 @@ class ContractHandler:
         print()
     def create_contract(self, c : Contract):
         try:
-            return self.db.insert_item(collection = self.collection, data= c)
+            return self.db.insert_item(collection = self.collection, data= c.dict())
         except:
             return False
     

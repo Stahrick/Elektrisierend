@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-
+from dataclasses import dataclass, field, asdict
+from uuid import uuid4
 
 @dataclass
 class Contract:
@@ -12,7 +12,7 @@ class Contract:
 
 @dataclass
 class Account:
-    _id : int = field(init = False)
+    _id : int = field(init = False, repr = False)
     username : str 
     pw_hash : int
     pw_salt : int
@@ -25,5 +25,13 @@ class Account:
     zip_code : int
     address : str 
     contract : Contract
+
+    def __post_init__(self):
+        self._id = uuid4()
+
+    def dict(self):
+        return {k: str(v) for k, v in asdict(self).items()}
+
+
     #moved em_reading and em_id to Contract
 

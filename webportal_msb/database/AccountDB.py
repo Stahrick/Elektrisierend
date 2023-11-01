@@ -12,7 +12,8 @@ class AccountHandler:
         print()
     def create_account(self, acc : Account):
         try:
-            return self.db.insert_item(collection = self.collection, data= acc)
+            print(acc)
+            return self.db.insert_item(collection = self.collection, data= acc.dict())
         except:
             return False
     

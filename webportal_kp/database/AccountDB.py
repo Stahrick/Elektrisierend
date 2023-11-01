@@ -11,7 +11,8 @@ class AccountHandler:
             self.collection = collection
         print()
     def create_account(self, acc : Account):
-        return self.db.insert_item(collection = self.collection, data= acc)
+        print(acc)
+        return self.db.insert_item(collection = self.collection, data= acc.dict())
     
     def delete_account_by_id(self, id : int):
         return self.db.delete_item_by_id(self.collection, id) 

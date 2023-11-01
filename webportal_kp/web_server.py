@@ -36,11 +36,10 @@ def check_register(username, password, first_name, last_name, email, iban, phone
     contract = Contract(em_id,"date","info",[0],"0","0")
     acc = Account(username,password, 123,first_name,last_name,email,iban,phone,city,zip_code,address,contract)
     #Check if username is already in use, TODO check for the rest of bs
-    print("acc:" + acc)
     if db_handler.get_account_by_username(acc.username):
         return False
     
-    return db_handler.create_account()
+    return db_handler.create_account(acc)
 
 def update_user_data(username, email, phone, iban, id = None):#PLASE GIVE ME ID PLEAAAAAASE
     #if new requested username is already reserved, dont update!
@@ -79,6 +78,7 @@ def register():
     #{"username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
     print( [i for i in  request.form])
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'email' in request.form and 'iban' in request.form and 'phone' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
+        
         username = request.form['username']
         password = request.form['password']
         first_name = request.form['first_name']
@@ -92,7 +92,7 @@ def register():
         em_id = request.form['em_id']
         print(iban)
         if check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
-            return redirect(url_for(login))
+            return redirect(url_for('login'))
         else:
             return render_template('register.html', error='invalid data')
     return render_template('register.html')
