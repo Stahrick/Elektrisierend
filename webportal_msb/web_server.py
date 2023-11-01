@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
-from os import urandom
+from os import urandom, getenv
+from database.AccountDB import AccountHandler
+from database.ContractDB import ContractHandler
+from database.InternalDataclasses import Account, Contract
+from dotenv import load_dotenv
 
 from views.metercommunication import meter
 from views.electricityprovider import provider
@@ -8,6 +12,13 @@ from views.electricityprovider import provider
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
+
+load_dotenv()
+pw = getenv('MSBPW')
+username = getenv('MSBUser')
+dbname = getenv('MSBDB')
+db_acc_handler = AccountHandler(username,pw,dbname)
+db_ctr_handler = ContractHandler(username,pw,dbname)
 
 app.register_blueprint(meter, url_prefix="/meter")
 app.register_blueprint(provider, url_prefix="/provider")
@@ -28,21 +39,42 @@ def check_session(uuid):
     return False
 
 def check_login(username, password):
+    if db_acc_handler.get_account_by_username(username):
+        print("true")
     return {'uuid':'uuid', 'role': 'technician'}
 
+#what for?
 def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
-    return True
+    contract = Contract(em_id,"date","info",[0],"0","0")
+    acc = Account(username,password, 123,first_name,last_name,email,iban,phone,city,zip_code,address,contract)
+    #Check if username is already in use, TODO check for the rest of bs
+    print("acc:" + acc)
+    if db_acc_handler.get_account_by_username(acc.username):
+        return False
+    res = db_acc_handler.create_account()
+    return True #res
 
 def update_user_data(username, email, phone, iban):
+    #if new requested username is already reserved, dont update!
+    if db_acc_handler.get_account_by_username(username):
+        return False
+    #TODO please i want id of current active user to update GIVE ME
+    #this is theoretically possible but i really dont advise it
+    #db_acc_handler.update_account_by_username(old_username, {"username":username, "email": email, "phone":phone, "iban": iban})#TODO do better wtf is this
     return True
 
 def get_contract_data(contract_id):
-    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
+    res = db_ctr_handler.get_contract_by_id(contract_id)
+    return res #{"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
 
 def get_ems_by_contract():
+    res = db_ctr_handler.get_all()
+    print(res)
     return [[urandom(6).hex() for i in range(6)], [urandom(6).hex() for i in range(6)], [i for i in range(6)]]
 
 def check_em_id(em):
+    res = db_acc_handler.get_account_by_id(em)['contract']['id']
+    print(res)
     return True
 
 def activate_maintenance(id):

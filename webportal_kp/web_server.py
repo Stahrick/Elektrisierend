@@ -7,11 +7,13 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
+
 load_dotenv()
 pw = getenv('StromiPW')
 username = getenv('StromiUser')
 dbname = getenv('StromiDB')
 db_handler = AccountHandler(username,pw,dbname)
+
 #todo: login, register, logout logic; fingerprint, css, database, password requirements
 #support, "email confirm"
 

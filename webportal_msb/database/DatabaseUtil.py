@@ -57,6 +57,12 @@ class MoronDB:
    def get_items(self, collection_name : str , data):
       collection = self.get_collection(collection_name, self.db)
       return list(collection.find(data))
+   
+   def get_items_all(self, collection_name : str):
+      collection = self.get_collection(collection_name, self.db)
+      cursor = collection.find({})
+      l = [i for i in cursor]
+      return l
       
    def get_item_by_id(self, collection_name : str , id):
       collection = self.get_collection(collection_name, self.db)
