@@ -1,15 +1,16 @@
 from pymongo import MongoClient
-from bson.objectid import ObjectId
-from time import sleep
+from dotenv import load_dotenv
+from os import getenv
 
+ip = getenv('DBIP')
 class MoronDB:
 
    client = None
    db = None
 
-   def __init__(self, port,hostname,dbname):   
-      #self.client = MongoClient(host=hostname, port = port) 
-      self.client = MongoClient("mongodb://localhost:27017/")
+   def __init__(self, port, username, password,dbname):
+      uri =  f"mongodb://{username}:{password}@{ip}:{port}/{dbname}?authSource=admin"
+      self.client = MongoClient(uri) 
       self.db = self.client[dbname]
 
    def insert_item(self, collection, data):
@@ -18,7 +19,7 @@ class MoronDB:
 
       result = collection.insert_one(data)
       return { "id" : result.inserted_id, "acknowledged" : result.acknowledged}
-   
+
    def insert_items(self, collection, data):
       if type(collection) == str:
          collection = self.get_collection(collection, self.db)
@@ -84,6 +85,26 @@ class MoronDB:
       collection = self.get_collection(collection_name,self.db)
       return collection.update_one({"_id": id},{"$set":cache}, upsert = True).acknowledged 
    
+   #!!!MEANT TO UPDATE A SINGLE ITEM BY POSSIBLY AMBIGUOUS FILTER
+   #if entity is not found, stop
+   def update_item_by_filter(self, collection_name : str, filter, data):
+      orig = self.get_items(collection_name,filter)
+      if type(orig) == list and len(orig)>1:
+         return {"acknowledged": False, "error": "filter didnt return a unique item"}
+      if orig:
+         orig = orig[0]
+         cache = {}
+         for key in orig.keys():
+            if key in data.keys():
+               cache[key] = data[key]
+               continue
+            cache[key] = orig[key]
+            collection = self.get_collection(collection_name,self.db)
+         return collection.update_one({"_id": orig['_id']},{"$set":cache}, upsert = True).acknowledged
+      else: 
+         return {"acknowledged": False, "error": "filter didnt return any (single) item"}
+      
+   
 
    def update_items_by_ids(self, collection_name : str ,id : list, data : list):
       pass
@@ -91,15 +112,3 @@ class MoronDB:
    def put_item_by_id(self, collection_name : str ,id, data):
       pass
 
-#manual testing
-"""# Get the database
-dbclass = MoronDB(27017,'localhost')
-id = dbclass.create_collection_with_data("name",{'name': 'John Smith','email': 'john@example.com'})["id"]
-ids = dbclass.create_collection_with_data("name",[{'name': 'John Smith','email': 'john@example.com'},{'name': 'John Smith2','email': 'john2@example.com'}])["ids"]
-
-print(dbclass.get_item_by_id("name",id))
-#print(dbclass.get_items("name",{'name': 'John Smith','email': 'john@example.com'}))
-print()
-print(dbclass.update_item_by_id("name",1, {'name': 'New Dude'}))
-
-#TODO: performance, really necessary to grab the collection each time?..."""
