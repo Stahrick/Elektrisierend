@@ -6,13 +6,29 @@ const toastLive = document.getElementById('liveToast')
 let url_prefix = "/service-worker"
 let meter_prefix = "/meter"
 
-const pull_meter_list = () => {
+const send_api_request = (url, method, payload, callbackfunc) => {
     let xhr = new XMLHttpRequest();
-    xhr.open('GET', url_prefix + '/list/', true);
-    xhr.send();
+    xhr.open(method, url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    if(method == "POST") {
+        xhr.send(payload);
+    }else if(method == "GET") {
+        xhr.send();
+    }else{
+        console.log("Unsupported method for api request")
+    }
+
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            let device_arr = JSON.parse(this.responseText);
+        if(xhr.readyState === 4) {
+            return callbackfunc(xhr.status, xhr.responseText);
+        }
+    }
+}
+
+const pull_meter_list = () => {
+    let callback = (statusCode, responseText) => {
+        if(statusCode === 200) {
+            let device_arr = JSON.parse(responseText);
             meter_selection.options.length = 0;
             device_arr.forEach(device => {
                 let opt = document.createElement('option');
@@ -22,16 +38,13 @@ const pull_meter_list = () => {
             })
         }
     }
+    send_api_request(url_prefix + '/list/', "GET", null, callback);
 }
 
 const pull_mails = () => {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', url_prefix + '/transfer-mails/', true);
-    xhr.send();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if(xhr.status === 200) {
-                let mails_arr = JSON.parse(this.responseText);
+    let callback = (statusCode, responseText) => {
+        if(statusCode === 200) {
+                let mails_arr = JSON.parse(responseText);
                 if(mails_arr.length <= 0) {
                     return
                 }
@@ -50,26 +63,24 @@ const pull_mails = () => {
                     mail_elem.appendChild(since_elem);
                     mailWrapper.appendChild(mail_elem);
                 })
-            }else{
-                console.log(xhr.responseText)
-            }
+        }else{
+            console.log(responseText)
         }
     }
+    send_api_request(url_prefix + '/transfer-mails/', "GET", null, callback);
 }
 
-let create_meter = () => {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', url_prefix + '/create/', true);
-    xhr.send();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            info_screen.textContent += xhr.responseText + "\r\n";
+const create_meter = () => {
+    let callback = (statusCode, responseText) => {
+        if(statusCode === 200) {
+            info_screen.textContent += responseText + "\r\n";
             pull_meter_list()
         }
     }
+    send_api_request(url_prefix + '/create/', "GET", null, callback);
 }
 
-let setup_meter = () => {
+const setup_meter = () => {
     if(meter_selection.selectedIndex == -1) {
         info_screen.textContent += "No meter selected\r\n";
         hideOverlay();
@@ -77,25 +88,19 @@ let setup_meter = () => {
     }
     let uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
     let registerCode = document.getElementById("action-value").value;
-
-    hideOverlay();
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', `${meter_prefix}/${uuid}/setup/`, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
     let reg_code = {"uuid": uuid, "code": registerCode, "url": "http://127.0.0.1:5000/meter"}
+    hideOverlay();
+    let callback = (statusCode, responseText) => {
+        info_screen.textContent += responseText + "\r\n";
+    }
     let body = JSON.stringify({
       uuid: uuid,
       registrationCode: JSON.stringify(reg_code)
     });
-    xhr.send(body);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            info_screen.textContent += xhr.responseText + "\r\n";
-        }
-    }
+    send_api_request(`${meter_prefix}/${uuid}/setup/`, "POST", body, callback);
 }
 
-let set_meter = () => {
+const set_meter = () => {
     if(meter_selection.selectedIndex == -1) {
         info_screen.textContent += "No meter selected\r\n";
         hideOverlay();
@@ -105,18 +110,21 @@ let set_meter = () => {
     let amount = document.getElementById("action-value").value;
 
     hideOverlay();
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', `${meter_prefix}/${uuid}/set/`, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
+    let callback = (statusCode, responseText) => {
+        info_screen.textContent += responseText + "\r\n";
+    }
     let body = JSON.stringify({
       amount: amount
     });
-    xhr.send(body);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            info_screen.textContent += xhr.responseText + "\r\n";
-        }
+    send_api_request(`${meter_prefix}/${uuid}/set/`, "POST", body, callback);
+}
+
+const restart_meter = () => {
+    let uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
+    let callback = (statusCode, responseText) => {
+        info_screen.textContent += responseText + "\r\n";
     }
+    send_api_request(`${meter_prefix}/${uuid}/restart/`, "GET", null, callback);
 }
 
 let showOverlay = (action, placeholderText) => {
