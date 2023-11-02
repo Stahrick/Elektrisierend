@@ -1,11 +1,13 @@
 # This a virtual reverse proxy to distribute requests to the wanted meter
 import json
+import re
 import threading
 import time
 import logging
+import datetime
 
 import requests
-from flask import Flask, Blueprint, make_response, request
+from flask import Flask, Blueprint, make_response, request, redirect, url_for
 
 from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
@@ -51,14 +53,19 @@ def meter_setup(device_uuid, device: Meter):
     return device.setup_meter(reg_code)
 
 
-@revproxy.route("/activate-maintenance/", methods=["GET"])
-@clearance_level_required(ClearanceLevel.MEDIUM)
+@revproxy.route("/activate-maintenance/<cookie_value>/", methods=["GET"])
+@clearance_level_required(ClearanceLevel.LOW)
 @device_required
-def meter_maintenance_activation(device_uuid, device: Meter):
-    device.activate_maintenance()
-    resp = make_response("Maintenance activated for you for next 5 minutes", 200)
-    # TODO Cookies
-    resp.set_cookie("maintenance-"+device_uuid, 123)
+def meter_maintenance_activation(device_uuid, device: Meter, cookie_value):
+    # Check cookie based on pub signature
+    redirect_url = request.referrer
+    # TODO check re url
+    if not redirect_url or not re.compile("^https?://localhost:5000/").match(redirect_url):
+        redirect_url = url_for("service-worker.index")
+
+    resp = make_response(redirect(redirect_url))
+    expiration_time = datetime.datetime.now() + datetime.timedelta(minutes=5)
+    resp.set_cookie("maintenance-"+str(device_uuid), cookie_value, secure=True, httponly=True, expires=expiration_time)
     return resp
 
 
@@ -83,7 +90,7 @@ def meter_restart(device_uuid, device: Meter):
     return device.restart()
 
 
-@revproxy.route("/swap-certificate", methods=["POST"])
+@revproxy.route("/swap-certificate/", methods=["POST"])
 @clearance_level_required(ClearanceLevel.HIGH)
 @device_required
 def meter_swap_certificate(device_uuid, device: Meter):
@@ -93,7 +100,6 @@ def meter_swap_certificate(device_uuid, device: Meter):
         return "Certificate missing", 401
     new_cert = data["cert"]
     return device.swap_certificate(new_cert)
-
 
 def send_meters():
     for meter_uuid in list_meters():
