@@ -33,6 +33,7 @@ logging.basicConfig(filename="./log.txt", encoding="UTF-8", format='%(asctime)s 
 atexit.register(stop_server)
 
 notifier_thread = threading.Thread(target=views.RevProxy.send_meters, args=[])
+notifier_thread.daemon = True
 notifier_thread.start()
 start_server()
 
