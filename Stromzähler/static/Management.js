@@ -70,12 +70,19 @@ let create_meter = () => {
 }
 
 let setup_meter = () => {
-    let uuid = meter_selection.options[ meter_selection.selectedIndex ].value
+    if(meter_selection.selectedIndex == -1) {
+        info_screen.textContent += "No meter selected\r\n";
+        hideOverlay();
+        return;
+    }
+    let uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
+    let registerCode = document.getElementById("action-value").value;
 
+    hideOverlay();
     let xhr = new XMLHttpRequest();
     xhr.open('POST', `${meter_prefix}/${uuid}/setup/`, true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    let reg_code = {"uuid": uuid, "code": 1234, "url": "http://127.0.0.1:5000/meter"}
+    let reg_code = {"uuid": uuid, "code": registerCode, "url": "http://127.0.0.1:5000/meter"}
     let body = JSON.stringify({
       uuid: uuid,
       registrationCode: JSON.stringify(reg_code)
@@ -83,14 +90,46 @@ let setup_meter = () => {
     xhr.send(body);
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
-            if(xhr.status === 200) {
-                info_screen.textContent += xhr.responseText + "\r\n";
-            }else{
-                info_screen.textContent += xhr.responseText + "\r\n";
-            }
+            info_screen.textContent += xhr.responseText + "\r\n";
         }
-
     }
+}
+
+let set_meter = () => {
+    if(meter_selection.selectedIndex == -1) {
+        info_screen.textContent += "No meter selected\r\n";
+        hideOverlay();
+        return;
+    }
+    let uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
+    let amount = document.getElementById("action-value").value;
+
+    hideOverlay();
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', `${meter_prefix}/${uuid}/set/`, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    let body = JSON.stringify({
+      amount: amount
+    });
+    xhr.send(body);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            info_screen.textContent += xhr.responseText + "\r\n";
+        }
+    }
+}
+
+let showOverlay = (action, placeholderText) => {
+    document.getElementById("action-value").placeholder = placeholderText;
+    document.getElementById("trigger-action").onclick = action;
+    document.getElementById("overlay").style.display = "flex";
+}
+
+let hideOverlay = () => {
+    document.getElementById("overlay").style.display = "None";
+    document.getElementById("trigger-action").onclick = null;
+    document.getElementById("action-value").placeholder = "";
+    document.getElementById("action-value").value = "";
 }
 
 setInterval(function (){

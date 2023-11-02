@@ -52,7 +52,9 @@
     </div>
     <div id="control">
         <button onclick="create_meter()">Bestelle Smartmeter</button>
-        <button onclick="setup_meter()">Beginne Einrichtung</button>
+        <button onclick="showOverlay(setup_meter, 'Registrierungscode')">Beginne Einrichtung</button>
+        <button onclick="showOverlay(set_meter, 'Zaehlerwert')">Setze Meter Wert</button>
+
     </div>
     <div class="toast-container position-static">
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -65,6 +67,17 @@
             <div class="toast-body">
                 Action Response
             </div>
+        </div>
+    </div>
+    <div id="overlay">
+        <div id="overlay-box">
+            <div class="input-group mb-3">
+                <input type="text" id="action-value" class="form-control" placeholder="" aria-label="Recipient's username" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="trigger-action" class="btn btn-outline-success" type="button">Sende Daten</button>
+                </div>
+            </div>
+            <button id="cancel-action" class="btn btn-danger" onclick="hideOverlay()">Abbrechen</button>
         </div>
     </div>
     <script src="/static/Management.js"></script>
