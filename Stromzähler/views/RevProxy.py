@@ -53,19 +53,31 @@ def meter_setup(device_uuid, device: Meter):
     return device.setup_meter(reg_code)
 
 
-@revproxy.route("/activate-maintenance/<cookie_value>/", methods=["GET"])
+@revproxy.route("/activate-maintenance/", methods=["GET"])
 @clearance_level_required(ClearanceLevel.LOW)
 @device_required
-def meter_maintenance_activation(device_uuid, device: Meter, cookie_value):
+def meter_maintenance_activation(device_uuid, device: Meter):
     # Check cookie based on pub signature
-    redirect_url = request.referrer
+
+    try:
+        cookie_json = request.args.get("cookie", "no-cookie", str)
+        cookie: dict = json.loads(cookie_json)
+    except json.JSONDecodeError as e:
+        return "Invalid or no cookie provided"
+    if not set(["device_uuid", "user_id", "valid_until"]).issubset(cookie.keys()):
+        return "Missing information in cookie", 400
+    if cookie["device_uuid"] != str(device_uuid):
+        return "Problem with provided device uuid", 400
     # TODO check re url
-    if not redirect_url or not re.compile("^https?://localhost:5000/").match(redirect_url):
+    redirect_url = request.args.get('next') or request.referrer
+    if not redirect_url or not re.compile("^https?://(localhost|127\\.0\\.0\\.1):5000/").match(redirect_url):
         redirect_url = url_for("service-worker.index")
 
     resp = make_response(redirect(redirect_url))
-    expiration_time = datetime.datetime.now() + datetime.timedelta(minutes=5)
-    resp.set_cookie("maintenance-"+str(device_uuid), cookie_value, secure=True, httponly=True, expires=expiration_time)
+    #expiration_time = datetime.datetime.now() + datetime.timedelta(minutes=5)
+    expiration_time = cookie["valid_until"]
+    resp.set_cookie("maintenance-"+str(device_uuid), cookie_json, secure=True, httponly=True, expires=expiration_time,
+                    max_age=datetime.timedelta(minutes=5))
     return resp
 
 
@@ -100,6 +112,12 @@ def meter_swap_certificate(device_uuid, device: Meter):
         return "Certificate missing", 401
     new_cert = data["cert"]
     return device.swap_certificate(new_cert)
+
+@revproxy.route("/push-update/", methods=["POST"])
+@clearance_level_required(ClearanceLevel.HIGH)
+@device_required
+def push_update(device_uuid, device: Meter):
+    return "Update pushed", 200
 
 def send_meters():
     for meter_uuid in list_meters():

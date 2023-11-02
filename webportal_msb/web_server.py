@@ -1,5 +1,9 @@
+import datetime
+import json
+
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from os import urandom
+from urllib.parse import urljoin
 
 from views.metercommunication import meter
 from views.electricityprovider import provider
@@ -138,7 +142,9 @@ def maintenance():
         if session.get('role')=='technician' and id is not None:
             if check_em_id(id):
                 if activate_maintenance(id):
-                    return redirect(url_for('home')+'?msg=active&id='+id)
+                    cookie_data = {"user_id": session.get('uuid'), "device_uuid": id, "valid_until": str(datetime.datetime.now()+datetime.timedelta(minutes=5))}
+                    cookie_json = json.dumps(cookie_data)
+                    return redirect(f"http://localhost:25565/meter/{id}/activate-maintenance/?cookie={cookie_json}&next={urljoin(request.url_root, url_for("home"))}")
     else:
         return redirect(url_for('home')+'?msg=invalid')
 
