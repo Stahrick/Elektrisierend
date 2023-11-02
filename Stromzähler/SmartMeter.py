@@ -72,7 +72,7 @@ class Meter:
         passed_sec = (cur_time - self.last_update).total_seconds()
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
         self.meter += passed_sec * amount_added
-        requests.post(f"{self.configuration["maintainer_url"]}/data/", json={"uuid": self.uuid, "meter": self.meter})
+        requests.post(f"{self.configuration["maintainer_url"]}/data/", json={"uuid": self.uuid, "consumption": self.meter})
         logging.info(f"SEND meter data {self.meter} Kwh")
 
     def is_in_maintenance(self):
