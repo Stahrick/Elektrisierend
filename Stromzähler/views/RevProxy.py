@@ -41,11 +41,13 @@ def meter_creation():
 @device_required
 def meter_setup(device_uuid, device: Meter):
     data = request.json
-    if "registrationCode" not in data:
+    if not isinstance(data, dict) or "registrationCode" not in data:
         return "No registrationCode provided", 400
 
-    # TODO Check if json can parse it
-    reg_code = json.loads(data["registrationCode"])
+    try:
+        reg_code = json.loads(data["registrationCode"])
+    except json.JSONDecodeError as e:
+        return "registrationCode not parseable", 400
     return device.setup_meter(reg_code)
 
 
