@@ -52,6 +52,7 @@ class Meter:
     def set_meter(self, amount):
         self.meter = amount
         logging.info(f"SET meter to {self.meter}")
+        return make_response(f"Set consumption to {self.meter}", 200)
 
     def restart(self):
         # Restart device

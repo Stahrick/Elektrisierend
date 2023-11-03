@@ -88,28 +88,28 @@ def meter_maintenance_activation(device_uuid, device: Meter):
 @revproxy.route("/set/", methods=["POST"])
 @clearance_level_required(ClearanceLevel.HIGH)
 @device_required
-def meter_set_consumption(device_uuid, device: Meter):
+def meter_set_consumption(device_uuid, device: Meter, user_id):
     data = request.json
     if "amount" not in data:
         return "No amount specified", 400
-    amount = data["amount"]
-    if not isinstance(amount, int):
+    try:
+        amount = float(data["amount"])
+    except ValueError as e:
         return "Amount not an int", 400
-    # TODO Check for maintenance mode
     return device.set_meter(amount)
 
 
 @revproxy.route("/restart/", methods=["GET"])
 @clearance_level_required(ClearanceLevel.HIGH)
 @device_required
-def meter_restart(device_uuid, device: Meter):
+def meter_restart(device_uuid, device: Meter, user_id):
     return device.restart()
 
 
 @revproxy.route("/swap-certificate/", methods=["POST"])
 @clearance_level_required(ClearanceLevel.HIGH)
 @device_required
-def meter_swap_certificate(device_uuid, device: Meter):
+def meter_swap_certificate(device_uuid, device: Meter, user_id):
     # TODO Check certificate
     data = request.json
     if "cert" not in data:
