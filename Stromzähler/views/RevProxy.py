@@ -5,9 +5,12 @@ import threading
 import time
 import logging
 import datetime
+import jwt
 
 import requests
 from flask import Flask, Blueprint, make_response, request, redirect, url_for
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 
 from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
@@ -60,11 +63,13 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     # Check cookie based on pub signature
 
     try:
-        cookie_json = request.args.get("cookie", "no-cookie", str)
-        cookie: dict = json.loads(cookie_json)
-    except json.JSONDecodeError as e:
+        with open("./sign_test_key.pub", "rb") as f:
+            pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
+        cookie_enc = request.args.get("cookie", "no-cookie", str)
+        cookie = jwt.decode(cookie_enc, pub_key, issuer="msb", algorithms="RS512")
+    except jwt.exceptions.InvalidTokenError as e:
         return "Invalid or no cookie provided"
-    if not set(["device_uuid", "user_id", "valid_until"]).issubset(cookie.keys()):
+    if not set(["device_uuid", "user_id", "exp"]).issubset(cookie.keys()):
         return "Missing information in cookie", 400
     if cookie["device_uuid"] != str(device_uuid):
         return "Problem with provided device uuid", 400
@@ -75,7 +80,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
 
     resp = make_response(redirect(redirect_url))
     #expiration_time = datetime.datetime.now() + datetime.timedelta(minutes=5)
-    expiration_time = cookie["valid_until"]
+    expiration_time = cookie["exp"]
     resp.set_cookie("maintenance-"+str(device_uuid), cookie_json, secure=True, httponly=True, expires=expiration_time,
                     max_age=datetime.timedelta(minutes=5))
     return resp
