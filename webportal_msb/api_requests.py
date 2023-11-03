@@ -74,8 +74,28 @@ def sign_cert(csr):
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 
+def gen_rsa_keypair():
+    key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=4096,
+    )
+    with open("../sign_test_key.pem", "wb") as f:
+        f.write(key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        ))
+    pub_key = key.public_key()
+    with open("../sign_test_key.pub", "wb") as f:
+        f.write(pub_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        ))
+
+
 if __name__ == "__main__":
     csr = ''
     with open('test.crt', 'rb') as f:
         csr = f.read()
     print(sign_cert(csr))
+    #gen_rsa_keypair()
