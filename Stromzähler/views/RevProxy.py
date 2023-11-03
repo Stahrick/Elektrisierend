@@ -61,7 +61,6 @@ def meter_setup(device_uuid, device: Meter):
 @device_required
 def meter_maintenance_activation(device_uuid, device: Meter):
     # Check cookie based on pub signature
-
     try:
         with open("./sign_test_key.pub", "rb") as f:
             pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
@@ -81,7 +80,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     resp = make_response(redirect(redirect_url))
     #expiration_time = datetime.datetime.now() + datetime.timedelta(minutes=5)
     expiration_time = cookie["exp"]
-    resp.set_cookie("maintenance-"+str(device_uuid), cookie_json, secure=True, httponly=True, expires=expiration_time,
+    resp.set_cookie("maintenance-"+str(device_uuid), cookie_enc, secure=True, httponly=True, expires=expiration_time,
                     max_age=datetime.timedelta(minutes=5))
     return resp
 
