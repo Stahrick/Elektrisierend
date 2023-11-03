@@ -3,6 +3,7 @@ import json
 import os
 
 import jwt
+import requests
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
@@ -59,7 +60,12 @@ def get_contract_data(contract_id):
 
 
 def get_ems_by_contract():
-    return [[urandom(6).hex() for i in range(6)], [urandom(6).hex() for i in range(6)], [i for i in range(6)]]
+    try:
+        r = requests.get("http://localhost:25565/service-worker/list/", timeout=5)
+        meter_uuids = r.json()
+    except Exception as e:
+        meter_uuids = [urandom(6).hex() for i in range(6)]
+    return [[uuid for uuid in meter_uuids], [urandom(6).hex() for i in range(len(meter_uuids))], [i for i in range(len(meter_uuids))]]
 
 
 def check_em_id(em):
