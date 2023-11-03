@@ -1,5 +1,9 @@
 import enum
 from functools import wraps
+
+import jwt
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from flask import request
 
 from GlobalStorage import list_meters, get_meter
@@ -26,10 +30,20 @@ def clearance_level_required(level):
                 # Perform certificate verification logic here
                 cert = request.headers.get('X-Client-Certificate')
                 return func(*args, **kwargs)
-            elif level == ClearanceLevel.HIGH and ("maintainer-"+uuid) in request.cookies:
-                cookie = request.cookies["maintainer-"+uuid]
+            elif level == ClearanceLevel.HIGH and ("maintenance-"+uuid) in request.cookies:
+                cookie = request.cookies["maintenance-"+uuid]
                 # Check maintainer session cookie
-                return func(*args, **kwargs)
+                # TODO move pub key loading into global storage
+                try:
+                    with open("./sign_test_key.pub", "rb") as f:
+                        pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
+                    cookie = jwt.decode(cookie, pub_key, issuer="msb", algorithms="RS512")
+                    if cookie["device_uuid"] != uuid:
+                        raise jwt.InvalidTokenError
+                    kwargs["user_id"] = cookie["user_id"]
+                    return func(*args, **kwargs)
+                except jwt.InvalidTokenError as e:
+                    return "Invalid token", 401
             elif level == ClearanceLevel.LOCAL:
                 global local_ip_pattern
                 if local_ip_pattern.match(request.host):
