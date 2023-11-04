@@ -35,7 +35,7 @@ def sign_cert(csr):
         public_exponent=65537,
         key_size=2048,
     )
-    csr_data = x509.load_pem_x509_certificate(csr)
+    csr_data = x509.load_pem_x509_csr(csr)
     subject = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, csr_data.subject.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value ),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, csr_data.subject.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value ),
@@ -72,6 +72,7 @@ def sign_cert(csr):
     # Write our certificate out to disk.
     with open("ich_hasse_mich", "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
+    return cert.public_bytes(serialization.Encoding.PEM).decode('utf-8')
 
 
 def gen_rsa_keypair():
