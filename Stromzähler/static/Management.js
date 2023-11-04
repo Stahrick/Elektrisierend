@@ -52,7 +52,7 @@ const pull_mails = () => {
                 let mailWrapper = document.getElementById("mail-list")
                 mails_arr.forEach(mail => {
                     let mail_elem = document.createElement('li');
-                    mail_elem.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+                    mail_elem.classList.add("mails", "list-group-item", "d-flex", "justify-content-between", "align-items-center");
                     mail_elem.textContent = mail[0];
                     let d = new Date(0); // The 0 there is the key, which sets the date to the epoch
                     d.setUTCSeconds(mail[1]);
@@ -88,14 +88,15 @@ const setup_meter = () => {
     }
     let uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
     let registerCode = document.getElementById("action-value").value;
-    let reg_code = {"uuid": uuid, "code": registerCode, "url": "http://127.0.0.1:5000/meter"}
+    //let reg_code = {"uuid": uuid, "code": registerCode, "url": "http://127.0.0.1:5000/meter"}
     hideOverlay();
     let callback = (statusCode, responseText) => {
         info_screen.textContent += responseText + "\r\n";
     }
     let body = JSON.stringify({
       uuid: uuid,
-      registrationCode: JSON.stringify(reg_code)
+      //registrationCode: JSON.stringify(reg_code)
+        registrationCode: registerCode
     });
     send_api_request(`${meter_prefix}/${uuid}/setup/`, "POST", body, callback);
 }

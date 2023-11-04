@@ -38,3 +38,7 @@
     border: white 3px solid;
     padding: 20px;
 }
+
+.mails {
+    word-wrap: break-word;
+}

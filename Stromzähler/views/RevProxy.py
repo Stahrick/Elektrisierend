@@ -52,9 +52,11 @@ def meter_setup(device_uuid, device: Meter):
         return "No registrationCode provided", 400
 
     try:
-        reg_code = json.loads(data["registrationCode"])
-    except json.JSONDecodeError:
-        return "registrationCode not parseable", 400
+        with open("./sign_test_key.pub", "rb") as f:
+            pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
+        reg_code = jwt.decode(data["registrationCode"], pub_key, issuer="msb", audience=str(device_uuid), algorithms="RS512")
+    except jwt.exceptions.InvalidTokenError:
+        return "registrationCode invalid", 400
     return device.setup_meter(reg_code)
 
 
