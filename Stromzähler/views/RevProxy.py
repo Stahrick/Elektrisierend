@@ -1,20 +1,19 @@
 # This a virtual reverse proxy to distribute requests to the wanted meter
+import datetime
 import json
+import logging
 import re
 import threading
-import logging
-import datetime
-import jwt
 
-import requests
-from flask import Flask, Blueprint, make_response, request, redirect, url_for, session
-from cryptography.hazmat.primitives import serialization
+import jwt
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from flask import Blueprint, make_response, request, redirect, url_for
 
 from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
-from security.Decorator import clearance_level_required, device_required, ClearanceLevel
 from Stromzähler.Config import cookie_sign_key
+from security.Decorator import clearance_level_required, device_required, ClearanceLevel
 
 logging.getLogger(__name__)
 
@@ -29,7 +28,8 @@ clearances = {
     "maintenance": ["restart", "cert_renew", "set_meter"]
 }
 
-auth_codes_in_use = {}
+sessions_in_use = {}
+
 
 @meter_management.route("/order/", methods=["POST"])
 @clearance_level_required(ClearanceLevel.MEDIUM)
@@ -53,7 +53,7 @@ def meter_setup(device_uuid, device: Meter):
 
     try:
         reg_code = json.loads(data["registrationCode"])
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         return "registrationCode not parseable", 400
     return device.setup_meter(reg_code)
 
@@ -68,32 +68,29 @@ def meter_maintenance_activation(device_uuid, device: Meter):
             pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
         temp_code_enc = request.args.get("code", "no-code", str)
         temp_code = jwt.decode(temp_code_enc, pub_key, issuer="msb", audience="smartmeter", algorithms="RS512")
-    except jwt.exceptions.InvalidTokenError as e:
+    except jwt.exceptions.InvalidTokenError:
         return "Invalid or no cookie provided"
-    if not set(["device_uuid", "auth_code", "exp"]).issubset(temp_code.keys()):
+    if not {"device_uuid", "user_id", "exp"}.issubset(temp_code.keys()):
         return "Missing information in code", 400
     if temp_code["device_uuid"] != str(device_uuid):
         return "Problem with provided device uuid", 400
-    if temp_code["auth_code"] in auth_codes_in_use:
-        logging.error(f"Duplicate auth code redemption for {temp_code["auth_code"]}")
+    if (temp_code["user_id"], temp_code["device_uuid"]) in sessions_in_use:
+        logging.error(f"Duplicate auth code redemption for {(temp_code["user_id"], temp_code["device_uuid"])}")
         return "Auth code was already redeemed", 400
-    auth_codes_in_use[temp_code["auth_code"]] = temp_code["exp"]
-    now = int(datetime.datetime.now().timestamp())
-    for elem in auth_codes_in_use.items():
-        if elem[1] < now:
-            del auth_codes_in_use[elem[0]]
+    sessions_in_use[temp_code["user_id"], temp_code["device_uuid"]] = temp_code["exp"]
+
     # TODO check re url
     redirect_url = request.args.get('next') or request.referrer
     if not redirect_url or not re.compile("^https?://(localhost|127\\.0\\.0\\.1):5000/").match(redirect_url):
         redirect_url = url_for("service-worker.index")
 
     # Create meter cookie
-    payload = {"iss": "smartmeter", "exp": datetime.datetime.now() + datetime.timedelta(minutes=5),
-               "id": temp_code["auth_code"], "device_uuid": temp_code["device_uuid"]}
+    payload = {"iss": "smartmeter", "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5),
+               "id": temp_code["user_id"], "device_uuid": temp_code["device_uuid"]}
     cookie = jwt.encode(payload, cookie_sign_key, algorithm="HS512")
 
     resp = make_response(redirect(redirect_url))
-    resp.set_cookie("maintenance-"+str(device_uuid), cookie, secure=True, httponly=True, expires=payload["exp"],
+    resp.set_cookie("maintenance-" + str(device_uuid), cookie, secure=True, httponly=True, expires=payload["exp"],
                     max_age=datetime.timedelta(minutes=5))
     return resp
 
@@ -107,7 +104,7 @@ def meter_set_consumption(device_uuid, device: Meter, user_id):
         return "No amount specified", 400
     try:
         amount = float(data["amount"])
-    except ValueError as e:
+    except ValueError:
         return "Amount not an int", 400
     return device.set_meter(amount)
 
@@ -138,8 +135,19 @@ def push_update(device_uuid, device: Meter):
     return "Update pushed", 200
 
 
+def clean_sessions():
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+    for elem in list(sessions_in_use.items()):
+        if elem[1] < now:
+            del sessions_in_use[elem[0]]
+    threading.Timer(60, clean_sessions).start()
+
+
 def send_meters():
     for meter_uuid in list_meters():
         get_meter(meter_uuid).send_meter()
     logging.info("Send all meter information")
     threading.Timer(1 * 60, send_meters).start()
+
+
+

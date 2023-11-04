@@ -1,6 +1,4 @@
 import datetime
-import json
-import os
 
 import jwt
 import requests
@@ -26,11 +24,9 @@ app.register_blueprint(provider, url_prefix="/provider")
 # support, "email confirm"
 #
 
-maintenance_codes_resolver = {}
-
 def check_session(uuid):
     # checks if uuid exists and is valid returns account data
-    if uuid == None:
+    if uuid is None:
         return False
     if "uuid" in uuid:
         print(uuid)
@@ -66,8 +62,9 @@ def get_ems_by_contract():
         r = requests.get("http://localhost:25565/service-worker/list/", timeout=5)
         meter_uuids = r.json()
     except Exception as e:
-        meter_uuids = [urandom(6).hex() for i in range(6)]
-    return [[uuid for uuid in meter_uuids], [urandom(6).hex() for i in range(len(meter_uuids))], [i for i in range(len(meter_uuids))]]
+        meter_uuids = [urandom(6).hex() for _ in range(6)]
+    return [[uuid for uuid in meter_uuids], [urandom(6).hex() for _ in range(len(meter_uuids))],
+            [i for i in range(len(meter_uuids))]]
 
 
 def check_em_id(em):
@@ -190,10 +187,8 @@ def maintenance():
                         priv_key = serialization.load_pem_private_key(
                             f.read(), password=None, backend=default_backend()
                         )
-                    code = int.from_bytes(urandom(5))
-                    maintenance_codes_resolver[code] = {"user_id": session.get("uuid"), "device_uuid": id, "time": datetime.datetime.now()}
-                    cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id), "auth_code": code,
-                                   "exp": datetime.datetime.now() + datetime.timedelta(seconds=20)}
+                    cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id), "user_id": user_data["uuid"],
+                                   "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
                     encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
                     return redirect(
                         f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={urljoin(request.url_root, url_for("home"))}")
