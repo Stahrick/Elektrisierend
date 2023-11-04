@@ -3,6 +3,8 @@ import logging
 import requests
 
 from datetime import datetime
+
+from cryptography import x509
 from flask import make_response
 from uuid import uuid4
 
@@ -37,6 +39,10 @@ class Meter:
             r = requests.post(f"{registration_config["url"]}/register/", json=req_data)
             if r.status_code != 200:
                 return make_response("Meter registration failed", 406)
+            res = r.json()
+            if "meter_cert" not in res:
+                return make_response("Meter registration failed", 406)
+            self.configuration["own_cert"] = x509.load_pem_x509_certificate(res["meter_cert"].encode('utf-8'))
         except (requests.exceptions.InvalidSchema, requests.exceptions.ConnectionError) as e:
             return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
