@@ -26,6 +26,8 @@ app.register_blueprint(provider, url_prefix="/provider")
 # support, "email confirm"
 #
 
+maintenance_codes_resolver = {}
+
 def check_session(uuid):
     # checks if uuid exists and is valid returns account data
     if uuid == None:
@@ -188,11 +190,13 @@ def maintenance():
                         priv_key = serialization.load_pem_private_key(
                             f.read(), password=None, backend=default_backend()
                         )
-                    cookie_data = {"iss": "msb", "user_id": session.get('uuid'), "device_uuid": id,
-                                   "exp": datetime.datetime.now() + datetime.timedelta(minutes=5)}
+                    code = int.from_bytes(urandom(5))
+                    maintenance_codes_resolver[code] = {"user_id": session.get("uuid"), "device_uuid": id, "time": datetime.datetime.now()}
+                    cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id), "auth_code": code,
+                                   "exp": datetime.datetime.now() + datetime.timedelta(seconds=20)}
                     encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
                     return redirect(
-                        f"http://localhost:25565/meter/{id}/activate-maintenance/?cookie={encoded}&next={urljoin(request.url_root, url_for("home"))}")
+                        f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={urljoin(request.url_root, url_for("home"))}")
     else:
         return redirect(url_for('home') + '?msg=invalid')
 

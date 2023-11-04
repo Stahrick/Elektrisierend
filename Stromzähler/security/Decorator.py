@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives import serialization
 from flask import request
 
 from GlobalStorage import list_meters, get_meter
+from Stromzähler.Config import cookie_sign_key
 
 import re
 
@@ -38,12 +39,10 @@ def clearance_level_required(level):
                 # Check maintainer session cookie
                 # TODO move pub key loading into global storage
                 try:
-                    with open("./sign_test_key.pub", "rb") as f:
-                        pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
-                    cookie = jwt.decode(cookie, pub_key, issuer="msb", algorithms="RS512")
+                    cookie = jwt.decode(cookie, cookie_sign_key, issuer="smartmeter", algorithms="HS512")
                     if cookie["device_uuid"] != uuid:
                         raise jwt.InvalidTokenError
-                    kwargs["user_id"] = cookie["user_id"]
+                    kwargs["user_id"] = cookie["id"]
                     return func(*args, **kwargs)
                 except jwt.InvalidTokenError as e:
                     logging.warning(f"Invalid token from {request.host}")
