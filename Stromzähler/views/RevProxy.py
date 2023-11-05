@@ -90,7 +90,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     payload = {"iss": "smartmeter", "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5),
                "id": temp_code["user_id"], "device_uuid": temp_code["device_uuid"]}
     cookie = jwt.encode(payload, cookie_sign_key, algorithm="HS512")
-
+    logging.info(f"Activated maintenance for {payload["id"]} on meter {device_uuid}")
     resp = make_response(redirect(redirect_url))
     resp.set_cookie("maintenance-" + str(device_uuid), cookie, secure=True, httponly=True, expires=payload["exp"],
                     max_age=datetime.timedelta(minutes=5))
