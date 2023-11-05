@@ -61,7 +61,8 @@ const pull_mails = () => {
                     since_elem.textContent = d.toLocaleTimeString("de-DE");
                     since_elem.classList.add("badge", "bg-primary");
                     mail_elem.appendChild(since_elem);
-                    mailWrapper.appendChild(mail_elem);
+                    //mailWrapper.appendChild(mail_elem);
+                    mailWrapper.insertBefore(mail_elem, mailWrapper.firstChild);
                 })
         }else{
             console.log(responseText)
@@ -124,6 +125,7 @@ const restart_meter = () => {
     let uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
     let callback = (statusCode, responseText) => {
         info_screen.textContent += responseText + "\r\n";
+        pull_meter_list()
     }
     send_api_request(`${meter_prefix}/${uuid}/restart/`, "GET", null, callback);
 }
