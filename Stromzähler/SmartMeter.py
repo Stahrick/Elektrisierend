@@ -1,5 +1,6 @@
 import random
 import logging
+import threading
 
 import requests
 
@@ -10,6 +11,7 @@ from flask import make_response
 from uuid import uuid4
 
 from security.Certificate import create_X509_csr
+from GlobalStorage import remove_meter, add_meter
 
 logging.getLogger(__name__)
 
@@ -30,6 +32,7 @@ class Meter:
             if None in self.configuration.values():
                 return "Meter not setup", 400
             return f(self, *args, **kwargs)
+
         return decorator
 
     def setup_meter(self, registration_config):
@@ -65,9 +68,12 @@ class Meter:
         logging.info(f"SET meter to {self.meter}")
         return make_response(f"Set consumption to {self.meter}", 200)
 
-    @check_setup_complete
+    #@check_setup_complete
     def restart(self):
         # Restart device
+        def add_again(): add_meter(self)
+        remove_meter(self.uuid)
+        threading.Timer(30, add_again).start()
         logging.warning("Restart triggered")
         return make_response("Restart triggered. Wait at least 30 sec before reconnecting.", 200)
 
@@ -81,16 +87,16 @@ class Meter:
     @check_setup_complete
     def send_meter(self):
         global average_kwh_per_sec
-        #if self.configuration["maintainer_url"] is None:
+        # if self.configuration["maintainer_url"] is None:
         #    return
         cur_time = datetime.now()
         passed_sec = (cur_time - self.last_update).total_seconds()
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
         self.meter += passed_sec * amount_added
         # TODO add verify= to check server cert
-        requests.post(f"{self.configuration["maintainer_url"]}/data/", json={"uuid": self.uuid, "consumption": self.meter}, cert=self.configuration["own_cert"])
+        requests.post(f"{self.configuration["maintainer_url"]}/data/",
+                      json={"uuid": self.uuid, "consumption": self.meter}, cert=self.configuration["own_cert"])
         logging.info(f"SEND meter data {self.meter} Kwh")
-
 
     @check_setup_complete
     def factory_reset(self):
@@ -104,4 +110,3 @@ class Meter:
         from GlobalStorage import remove_meter
         logging.warning("Power cut off triggered")
         remove_meter(self.uuid)
-
