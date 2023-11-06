@@ -42,7 +42,7 @@ def setup_meter():
     return make_response(f"Device({device.uuid}) setup complete", 200)
 
 
-@management.route("/receive_mails/", methods=["POST"])
+@management.route("/receive-mails/", methods=["POST"])
 def recv_mails():
     # Receive mails from Messstellenbetreiber
     global in_transit_mails

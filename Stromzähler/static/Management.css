@@ -32,3 +32,13 @@
     background-color: rgba(0,0,0,0.5);
     z-index: 9999;
 }
+
+#overlay-box {
+    border-radius: 3%;
+    border: white 3px solid;
+    padding: 20px;
+}
+
+.mails {
+    word-wrap: break-word;
+}
