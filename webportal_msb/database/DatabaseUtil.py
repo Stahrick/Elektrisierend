@@ -71,7 +71,7 @@ class MoronDB:
    def get_items_by_ids(self, collection_name : str , ids):
       collection = self.get_collection(collection_name, database = self.db)
       return collection.find({"_id": id})
-   
+    
    def delete_item_by_id(self, collection_name : str, id):
       collection = self.get_collection(collection_name, self.db)
       return collection.delete_one({"_id": id})

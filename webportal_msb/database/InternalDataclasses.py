@@ -6,31 +6,53 @@ class Contract:
     _id : int
     date : str #TODO what format
     personal_info : str
-    em_data : list
-    em_consumption : int
-    em_cost : int
+    iban : str 
+    em_id : str
+    state : str
+    city : str
+    zip_code : int
+    address : str
+
+    def dict(self):
+        return {k: str(v) for k, v in asdict(self).items()}
+
+@dataclass
+class Em:
+    _id : str
+    em_data : float
+    em_consumption : float
+    em_cost : float
+    hist_id : str
+
+    def dict(self):
+        return {k: str(v) for k, v in asdict(self).items()}
+
+@dataclass
+class HistData:
+    _id : str
+    data : list
 
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
 
 @dataclass
 class Account:
-    _id : int = field(init = False, repr = False)
+    _id : str = field(init = False, repr = False)
+    role : str
     username : str 
     pw_hash : int
     pw_salt : int
     first_name : str
     last_name : str
     email : str 
-    iban : str 
     phone : int 
     city : str 
     zip_code : int
     address : str 
-    contract : Contract
+    contract_id : str
 
     def __post_init__(self):
-        self._id = uuid4()
+        self._id = str(uuid4())
 
 
     def dict(self):

@@ -34,7 +34,7 @@ class AccountHandler:
         try:
             return self.db.get_items(self.collection, {"username" : username})
         except:
-            return False
+            return None
     
     def update_account_by_id(self, id, data : dict):
         try:

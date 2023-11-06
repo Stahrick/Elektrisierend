@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
+from database.EMDB import EmHandler
+from database.HistDataDB import HistDataHandler
 from database.InternalDataclasses import Account, Contract
 from dotenv import load_dotenv
 
@@ -19,6 +21,8 @@ username = getenv('MSBUser')
 dbname = getenv('MSBDB')
 db_acc_handler = AccountHandler(username,pw,dbname)
 db_ctr_handler = ContractHandler(username,pw,dbname)
+db_elmo_handler = EmHandler(username,pw,dbname)
+db_hdt_handler = HistDataHandler(username,pw,dbname)
 
 app.register_blueprint(meter, url_prefix="/meter")
 app.register_blueprint(provider, url_prefix="/provider")
@@ -27,55 +31,76 @@ app.register_blueprint(provider, url_prefix="/provider")
 #
 
 def check_session(uuid):
-    
     #checks if uuid exists and is valid returns account data
     if uuid == None:
         return False
-    if "uuid" in uuid:
-        print(uuid)
-        #hier muss noch die datenbank zuordnung kommen, und check ob es die uuid gibt
-        return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet", "house": "3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "{{ 7*7 }}"}
-
+    acc = db_acc_handler.get_account_by_id(uuid)
+    if acc:
+        return acc
+    
     return False
 
 def check_login(username, password):
-    if db_acc_handler.get_account_by_username(username):
-        print("true")
+    res = db_acc_handler.get_account_by_username(username)[0]
+    if res:
+       return {'uuid':res['_id'], 'role': res['role']}
     return {'uuid':'uuid', 'role': 'technician'}
 
-#what for?
 def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
     contract = Contract(em_id,"date","info",[0],"0","0")
     acc = Account(username,password, 123,first_name,last_name,email,iban,phone,city,zip_code,address,contract)
     #Check if username is already in use, TODO check for the rest of bs
-    print("acc:" + acc)
     if db_acc_handler.get_account_by_username(acc.username):
         return False
     res = db_acc_handler.create_account()
     return True #res
 
-def update_user_data(username, email, phone, iban):
-    #if new requested username is already reserved, dont update!
+#updates account data by given fields, ignores params all if data is given directly
+#TODO please test
+def update_user_data(_id, role = None,  
+                     username  = None,  
+                     pw_hash = None,  pw_salt = None,  
+                     first_name = None,  last_name = None,  
+                     email  = None,  phone  = None,  
+                     city  = None,  zip_code = None,  
+                     address  = None,  contract_id = None, 
+                     data : dict = None):
+    param = locals()
+    print(type(param))
+    del(param['_id'])
     if db_acc_handler.get_account_by_username(username):
-        return False
-    #TODO please i want id of current active user to update GIVE ME
-    #this is theoretically possible but i really dont advise it
-    #db_acc_handler.update_account_by_username(old_username, {"username":username, "email": email, "phone":phone, "iban": iban})#TODO do better wtf is this
-    return True
+        return False    
+    if 'data' in param:
+        return db_acc_handler.update_account_by_id(_id,data)
+    else:
+        return db_acc_handler.update_account_by_id(_id,param)
+def update_contract_data(_id, date = None, personal_info = None, iban = None, em_id = None, state = None, city = None, zip_code = None, address = None, data : dict = None):
+    param = locals()
+    print(type(param))
+    del(param['_id'])
+    if 'data' in param:
+        return db_acc_handler.update_account_by_id(_id,data)
+    else:
+        return db_acc_handler.update_account_by_id(_id,param)
 
 def get_contract_data(contract_id):
     res = db_ctr_handler.get_contract_by_id(contract_id)
-    return res #{"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
+    print(res)
+    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
 
 def get_ems_by_contract():
-    res = db_ctr_handler.get_all()
-    print(res)
-    return [[urandom(6).hex() for i in range(6)], [urandom(6).hex() for i in range(6)], [i for i in range(6)]]
+    dbres = db_ctr_handler.get_all()
+    l1,l2,l = list(),list(),list()
+    for i,r in enumerate(dbres):
+        l1.append(r['em_id'])#ich hasse konrad
+        l2.append(r['_id'])
+    return [l1,l2]
 
-def check_em_id(em):
-    res = db_acc_handler.get_account_by_id(em)['contract']['id']
-    print(res)
-    return True
+def check_em_id(id):
+    res = db_elmo_handler.get_Em_by_id(id)
+    if res:
+        return True
+    return False
 
 def activate_maintenance(id):
     return True
@@ -148,7 +173,7 @@ def edit_contract():
             email = request.form['email']
             phone = request.form['phone']
             iban = request.form['iban']
-            if update_user_data(username, email, phone, iban):
+            if update_user_data(user_data['_id'],username = username,email= email,phone= phone):
                 #trys to update database and redirects to profile if it did
                 #updates values for account that owns the cookie
                 return redirect(url_for('profile'))

@@ -52,6 +52,7 @@ def update_user_data(username, email, phone, iban, id = None):#PLASE GIVE ME ID 
 
 @app.route('/login', methods=['GET','POST'])
 def login():
+    print([i for i in request.form])
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
