@@ -29,12 +29,20 @@ const pull_meter_list = () => {
     let callback = (statusCode, responseText) => {
         if(statusCode === 200) {
             let device_arr = JSON.parse(responseText);
+            let uuid = null;
+            /*if(meter_selection.selectedIndex != -1) {
+                uuid = meter_selection.options[ meter_selection.selectedIndex ].value;
+            }*/
+            let selectedValue = meter_selection.value;
             meter_selection.options.length = 0;
             device_arr.forEach(device => {
                 let opt = document.createElement('option');
                 opt.value = device;
                 opt.innerHTML = device;
                 meter_selection.appendChild(opt);
+                if (device === selectedValue) {
+                    opt.selected = true;
+                }
             })
         }
     }
