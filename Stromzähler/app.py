@@ -2,6 +2,7 @@ import json
 
 from flask import Flask
 from os.path import exists
+from pathlib import Path
 
 import views.RevProxy
 from views.ServiceWorker import management
@@ -18,10 +19,11 @@ app = Flask(__name__)
 app.register_blueprint(management, url_prefix="/service-worker")
 app.register_blueprint(meter_management, url_prefix="/meter")
 
+path = Path(__file__).parent
 
 def start_server():
-    if exists("./save_meters.json"):
-        with open("./save_meters.json", "r") as f:
+    if exists(path / "save_meters.json"):
+        with open(path / "save_meters.json", "r") as f:
             data = json.load(f)
             meters = {uuid: Meter.from_dict(meter_data) for uuid, meter_data in data.items()}
             import_meters(meters)
@@ -30,7 +32,7 @@ def start_server():
 
 
 def stop_server():
-    with open("./save_meters.json", "w") as f:
+    with open(path / "save_meters.json", "w") as f:
         json.dump(export_meters(), f)
 
 

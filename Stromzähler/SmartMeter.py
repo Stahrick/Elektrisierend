@@ -2,6 +2,7 @@ import random
 import logging
 import threading
 from json import JSONEncoder
+from pathlib import Path
 
 import requests
 
@@ -24,7 +25,7 @@ class Meter:
     uuid = None
     meter = None
     last_update = None
-    configuration = {"maintainer_cert": None, "maintainer_url": None, "own_cert": None}
+    configuration = {"maintainer_cert": None, "maintainer_url": None, "own_cert": None, "priv_key": None}
 
     def __init__(self, uuid=None):
         self.uuid = str(uuid4()) if uuid is None else uuid
@@ -43,7 +44,7 @@ class Meter:
             logging.info(f"Invalid registration config provided for device({self.uuid}): {registration_config}")
             return make_response("Invalid registration code provided", 400)
         code = registration_config["code"]
-        csr = create_X509_csr(self.uuid)
+        privkey_path, csr = create_X509_csr(self.uuid)
         req_data = {"uuid": self.uuid, "code": code, "meter-cert": csr}
         try:
             r = requests.post(f"{registration_config["url"]}/register/", json=req_data)
@@ -54,10 +55,12 @@ class Meter:
             if "meter_cert" not in res:
                 self.configuration["own_cert"] = None
                 return make_response("Meter registration failed", 406)
-            cert_path = f"./Stromzähler/MeterCerts/{self.uuid}.pem"
+
+            cert_path = str(Path(__file__).parent / f"MeterCerts/{self.uuid}.pem")
             with open(cert_path, "w") as f:
                 f.write(res["meter_cert"])
             self.configuration["own_cert"] = cert_path
+            self.configuration["priv_key"] = privkey_path
         except (requests.exceptions.InvalidSchema, requests.exceptions.ConnectionError) as e:
             return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
@@ -101,7 +104,8 @@ class Meter:
         # TODO add verify= to check server cert
         # TODO requests only allows to load cert, key itself -> You have to provide path
         requests.post(f"{self.configuration["maintainer_url"]}/data/",
-                      json={"uuid": self.uuid, "consumption": self.meter})
+                      json={"uuid": self.uuid, "consumption": self.meter},
+                      cert=(self.configuration["own_cert"], self.configuration["priv_key"]))
         logging.info(f"SEND meter data {self.meter} Kwh")
 
     @check_setup_complete
