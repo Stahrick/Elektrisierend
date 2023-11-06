@@ -25,10 +25,11 @@ class Meter:
     uuid = None
     meter = None
     last_update = None
-    configuration = {"maintainer_cert": None, "maintainer_url": None, "own_cert": None, "priv_key": None}
+    configuration = None
 
     def __init__(self, uuid=None):
         self.uuid = str(uuid4()) if uuid is None else uuid
+        self.configuration = {"maintainer_cert": None, "maintainer_url": None, "own_cert": None, "priv_key": None}
 
     def check_setup_complete(f):
         def decorator(self, *args, **kwargs):
