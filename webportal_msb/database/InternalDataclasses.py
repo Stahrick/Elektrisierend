@@ -3,7 +3,7 @@ from uuid import uuid4
 
 @dataclass
 class Contract:
-    _id : int
+    _id : int = field(init = False, repr = False)
     date : str #TODO what format
     personal_info : str
     iban : str 
@@ -18,7 +18,7 @@ class Contract:
 
 @dataclass
 class Em:
-    _id : str
+    _id : str = field(init = False, repr = False)
     em_data : float
     em_consumption : float
     em_cost : float
@@ -29,7 +29,7 @@ class Em:
 
 @dataclass
 class HistData:
-    _id : str
+    _id : str = field(init = False, repr = False)
     data : list
 
     def dict(self):
@@ -46,6 +46,7 @@ class Account:
     last_name : str
     email : str 
     phone : int 
+    state : str
     city : str 
     zip_code : int
     address : str 

@@ -1,5 +1,5 @@
 from database.DatabaseUtil import MoronDB
-from database.InternalDataclasses import Account, Contract
+from database.InternalDataclasses import Account
 class AccountHandler:
 
     db : MoronDB    

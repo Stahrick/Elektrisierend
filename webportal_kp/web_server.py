@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
+from database.ContractDB import ContractHandler
 from database.InternalDataclasses import Account, Contract
 from dotenv import load_dotenv
 
@@ -12,7 +13,8 @@ load_dotenv()
 pw = getenv('StromiPW')
 username = getenv('StromiUser')
 dbname = getenv('StromiDB')
-db_handler = AccountHandler(username,pw,dbname)
+db_acc_handler = AccountHandler(username,pw,dbname)
+db_ctr_handler = ContractHandler(username,pw,dbname)
 
 #todo: login, register, logout logic; fingerprint, css, database, password requirements
 #support, "email confirm"
@@ -22,32 +24,47 @@ def check_session(uuid):
     #checks if uuid exists and is valid returns account data
     if uuid == None:
         return False
-    dbu = db_handler.get_account_by_id(uuid)
+    dbu = db_acc_handler.get_account_by_id(uuid)
     if dbu:
         return dbu
     return False
 
 def check_login(username, password):
-    if db_handler.get_account_by_username(username):
+    if db_acc_handler.get_account_by_username(username):
         #TODO validate pwd hash :P
         return {'uuid':'uuid'}
 
-def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
-    contract = Contract(em_id,"date","info",[0],"0","0")
-    acc = Account(username,password, 123,first_name,last_name,email,iban,phone,city,zip_code,address,contract)
-    #Check if username is already in use, TODO check for the rest of bs
-    if db_handler.get_account_by_username(acc.username):
-        return False
+def check_register(username  = None, pw = None,
+                   first_name = None,  last_name = None,
+                   email  = None,  phone  = None, acc_state = None,
+                   acc_city  = None,  acc_zip_code = None,
+                   acc_address  = None,  contract_id = None,
+                   date = None, personal_info = None,
+                   iban = None, em_id = None,
+                   contr_state = None, contr_city = None,
+                   contr_zip_code = None, contr_address = None):
     
-    return True
+    #Check if username is already in use, TODO check for the rest of bs
+    if db_acc_handler.get_account_by_username(acc.username):
+        return False
+    #TODO check for em_id?
+    
+    contract = Contract(date,personal_info,iban,em_id,contr_state,contr_city,contr_zip_code,contr_address)
+    contract_db = db_ctr_handler.create_contract(contract)
+    if contract_db:
+        acc = Account(username,pw, 123,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['_id'])
+        acc_db = db_acc_handler.create_account(acc)
+        if acc_db:
+            return True
+    
 
 def update_user_data(username, email, phone, iban, id = None):#PLASE GIVE ME ID PLEAAAAAASE
     #if new requested username is already reserved, dont update!
-    if db_handler.get_account_by_username(username):
+    if db_acc_handler.get_account_by_username(username):
         return False
     #TODO please i want id of current active user to update GIVE ME
     #this is theoretically possible but i really dont advise it
-    #db_handler.update_account_by_username(old_username, {"username":username, "email": email, "phone":phone, "iban": iban})#TODO do better wtf is this
+    #db_acc_handler.update_account_by_username(old_username, {"username":username, "email": email, "phone":phone, "iban": iban})#TODO do better wtf is this
     return True
 
 @app.route('/login', methods=['GET','POST'])
