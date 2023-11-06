@@ -70,8 +70,7 @@ def sign_cert(csr):
     # Sign our certificate with our private key
     ).sign(key, hashes.SHA256())
     # Write our certificate out to disk.
-    with open("ich_hasse_mich", "wb") as f:
-        f.write(cert.public_bytes(serialization.Encoding.PEM))
+    return cert.public_bytes(serialization.Encoding.PEM)
 
 
 if __name__ == "__main__":
