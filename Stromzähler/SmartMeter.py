@@ -1,12 +1,14 @@
 import random
 import logging
 import threading
+from json import JSONEncoder
 
 import requests
 
 from datetime import datetime
 
 from cryptography import x509
+from cryptography.hazmat.primitives import serialization
 from flask import make_response
 from uuid import uuid4
 
@@ -41,9 +43,8 @@ class Meter:
             logging.info(f"Invalid registration config provided for device({self.uuid}): {registration_config}")
             return make_response("Invalid registration code provided", 400)
         code = registration_config["code"]
-        self.configuration["own_cert"] = create_X509_csr(self.uuid)
-        self.configuration["maintainer_cert"] = "Hier könnte ihr Cert stehen"
-        req_data = {"uuid": self.uuid, "code": code, "meter-cert": self.configuration["own_cert"]}
+        csr = create_X509_csr(self.uuid)
+        req_data = {"uuid": self.uuid, "code": code, "meter-cert": csr}
         try:
             r = requests.post(f"{registration_config["url"]}/register/", json=req_data)
             if r.status_code != 200:
@@ -53,11 +54,15 @@ class Meter:
             if "meter_cert" not in res:
                 self.configuration["own_cert"] = None
                 return make_response("Meter registration failed", 406)
-            self.configuration["own_cert"] = x509.load_pem_x509_certificate(res["meter_cert"].encode('utf-8'))
+            cert_path = f"./Stromzähler/MeterCerts/{self.uuid}.pem"
+            with open(cert_path, "w") as f:
+                f.write(res["meter_cert"])
+            self.configuration["own_cert"] = cert_path
         except (requests.exceptions.InvalidSchema, requests.exceptions.ConnectionError) as e:
             return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
         self.last_update = datetime.now()
+        self.configuration["maintainer_cert"] = "Hier könnte ihr Cert stehen"
         self.configuration["maintainer_url"] = registration_config["url"]
         logging.info(f"Initialized meter with {self.meter} KWH")
         return make_response("Meter setup complete", 200)
@@ -111,3 +116,35 @@ class Meter:
         from GlobalStorage import remove_meter
         logging.warning("Power cut off triggered")
         remove_meter(self.uuid)
+
+    def to_dict(self):
+        data = {
+            "uuid": self.uuid,
+            "meter": self.meter,
+            "last_update": self.last_update.isoformat() if self.last_update else None,
+            "configuration": self.configuration,
+        }
+        #if self.configuration["own_cert"]:
+        #    data["configuration"]["own_cert"] = self.configuration["own_cert"].public_bytes(serialization.Encoding.PEM).decode('utf-8')
+        #if self.configuration["maintainer_cert"]:
+        #    data["configuration"]["maintainer_cert"] = self.configuration["maintainer_cert"].public_bytes(serialization.Encoding.PEM).decode('utf-8')
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        meter = cls(data["uuid"])
+        meter.meter = data["meter"]
+        meter.last_update = datetime.fromisoformat(data["last_update"]) if data["last_update"] else None
+        meter.configuration = data["configuration"]
+        # if "own_cert" in data["configuration"]:
+        #     meter.configuration["own_cert"] = x509.load_pem_x509_certificate(data["configuration"]["own_cert"].encode('utf-8'))
+        # if "maintainer_cert" in data["configuration"]:
+        #    meter.configuration["maintainer_cert"] = x509.load_pem_x509_certificate(data["configuration"]["maintainer_cert"].encode('utf-8'))
+        return meter
+
+class MeterEncoder(JSONEncoder):
+    def default(self, o):
+        #return {"uuid": o.uuid, "meter": o.meter,
+        #        "last_update": o.last_update, "configuration": o.configuration}
+        return o.__dict__
+

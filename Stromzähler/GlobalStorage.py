@@ -22,9 +22,9 @@ def get_meter(uuid):
 
 def export_meters():
     global meter_dict
-    return meter_dict
+    return {uuid: meter.to_dict() for uuid, meter in meter_dict.items()}
 
 
-def import_meters(import_data):
+def import_meters(import_data: dict):
     global meter_dict
     meter_dict = import_data
