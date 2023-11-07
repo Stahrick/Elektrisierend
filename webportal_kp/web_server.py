@@ -34,38 +34,74 @@ def check_login(username, password):
         #TODO validate pwd hash :P
         return {'uuid':'uuid'}
 
-def check_register(username  = None, pw = None,
-                   first_name = None,  last_name = None,
-                   email  = None,  phone  = None, acc_state = None,
-                   acc_city  = None,  acc_zip_code = None,
-                   acc_address  = None,  contract_id = None,
-                   date = None, personal_info = None,
-                   iban = None, em_id = None,
-                   contr_state = None, contr_city = None,
-                   contr_zip_code = None, contr_address = None):
+def check_register(username, 
+                    pw_hash, pw_salt, 
+                    first_name, last_name, 
+                    email , phone , 
+                    acc_state, acc_city , acc_zip_code, 
+                    acc_address,
+                    personal_info, 
+                    iban, em_id, 
+                    ctr_state, ctr_city, 
+                    ctr_zip_code, ctr_address,
+                    ) -> bool:
     
     #Check if username is already in use, TODO check for the rest of bs
-    if db_acc_handler.get_account_by_username(acc.username):
-        return False
-    #TODO check for em_id?
-    
-    contract = Contract(date,personal_info,iban,em_id,contr_state,contr_city,contr_zip_code,contr_address)
-    contract_db = db_ctr_handler.create_contract(contract)
-    if contract_db:
-        acc = Account(username,pw, 123,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['_id'])
-        acc_db = db_acc_handler.create_account(acc)
-        if acc_db:
-            return True
-    
-
-def update_user_data(username, email, phone, iban, id = None):#PLASE GIVE ME ID PLEAAAAAASE
-    #if new requested username is already reserved, dont update!
     if db_acc_handler.get_account_by_username(username):
         return False
-    #TODO please i want id of current active user to update GIVE ME
-    #this is theoretically possible but i really dont advise it
-    #db_acc_handler.update_account_by_username(old_username, {"username":username, "email": email, "phone":phone, "iban": iban})#TODO do better wtf is this
+    #TODO check for em_id?
+    #TODO insert current date or what else
+    contract = Contract("date",personal_info,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
+    contract_db = db_ctr_handler.create_contract(contract)
+    if contract_db:
+        if not pw_salt: pw_salt = 123 #NOTE remove when implemented
+        acc = Account(username,pw_hash, pw_salt,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['_id'])
+        acc_db = db_acc_handler.create_account(acc)
+        if acc_db:
+            return True #NOTE return acc_db maybe?
+    
+def update_user_data(acc_id, ctr_id,
+                     username  = None, 
+                     pw_hash = None, pw_salt = None, 
+                     first_name = None, last_name = None, 
+                     email  = None, phone  = None, 
+                     acc_state = None,
+                     acc_city  = None, acc_zip_code = None, 
+                     acc_address  = None, acc_contract_id = None, 
+                     acc_data : dict = None, 
+                     personal_info = None, 
+                     iban = None, em_id = None, 
+                     ctr_state = None, ctr_city = None, 
+                     ctr_zip_code = None, ctr_address = None, 
+                     ctr_data : dict = None,
+                     ) -> bool:
+    b1 = update_acc_data(acc_id, username, pw_hash, pw_salt, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
+    b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    if b1 and b2:
+        return True
+    return False
+def update_acc_data(_id,username  = None, pw_hash = None, pw_salt = None, first_name = None, last_name = None, email  = None, phone  = None, state = None, city  = None, zip_code = None, address  = None, contract_id = None, data : dict = None) -> bool:
+    param = locals()
+    if param:
+        del(param['_id'])
+        if db_acc_handler.get_account_by_username(username):
+            return False    
+        if 'data' in param:
+            return db_acc_handler.update_account_by_id(_id,data)
+        else:
+            return db_acc_handler.update_account_by_id(_id,param)
     return True
+    
+def update_contract_data(_id, date = None, personal_info = None, iban = None, em_id = None, state = None, city = None, zip_code = None, address = None, data : dict = None):
+    param = locals()
+    if param:
+        del(param['_id'])
+        if 'data' in param:
+            return db_acc_handler.update_account_by_id(_id,data)
+        else:
+            return db_acc_handler.update_account_by_id(_id,param)
+    return True
+
 
 @app.route('/login', methods=['GET','POST'])
 def login():
