@@ -42,3 +42,8 @@
 .mails {
     word-wrap: break-word;
 }
+
+.mail-body {
+    word-break: break-all!important;
+    word-wrap: break-word!important;
+}

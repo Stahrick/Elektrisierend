@@ -60,15 +60,26 @@ const pull_mails = () => {
                 let mailWrapper = document.getElementById("mail-list")
                 mails_arr.forEach(mail => {
                     let mail_elem = document.createElement('li');
-                    mail_elem.classList.add("mails", "list-group-item", "d-flex", "justify-content-between", "align-items-center");
-                    mail_elem.textContent = mail[0];
+                    mail_elem.classList.add("mails", "list-group-item", "d-flex", "flex-column", "justify-content-between", "text-break");
+
+                    let title_wrapper = document.createElement('div');
+                    title_wrapper.classList.add("mail-title-wrapper", "d-flex", "flex-row", "justify-content-between", "align-items-center", "border-bottom", "border-white", "border-3");
+                    mail_elem.appendChild(title_wrapper);
+                    let title_elem = document.createElement('text');
+                    title_elem.classList.add("mail-title", "fs-5")
+                    title_elem.textContent = mail[0];
+                    title_wrapper.appendChild(title_elem);
                     let d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-                    d.setUTCSeconds(mail[1]);
+                    d.setUTCSeconds(mail[2]);
                     let options = {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: 'false' }
                     let since_elem = document.createElement("span");
                     since_elem.textContent = d.toLocaleTimeString("de-DE");
                     since_elem.classList.add("badge", "bg-primary");
-                    mail_elem.appendChild(since_elem);
+                    title_wrapper.appendChild(since_elem);
+                    let mailbody = document.createElement("text");
+                    mailbody.classList.add("mail-body");
+                    mailbody.textContent = mail[1];
+                    mail_elem.appendChild(mailbody);
                     //mailWrapper.appendChild(mail_elem);
                     mailWrapper.insertBefore(mail_elem, mailWrapper.firstChild);
                 })
