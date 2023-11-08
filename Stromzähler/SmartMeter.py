@@ -103,7 +103,6 @@ class Meter:
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
         self.meter += passed_sec * amount_added
         # TODO add verify= to check server cert
-        # TODO requests only allows to load cert, key itself -> You have to provide path
         requests.post(f"{self.configuration["maintainer_url"]}/data/",
                       json={"uuid": self.uuid, "consumption": self.meter},
                       cert=(self.configuration["own_cert"], self.configuration["priv_key"]))
@@ -129,10 +128,6 @@ class Meter:
             "last_update": self.last_update.isoformat() if self.last_update else None,
             "configuration": self.configuration,
         }
-        #if self.configuration["own_cert"]:
-        #    data["configuration"]["own_cert"] = self.configuration["own_cert"].public_bytes(serialization.Encoding.PEM).decode('utf-8')
-        #if self.configuration["maintainer_cert"]:
-        #    data["configuration"]["maintainer_cert"] = self.configuration["maintainer_cert"].public_bytes(serialization.Encoding.PEM).decode('utf-8')
         return data
 
     @classmethod
@@ -141,10 +136,6 @@ class Meter:
         meter.meter = data["meter"]
         meter.last_update = datetime.fromisoformat(data["last_update"]) if data["last_update"] else None
         meter.configuration = data["configuration"]
-        # if "own_cert" in data["configuration"]:
-        #     meter.configuration["own_cert"] = x509.load_pem_x509_certificate(data["configuration"]["own_cert"].encode('utf-8'))
-        # if "maintainer_cert" in data["configuration"]:
-        #    meter.configuration["maintainer_cert"] = x509.load_pem_x509_certificate(data["configuration"]["maintainer_cert"].encode('utf-8'))
         return meter
 
 class MeterEncoder(JSONEncoder):
