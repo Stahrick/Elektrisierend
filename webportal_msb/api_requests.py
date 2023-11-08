@@ -75,7 +75,6 @@ def sign_cert(csr):
     # Sign our certificate with our private key
     ).sign(key, hashes.SHA256())
     # Write our certificate out to disk.
-    return cert.public_bytes(serialization.Encoding.PEM)
     return cert.public_bytes(serialization.Encoding.PEM).decode('utf-8')
 
 
@@ -126,4 +125,4 @@ if __name__ == "__main__":
     #     csr = f.read()
     # print(sign_cert(csr))
     #gen_rsa_keypair()
-    send_registration_mail("5f461dbd-ff5e-470c-9a9b-be2f95588d9d")
+    send_registration_mail("5f27812d-a9b4-4945-a195-8b0d2b889967")
