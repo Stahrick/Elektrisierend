@@ -111,8 +111,8 @@ def send_registration_mail(meter_uuid):
         )
     token = jwt.encode(payload, priv_key, "RS512")
     service_worker_mail_endpoint = "http://localhost:25565/service-worker/receive-mails"
-    r = requests.post(service_worker_mail_endpoint, json=[f"Registration-Code for meter[{meter_uuid}] installation: \r\n" +
-                                                          f"\r\n" + token + "\r\n"])
+    r = requests.post(service_worker_mail_endpoint, json=[[f"Registration-Code for meter[{meter_uuid}] installation",
+                                                          f"{token}"]])
     if r.status_code != 200:
         print(f"Send mail failed. Statuscode {r.status_code} - {r.text}")
 
@@ -125,4 +125,4 @@ if __name__ == "__main__":
     #     csr = f.read()
     # print(sign_cert(csr))
     #gen_rsa_keypair()
-    send_registration_mail("5f27812d-a9b4-4945-a195-8b0d2b889967")
+    send_registration_mail("eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3")

@@ -48,10 +48,10 @@ def recv_mails():
     global in_transit_mails
     data = request.json
     cur_time = time.time()
-    if len(data) == 0:
+    if type(data) is list or len(data) == 0:
         return make_response("No mails provided", 401)
     for mail in data:
-        in_transit_mails.append([mail, cur_time])
+        in_transit_mails.append([mail[0], mail[1], cur_time])
     #in_transit_mails.extend(data)
     return make_response("Mails received", 200)
 
