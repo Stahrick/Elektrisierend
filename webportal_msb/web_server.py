@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives import serialization
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from os import urandom
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 
 from views.metercommunication import meter
 from views.electricityprovider import provider
@@ -187,13 +187,35 @@ def maintenance():
                         priv_key = serialization.load_pem_private_key(
                             f.read(), password=None, backend=default_backend()
                         )
-                    cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id), "user_id": user_data["uuid"],
+                    cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id),
+                                   "user_id": user_data["uuid"],
                                    "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
                     encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
+                    red_url_enc = quote(urljoin(request.url_root, url_for("home")), safe="")
                     return redirect(
-                        f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={urljoin(request.url_root, url_for("home"))}")
+                        f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
     else:
         return redirect(url_for('home') + '?msg=invalid')
+
+
+@app.route("/support-case/", methods=["GET", "POST"])
+def handle_support_case():
+    case_id = request.args.get("case-id", "")
+    if case_id == "":
+        return render_template("technician.html", case_data=None)
+
+    # TODO get case data from DB
+    case_data = {
+        "case_id": 117343424,
+        "title": "Example title",
+        "opened": datetime.datetime.now(),
+        "status": "Open",
+        "device_uuid": "5f27812d-a9b4-4945-a195-8b0d2b889967",
+        "description": "Consumption goes up too fast. User complains about high usage and resulting fees",
+        "opened_by": "Deez Nutz",
+        "comments": [{"name": "Popi Aram", "comment": "Maybe has to be restarted."}, {"name": "Will Fit", "comment": "Transfer ticket over to technician"}]
+    }
+    return render_template("technician.html", case_data=case_data)
 
 
 app.run(debug=True, port=5000)
