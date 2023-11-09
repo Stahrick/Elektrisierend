@@ -213,7 +213,7 @@ def handle_support_case():
         "device_uuid": "5f27812d-a9b4-4945-a195-8b0d2b889967",
         "description": "Consumption goes up too fast. User complains about high usage and resulting fees",
         "opened_by": "Deez Nutz",
-        "comments": [{"name": "Popi Aram", "comment": "Maybe has to be restarted."}, {"name": "Will Fit", "comment": "Transfer ticket over to technician"}]
+        "comments": [{"name": "Popi Aram", "comment": "Maybe has to be restarted.", "time": datetime.datetime.now()}, {"name": "Will Fit", "comment": "Transfer ticket over to technician", "time": datetime.datetime.now()}]
     }
     return render_template("technician.html", case_data=case_data)
 
