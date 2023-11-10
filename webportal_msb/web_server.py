@@ -187,6 +187,10 @@ def maintenance():
                 # TODO check case_id exist in DB and is connected to device uuid
                 if case_id == "":
                     return redirect(url_for('home') + '?msg=invalid')
+                valid_referrer = urljoin(urljoin(request.url_root, url_for("handle_support_case")), f"?case-id={case_id}")
+                if request.referrer != valid_referrer:
+                    # Ensure user requests from support ticket or seriously manipulate request
+                    return redirect(url_for('home') + '?msg=invalid')
                 if activate_maintenance(id):
                     with open("./sign_test_key.pem", "rb") as f:
                         priv_key = serialization.load_pem_private_key(
