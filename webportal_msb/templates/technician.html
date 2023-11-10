@@ -32,7 +32,7 @@
                         <div class="input-group">
                             <div id="case-device-uuid" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["device_uuid"] }}</div>
 
-                            <a href="{{ url_for('maintenance')+'?id=' + case_data["device_uuid"] }}"><button class="btn btn-outline-success" type="button">🖥️</button></a>
+                            <a href="{{ url_for('maintenance')+'?id=' + case_data["device_uuid"] + '&case-id=' + case_data["case_id"]|string}}"><button class="btn btn-outline-success" type="button">🖥️</button></a>
                         </div>
                     </div>
                     <div class="col-4 my-1">
