@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import jwt
 import requests
@@ -182,6 +183,10 @@ def maintenance():
         id = request.args.get('id')
         if session.get('role') == 'technician' and id is not None:
             if check_em_id(id):
+                case_id = request.args.get("case-id", "")
+                # TODO check case_id exist in DB and is connected to device uuid
+                if case_id == "":
+                    return redirect(url_for('home') + '?msg=invalid')
                 if activate_maintenance(id):
                     with open("./sign_test_key.pem", "rb") as f:
                         priv_key = serialization.load_pem_private_key(
@@ -192,6 +197,8 @@ def maintenance():
                                    "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
                     encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
                     red_url_enc = quote(urljoin(request.url_root, url_for("home")), safe="")
+                    logging.info(f"User [{cookie_data["user_id"]}] activated maintenance for "
+                                 f"device [{cookie_data["device_uuid"]}] connected to support case [{case_id}]")
                     return redirect(
                         f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
     else:
