@@ -41,7 +41,8 @@ def check_session(uuid):
 
 
 def check_login(username, password):
-    return {'uuid': 'uuid', 'role': 'technician'}
+    #return {'uuid': 'uuid', 'role': 'technician'}
+    return {'uuid': 'uuid', 'role': 'office'}
 
 
 def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
@@ -76,7 +77,7 @@ def activate_maintenance(id):
     return True
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
@@ -93,14 +94,14 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/logout', methods=['GET', 'POST'])
+@app.route('/logout/', methods=['GET', 'POST'])
 def logout():
     response = make_response(redirect(url_for('login')))
     session.clear()
     return response
 
 
-@app.route('/home', methods=['GET', 'POST'])
+@app.route('/home/', methods=['GET', 'POST'])
 def home():
     user_data = check_session(session.get('uuid'))
     if user_data:
@@ -123,28 +124,7 @@ def home():
     return redirect(url_for('login'))
 
 
-@app.route('/show_contract', methods=['POST'])
-def show_contract():
-    user_data = check_session(session.get('uuid'))
-    if user_data:
-        if 'contract_id' in request.form:
-            contract_id = request.form['contract_id']
-            contract_data = get_contract_data(contract_id)
-            if contract_data:
-                return render_template('show_contract.html', contract_id=contract_data['contract_id'],
-                                       em_id=contract_data['em_id'], em_reading=contract_data['em_reading'],
-                                       state=contract_data['state'], zip_code=contract_data['zip_code'],
-                                       city=contract_data['city'], address=contract_data['address'],
-                                       iban=contract_data['iban'], phone=contract_data['phone'],
-                                       email=contract_data['email'], username=contract_data['username'],
-                                       first_name=contract_data['first_name'], last_name=contract_data['last_name'])
-            else:
-                # das lässt gerade template injections zu
-                return redirect(url_for('login'))
-    return redirect(url_for('login'))
-
-
-@app.route('/edit_contract', methods=['GET', 'POST'])
+@app.route('/edit_contract/', methods=['GET', 'POST'])
 def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
@@ -160,23 +140,17 @@ def edit_contract():
                 return redirect(url_for('profile'))
             else:
                 # returns error if it cant update
-                return render_template('edit_profile', username=username, email=email, phone=phone, iban=iban,
+                return render_template('edit_contract.html', contract=request.form,
                                        error='Cant update your Profile')
         if request.args.get('contract_id') is not None:
             contract_data = get_contract_data(request.args.get('contract_id'))
             if contract_data:
-                return render_template('edit_contract.html', contract_id=contract_data['contract_id'],
-                                       em_id=contract_data['em_id'], em_reading=contract_data['em_reading'],
-                                       state=contract_data['state'], zip_code=contract_data['zip_code'],
-                                       city=contract_data['city'], address=contract_data['address'],
-                                       iban=contract_data['iban'], phone=contract_data['phone'],
-                                       email=contract_data['email'], username=contract_data['username'],
-                                       first_name=contract_data['first_name'], last_name=contract_data['last_name'])
+                return render_template('edit_contract.html', contract=contract_data)
         return redirect(url_for('home') + '?msg=ici')
     return redirect(url_for('login'))
 
 
-@app.route('/maintenance', methods=['GET'])
+@app.route('/maintenance/', methods=['GET'])
 def maintenance():
     user_data = check_session(session.get('uuid'))
     if user_data:
@@ -187,7 +161,8 @@ def maintenance():
                 # TODO check case_id exist in DB and is connected to device uuid
                 if case_id == "":
                     return redirect(url_for('home') + '?msg=invalid')
-                valid_referrer = urljoin(urljoin(request.url_root, url_for("handle_support_case")), f"?case-id={case_id}")
+                valid_referrer = urljoin(urljoin(request.url_root, url_for("handle_support_case")),
+                                         f"?case-id={case_id}")
                 if request.referrer != valid_referrer:
                     # Ensure user requests from support ticket or seriously manipulate request
                     return redirect(url_for('home') + '?msg=invalid')
