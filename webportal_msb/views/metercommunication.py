@@ -1,5 +1,5 @@
 from flask import Blueprint, request, make_response
-from webportal_msb.api_requests import sign_cert
+from api_requests import sign_cert
 
 import requests
 
