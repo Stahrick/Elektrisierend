@@ -3,7 +3,7 @@ from uuid import uuid4
 
 @dataclass
 class Contract:
-    _id : int = field(init = False, repr = False)
+    _id : str = field(init = False, repr = False)
     date : str #TODO what format
     personal_info : str
     iban : str 

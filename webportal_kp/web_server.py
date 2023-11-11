@@ -30,9 +30,11 @@ def check_session(uuid):
     return False
 
 def check_login(username, password):
-    if db_acc_handler.get_account_by_username(username):
-        #TODO validate pwd hash :P
-        return {'uuid':'uuid'}
+    res = db_acc_handler.get_account_by_username(username)
+    if res[0]:
+       if password == res[0]['pw_hash']: #TODO hash
+           return {'_id': res[0]['_id']}
+    return None
 
 def check_register(username, 
                     pw_hash, pw_salt, 
@@ -113,7 +115,7 @@ def login():
         if valid:
             print("valid")
             response = make_response(redirect(url_for('home')))
-            session['uuid'] = valid['uuid']
+            session['uuid'] = valid['_id']
             return response
         else:
             print("invalid")
