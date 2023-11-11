@@ -27,10 +27,10 @@ load_dotenv()
 pw = getenv('MSBPW')
 username = getenv('MSBUser')
 dbname = getenv('MSBDB')
-db_acc_handler = AccountHandler(username,pw,dbname)
-db_ctr_handler = ContractHandler(username,pw,dbname)
-db_elmo_handler = EmHandler(username,pw,dbname)
-db_hdt_handler = HistDataHandler(username,pw,dbname)
+db_acc_handler = AccountHandler(username, pw, dbname)
+db_ctr_handler = ContractHandler(username, pw, dbname)
+db_elmo_handler = EmHandler(username, pw, dbname)
+db_hdt_handler = HistDataHandler(username, pw, dbname)
 
 app.register_blueprint(meter, url_prefix="/meter")
 app.register_blueprint(provider, url_prefix="/provider")
@@ -53,68 +53,79 @@ def check_session(uuid):
 def check_login(username, password):
     res = db_acc_handler.get_account_by_username(username)[0]
     if res:
-       return {'uuid':res['_id'], 'role': res['role']}
+        return {'uuid': res['_id'], 'role': res['role']}
     return None
 
 def check_register(data):
-    return True #no registration for msb, done by hand by db admin :D (currently)
+    return True  # no registration for msb, done by hand by db admin :D (currently)
 
-#updates account data by given fields, ignores params all if data is given directly
-#TODO please test
+
+# updates account data by given fields, ignores params all if data is given directly
+# TODO please test
 def update_user_data(acc_id, ctr_id,
-                     username  = None,
-                     pw_hash = None, pw_salt = None,
-                     first_name = None, last_name = None,
-                     email  = None, phone  = None,
-                     acc_city  = None, acc_zip_code = None,
-                     acc_address  = None, acc_contract_id = None,
-                     acc_data : dict = None,
-                     personal_info = None,
-                     iban = None, em_id = None,
-                     ctr_state = None, ctr_city = None,
-                     ctr_zip_code = None, ctr_address = None,
-                     ctr_data : dict = None,
+                     username=None,
+                     pw_hash=None, pw_salt=None,
+                     first_name=None, last_name=None,
+                     email=None, phone=None,
+                     acc_city=None, acc_zip_code=None,
+                     acc_address=None, acc_contract_id=None,
+                     acc_data: dict = None,
+                     personal_info=None,
+                     iban=None, em_id=None,
+                     ctr_state=None, ctr_city=None,
+                     ctr_zip_code=None, ctr_address=None,
+                     ctr_data: dict = None,
                      ) -> bool:
-    b1 = update_acc_data(acc_id,username, pw_hash, pw_salt, first_name, last_name, email, phone, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
-    b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    b1 = update_acc_data(acc_id, username, pw_hash, pw_salt, first_name, last_name, email, phone, acc_city,
+                         acc_zip_code, acc_address, acc_contract_id, acc_data)
+    b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,
+                              ctr_data)
     if b1 and b2:
         return True
     return False
-def update_acc_data(_id,username  = None, pw_hash = None, pw_salt = None, first_name = None, last_name = None, email  = None, phone  = None, city  = None, zip_code = None, address  = None, contract_id = None, data : dict = None) -> bool:
+
+
+def update_acc_data(_id, username=None, pw_hash=None, pw_salt=None, first_name=None, last_name=None, email=None,
+                    phone=None, city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
     param = locals()
     if param:
-        del(param['_id'])
+        del (param['_id'])
         if db_acc_handler.get_account_by_username(username):
             return False
         if 'data' in param:
-            return db_acc_handler.update_account_by_id(_id,data)
+            return db_acc_handler.update_account_by_id(_id, data)
         else:
-            return db_acc_handler.update_account_by_id(_id,param)
+            return db_acc_handler.update_account_by_id(_id, param)
     return True
 
 
-def update_contract_data(_id, date = None, personal_info = None, iban = None, em_id = None, state = None, city = None, zip_code = None, address = None, data : dict = None):
+def update_contract_data(_id, date=None, personal_info=None, iban=None, em_id=None, state=None, city=None,
+                         zip_code=None, address=None, data: dict = None):
     param = locals()
     if param:
-        del(param['_id'])
+        del (param['_id'])
         if 'data' in param:
-            return db_acc_handler.update_account_by_id(_id,data)
+            return db_acc_handler.update_account_by_id(_id, data)
         else:
-            return db_acc_handler.update_account_by_id(_id,param)
+            return db_acc_handler.update_account_by_id(_id, param)
 
 
 def get_contract_data(contract_id):
     res = db_ctr_handler.get_contract_by_id(contract_id)
     print(res)
-    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
+    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email": "cum@me.com",
+            "iban": "DE123654", "phone": "+49112", "state": "Germany", "city": "Madenheim", "zip_code": "69069",
+            "address": "Wallstreet 3", "em_id": "DEADBEEF4269", "em_reading": 911.69, "contract_id": "\{\{ 7*7 \}\}"}
+
 
 def get_ems_by_contract():
     dbres = db_ctr_handler.get_all()
-    l1,l2,l = list(),list(),list()
-    for i,r in enumerate(dbres):
-        l1.append(r['em_id'])#ich hasse konrad
+    l1, l2, l = list(), list(), list()
+    for i, r in enumerate(dbres):
+        l1.append(r['em_id'])  # ich hasse konrad
         l2.append(r['_id'])
-    return [l1,l2]
+    return [l1, l2]
+
 
 def check_em_id(id):
     res = db_elmo_handler.get_Em_by_id(id)
@@ -184,9 +195,9 @@ def edit_contract():
             email = request.form['email']
             phone = request.form['phone']
             iban = request.form['iban']
-            if update_user_data(user_data['_id'],username = username,email= email,phone= phone):
-                #trys to update database and redirects to profile if it did
-                #updates values for account that owns the cookie
+            if update_user_data(user_data['_id'], username=username, email=email, phone=phone):
+                # trys to update database and redirects to profile if it did
+                # updates values for account that owns the cookie
 
                 return redirect(url_for('profile'))
             else:
@@ -223,7 +234,7 @@ def maintenance():
                             f.read(), password=None, backend=default_backend()
                         )
                     cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id),
-                                   "user_id": user_data["uuid"],
+                                   "user_id": user_data["_id"],
                                    "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
                     encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
                     red_url_enc = quote(urljoin(request.url_root, url_for("home")), safe="")
@@ -231,8 +242,7 @@ def maintenance():
                                  f"device [{cookie_data["device_uuid"]}] connected to support case [{case_id}]")
                     return redirect(
                         f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
-    else:
-        return redirect(url_for('home') + '?msg=invalid')
+    return redirect(url_for('home') + '?msg=invalid')
 
 
 @app.route("/support-case/", methods=["GET", "POST"])
@@ -250,7 +260,9 @@ def handle_support_case():
         "device_uuid": "5f27812d-a9b4-4945-a195-8b0d2b889967",
         "description": "Consumption goes up too fast. User complains about high usage and resulting fees",
         "opened_by": "Deez Nutz",
-        "comments": [{"name": "Popi Aram", "comment": "Maybe has to be restarted.", "time": datetime.datetime.now()}, {"name": "Will Fit", "comment": "Transfer ticket over to technician", "time": datetime.datetime.now()}]
+        "comments": [{"name": "Popi Aram", "comment": "Maybe has to be restarted.", "time": datetime.datetime.now()},
+                     {"name": "Will Fit", "comment": "Transfer ticket over to technician",
+                      "time": datetime.datetime.now()}]
     }
     return render_template("technician.html", case_data=case_data)
 
