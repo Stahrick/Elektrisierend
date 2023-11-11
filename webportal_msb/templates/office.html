@@ -6,7 +6,7 @@
 <h2>Hier ist die Seite für die Vertragleute</h2>
 <p>Keine Ahnung was man hier so reinmachen könnte</p>
 <p id="error">{{ error }}</p>
-<form action="{{ url_for('show_contract') }}" method="post" autocomplete="off">
+<form action="{{ url_for('edit_contract') }}" method="get" autocomplete="off">
     <label for="contract_id"><p>Contract ID</p></label>
     <input type="text" name="contract_id" placeholder="ContractID" id="contract_id" required>
     <input type="submit" value="Submit">
