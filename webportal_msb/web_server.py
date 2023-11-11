@@ -51,9 +51,9 @@ def check_session(uuid):
 
 
 def check_login(username, password):
-    res = db_acc_handler.get_account_by_username(username)[0]
-    if res:
-        return {'uuid': res['_id'], 'role': res['role']}
+    res = db_acc_handler.get_account_by_username(username)
+    if res[0]:
+       return {'uuid': res[0]['_id'], 'role': res[0]['role']}
     return None
 
 def check_register(data):
@@ -105,9 +105,9 @@ def update_contract_data(_id, date=None, personal_info=None, iban=None, em_id=No
     if param:
         del (param['_id'])
         if 'data' in param:
-            return db_acc_handler.update_account_by_id(_id, data)
+            return db_ctr_handler.update_contract_by_id(_id,data)
         else:
-            return db_acc_handler.update_account_by_id(_id, param)
+            return db_ctr_handler.update_contract_by_id(_id,param)
 
 
 def get_contract_data(contract_id):
@@ -238,8 +238,8 @@ def maintenance():
                                    "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
                     encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
                     red_url_enc = quote(urljoin(request.url_root, url_for("home")), safe="")
-                    logging.info(f"User [{cookie_data["user_id"]}] activated maintenance for "
-                                 f"device [{cookie_data["device_uuid"]}] connected to support case [{case_id}]")
+                    logging.info(f"User [{cookie_data['user_id']}] activated maintenance for "
+                                 f"device [{cookie_data['device_uuid']}] connected to support case [{case_id}]")
                     return redirect(
                         f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
     return redirect(url_for('home') + '?msg=invalid')
