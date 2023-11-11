@@ -3,25 +3,78 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h2>Hier ist die Seite für Techniker</h2>
-<p>Keine Ahnung was man hier so reinmachen könnte</p>
-<p>{{ msg }}</p>
-<table id="em_contract">
-    <tr>
-        <th>Electricity Meter</th>
-        <th>Contract ID</th>
-    </tr>
-    {% for i in range(entries) %}
-        <tr>
-            <td>{{ em_ids[0][i] }}</td>
-            <td>{{ em_ids[1][i] }}</td>
-            <td><a href="{{ url_for('maintenance')+'?id='+em_ids[0][i]}}"><button type="button">Maintance</button></a></td>
-        </tr>
-    {% endfor %}
-</table>
-<img src="{{ url_for('static', filename='stromi_stromson.png') }}" id="content-img"><span>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.   
+    <div class="container-fluid d-flex align-items-center justify-content-center">
+        {% if case_data %}
+            <div class="container m-3 p-4 border border-success rounded-2">
+                <div class="row">
+                    <div class="col my-1">
+                        <label for="case-title" class="form-label">Titel</label>
+                        <div id="case-title" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["title"] }}</div>
+                    </div>
+                    <div class="col-3 my-1">
+                        <label for="case-status" class="form-label">Status</label>
+                        <div id="case-status" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["status"] }}</div>
+                    </div>
+                </div>
+                <div class="row d-flex justify-content-between">
+                    <div class="col-4 my-1">
+                        <label for="case-id" class="form-label">Fall ID</label>
+                        <div id="case-id" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["case_id"] }}</div>
+                    </div>
+                    <div class="col-5 col-sm-6 my-1">
+                        <label for="case-opened" class="form-label">Eröffnet am</label>
+                        <div id="case-opened" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["opened"] }}</div>
+                    </div>
+                </div>
+                <div class="row d-flex justify-content-between">
+                    <div class="col-6 col-sm-10 col-md-7 my-1">
+                        <label for="case-device-uuid" class="form-label">Geräte ID</label>
+                        <div class="input-group">
+                            <div id="case-device-uuid" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["device_uuid"] }}</div>
 
-    Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   
-    
-    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse</span>
+                            <a href="{{ url_for('maintenance')+'?id=' + case_data["device_uuid"] + '&case-id=' + case_data["case_id"]|string}}"><button class="btn btn-outline-success" type="button">🖥️</button></a>
+                        </div>
+                    </div>
+                    <div class="col-4 my-1">
+                        <label for="case-opened-by" class="form-label">Eröffnet von</label>
+                        <div id="case-opened-by" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["opened_by"] }}</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col my-1">
+                        <label for="case-description" class="form-label">Beschreibung</label>
+                        <div id="case-description" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["description"] }}</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row vstack gap-3">
+                    <label class="form-label">Kommentare</label>
+                    {% for comment in case_data["comments"] %}
+                    <div class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                🧑 {{ comment["name"] }}
+                            </div>
+                            <div class="badge text-bg-success">
+                                {{ comment["time"] }}
+                            </div>
+                        </div>
+                        <div>
+                            {{ comment["comment"] }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <form action="/support-case/", method="get", enctype="application/x-www-form-urlencoded">
+                <div class="mb-3">
+                    <label for="case-id" class="form-label">Support Fall ID</label>
+                    <input name="case-id" id="case-id" type="number" class="form-control"/>
+                </div>
+                <button type="submit" class="btn btn-primary">Absenden</button>
+            </form>
+        {% endif %}
+    </div>
+
 {% endblock %}

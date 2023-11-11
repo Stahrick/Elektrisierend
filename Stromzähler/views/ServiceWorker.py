@@ -42,16 +42,16 @@ def setup_meter():
     return make_response(f"Device({device.uuid}) setup complete", 200)
 
 
-@management.route("/receive_mails/", methods=["POST"])
+@management.route("/receive-mails/", methods=["POST"])
 def recv_mails():
     # Receive mails from Messstellenbetreiber
     global in_transit_mails
     data = request.json
     cur_time = time.time()
-    if len(data) == 0:
+    if type(data) is list or len(data) == 0:
         return make_response("No mails provided", 401)
     for mail in data:
-        in_transit_mails.append([mail, cur_time])
+        in_transit_mails.append([mail[0], mail[1], cur_time])
     #in_transit_mails.extend(data)
     return make_response("Mails received", 200)
 
@@ -59,6 +59,6 @@ def recv_mails():
 @management.route("/transfer-mails/", methods=["GET"])
 def transfer_mails():
     global in_transit_mails
-    new_mails = in_transit_mails
+    new_mails = in_transit_mails.copy()
     in_transit_mails.clear()
     return new_mails
