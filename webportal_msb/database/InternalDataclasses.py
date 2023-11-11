@@ -38,6 +38,7 @@ class HistData:
 @dataclass
 class Account:
     _id : str = field(init = False, repr = False)
+    role : str
     username : str 
     pw_hash : int
     pw_salt : int
