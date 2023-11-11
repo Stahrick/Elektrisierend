@@ -3,38 +3,117 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="edit_profile">
-<h2>Home Page</h2>
-<form action="{{ url_for('edit_contract') }}" method="post" autocomplete="off">
-    <label for="contract_id"><p>Contract ID</p></label>
-    <input type="text" name="contract_id" value="{{ contract_id }}">
-    <label for="username"><p>Username</p></label>
-    <input type="text" name="username" value="{{ username }}">
-    <label for="first_name"><p>First name</p></label>
-    <input type="text" name="first_name" value="{{ first_name }}">
-    <label for="last_name"><p>Last name</p></label>
-    <input type="text" name="last_name" value="{{ last_name }}">
-    <label for="em_id"><p>Electricity Meter ID</p></label>
-    <input type="text" name="em_id" value="{{ em_id }}">
-    <label for="state"><p>State</p></label>
-    <input type="text" name="state" value="{{ state }}">
-    <label for="zip_code"><p>ZIP Code</p></label>
-    <input type="text" name="zip_code" value="{{ zip_code }}">
-    <label for="city"><p>City</p></label>
-    <input type="text" name="city" value="{{ city }}">
-    <label for="address"><p>Address</p></label>
-    <input type="text" name="address" value="{{ address }}">
-    <label for="iban"><p>IBAN</p></label>
-    <input type="text" name="iban" value="{{ iban }}">
-    <label for="email"><p>Email address</p></label>
-    <input type="email" name="email" value="{{ email }}">
-    <label for="phone"><p>Phone number</p></label>
-    <input type="tel" name="phone" value="{{ phone }}">
-    <div class="error">{{ error }}</div>
-    <input type="submit" value="Submit Changes">
-</form>
-<form action="{{ url_for('home') }}">
-    <input type="submit" value="Cancel">
-</form>
+<div class="content-fluid m-4">
+    <form action="{{ url_for('edit_contract') }}" method="post" autocomplete="off">
+        <div class="accordion" id="contract-data-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonalData" aria-expanded="false" aria-controls="collapsePersonalData">
+                      Persönliche Daten
+                    </button>
+                </h2>
+                <div id="collapsePersonalData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-id" class="form-label">Vertragsnummer</label>
+                                <input class="form-control" id="contract-id" placeholder="{{ contract["contract_id"] }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-first-name" class="form-label">Vorname</label>
+                                <input class="form-control" id="contract-first-name" placeholder="{{ contract["first_name"] }}">
+                            </div>
+                            <div class="col">
+                                <label for="contract-last-name" class="form-label">Nachname</label>
+                                <input class="form-control" id="contract-last-name" placeholder="{{ contract["last_name"] }}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-email" class="form-label">E-Mail Adresse</label>
+                                <input class="form-control" id="contract-email" placeholder="{{ contract["email"] }}" type="email">
+                            </div>
+                            <div class="col">
+                                <label for="contract-tel" class="form-label">Telefonnummer</label>
+                                <input class="form-control" id="contract-tel" placeholder="{{ contract["phone"] }}" type="tel">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-iban" class="form-label">IBAN</label>
+                                <input class="form-control" id="contract-iban" placeholder="{{ contract["iban"] }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocationData" aria-expanded="false" aria-controls="collapseLocationData">
+                      Anschrift
+                    </button>
+                </h2>
+                <div id="collapseLocationData" class="accordion-collapse collapse multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-street" class="form-label">Straße</label>
+                                <input class="form-control" id="contract-street" placeholder="{{ contract["address"] }}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col-2">
+                                <label for="contract-zip-code" class="form-label">Postleitzahl</label>
+                                <input class="form-control" id="contract-zip-code" placeholder="{{ contract["zip_code"] }}" type="number">
+                            </div>
+                            <div class="col">
+                                <label for="contract-city" class="form-label">Stadt</label>
+                                <input class="form-control" id="contract-city" placeholder="{{ contract["city"] }}">
+                            </div>
+                            <div class="col-4">
+                                <label for="contract-state" class="form-label">Land</label>
+                                <input class="form-control" id="contract-state" placeholder="{{ contract["state"] }}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContractData" aria-expanded="false" aria-controls="collapseContractData">
+                      Stromzähler
+                    </button>
+                </h2>
+                <div id="collapseContractData" class="accordion-collapse collapse multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-uuid" class="form-label">Zählernummer</label>
+                                <input class="form-control" id="contract-meter-uuid" placeholder="{{ contract["em_id"] }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-consumption" class="form-label">Zählerstand</label>
+                                <input class="form-control" id="contract-meter-consumption" placeholder="{{ contract["em_reading"] }}" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row py-1">
+            <label for="contract-change-otp" class="form-label font-weight-bold">Änderungscode des Kunden</label>
+            <div class="col-4 input-group">
+                <input class="form-control form-control-lg border border-2 border-warning" id="contract-change-otp" placeholder="OTP erhalten vom Kunden" required>
+                <button type="submit" class="btn btn-success w-25">Absenden</button>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
