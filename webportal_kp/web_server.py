@@ -31,7 +31,7 @@ def check_session(uuid):
 
 def check_login(username, password):
     res = db_acc_handler.get_account_by_username(username)
-    if res[0]:
+    if res and res[0]:
        if password == res[0]['pw_hash']: #TODO hash
            return {'_id': res[0]['_id']}
     return None
