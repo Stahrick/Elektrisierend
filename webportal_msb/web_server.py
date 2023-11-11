@@ -7,7 +7,13 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
-from os import urandom
+from os import urandom, getenv
+from database.AccountDB import AccountHandler
+from database.ContractDB import ContractHandler
+from database.EMDB import EmHandler
+from database.HistDataDB import HistDataHandler
+from database.InternalDataclasses import Account, Contract
+from dotenv import load_dotenv
 from urllib.parse import urljoin, quote
 
 from views.metercommunication import meter
@@ -17,6 +23,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
 
+load_dotenv()
+pw = getenv('MSBPW')
+username = getenv('MSBUser')
+dbname = getenv('MSBDB')
+db_acc_handler = AccountHandler(username,pw,dbname)
+db_ctr_handler = ContractHandler(username,pw,dbname)
+db_elmo_handler = EmHandler(username,pw,dbname)
+db_hdt_handler = HistDataHandler(username,pw,dbname)
+
 app.register_blueprint(meter, url_prefix="/meter")
 app.register_blueprint(provider, url_prefix="/provider")
 
@@ -25,51 +40,87 @@ app.register_blueprint(provider, url_prefix="/provider")
 # support, "email confirm"
 #
 
-def check_session(uuid):
-    # checks if uuid exists and is valid returns account data
-    if uuid is None:
+def check_session(uuid): 
+    #checks if uuid exists and is valid returns account data
+    if uuid == None:
         return False
-    if "uuid" in uuid:
-        print(uuid)
-        # hier muss noch die datenbank zuordnung kommen, und check ob es die uuid gibt
-        return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email": "cum@me.com",
-                "iban": "DE123654", "phone": "+49112", "city": "Madenheim", "zip_code": "69069",
-                "address": "Wallstreet", "house": "3", "em_id": "DEADBEEF4269", "em_reading": 911.69,
-                "contract_id": "{{ 7*7 }}"}
-
+    acc = db_acc_handler.get_account_by_id(uuid)
+    if acc:
+        return acc 
     return False
 
 
 def check_login(username, password):
-    return {'uuid': 'uuid', 'role': 'technician'}
+    res = db_acc_handler.get_account_by_username(username)[0]
+    if res:
+       return {'uuid':res['_id'], 'role': res['role']}
+    return None
 
+def check_register(data):
+    return True #no registration for msb, done by hand by db admin :D (currently)
 
-def check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
+#updates account data by given fields, ignores params all if data is given directly
+#TODO please test
+def update_user_data(acc_id, ctr_id,
+                     username  = None, 
+                     pw_hash = None, pw_salt = None, 
+                     first_name = None, last_name = None, 
+                     email  = None, phone  = None, 
+                     acc_city  = None, acc_zip_code = None, 
+                     acc_address  = None, acc_contract_id = None, 
+                     acc_data : dict = None, 
+                     personal_info = None, 
+                     iban = None, em_id = None, 
+                     ctr_state = None, ctr_city = None, 
+                     ctr_zip_code = None, ctr_address = None, 
+                     ctr_data : dict = None,
+                     ) -> bool:
+    b1 = update_acc_data(acc_id,username, pw_hash, pw_salt, first_name, last_name, email, phone, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
+    b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    if b1 and b2:
+        return True
+    return False
+def update_acc_data(_id,username  = None, pw_hash = None, pw_salt = None, first_name = None, last_name = None, email  = None, phone  = None, city  = None, zip_code = None, address  = None, contract_id = None, data : dict = None) -> bool:
+    param = locals()
+    if param:
+        del(param['_id'])
+        if db_acc_handler.get_account_by_username(username):
+            return False    
+        if 'data' in param:
+            return db_acc_handler.update_account_by_id(_id,data)
+        else:
+            return db_acc_handler.update_account_by_id(_id,param)
     return True
 
-
-def update_user_data(username, email, phone, iban):
-    return True
+    
+def update_contract_data(_id, date = None, personal_info = None, iban = None, em_id = None, state = None, city = None, zip_code = None, address = None, data : dict = None):
+    param = locals()
+    if param:
+        del(param['_id'])
+        if 'data' in param:
+            return db_acc_handler.update_account_by_id(_id,data)
+        else:
+            return db_acc_handler.update_account_by_id(_id,param)
 
 
 def get_contract_data(contract_id):
-    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email": "cum@me.com",
-            "iban": "DE123654", "phone": "+49112", "state": "Germany", "city": "Madenheim", "zip_code": "69069",
-            "address": "Wallstreet 3", "em_id": "DEADBEEF4269", "em_reading": 911.69, "contract_id": "\{\{ 7*7 \}\}"}
-
+    res = db_ctr_handler.get_contract_by_id(contract_id)
+    print(res)
+    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "state":"Germany", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69, "contract_id": "\{\{ 7*7 \}\}"}
 
 def get_ems_by_contract():
-    try:
-        r = requests.get("http://localhost:25565/service-worker/list/", timeout=5)
-        meter_uuids = r.json()
-    except Exception as e:
-        meter_uuids = [urandom(6).hex() for _ in range(6)]
-    return [[uuid for uuid in meter_uuids], [urandom(6).hex() for _ in range(len(meter_uuids))],
-            [i for i in range(len(meter_uuids))]]
+    dbres = db_ctr_handler.get_all()
+    l1,l2,l = list(),list(),list()
+    for i,r in enumerate(dbres):
+        l1.append(r['em_id'])#ich hasse konrad
+        l2.append(r['_id'])
+    return [l1,l2]
 
-
-def check_em_id(em):
-    return True
+def check_em_id(id):
+    res = db_elmo_handler.get_Em_by_id(id)
+    if res:
+        return True
+    return False
 
 
 def activate_maintenance(id):
@@ -154,9 +205,10 @@ def edit_contract():
             email = request.form['email']
             phone = request.form['phone']
             iban = request.form['iban']
-            if update_user_data(username, email, phone, iban):
-                # trys to update database and redirects to profile if it did
-                # updates values for account that owns the cookie
+            if update_user_data(user_data['_id'],username = username,email= email,phone= phone):
+                #trys to update database and redirects to profile if it did
+                #updates values for account that owns the cookie
+
                 return redirect(url_for('profile'))
             else:
                 # returns error if it cant update
