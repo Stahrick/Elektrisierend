@@ -187,4 +187,7 @@ def edit_profile():
         return render_template('edit_profile.html', username=user_data['username'], email=user_data['email'], phone=user_data['phone'], iban=user_data['iban'])
     return redirect(url_for('login'))
 
-app.run(debug=True, port=4000)
+if __name__ == "__main__":
+    context = ('cert.pem', 'key.pem')
+    context = ('localhost.crt', 'localhost.key')
+    app.run(host='localhost', port=5000, debug=True, ssl_context=context)#, ssl_context=context)
