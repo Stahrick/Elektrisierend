@@ -96,6 +96,16 @@ def gen_rsa_keypair():
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         ))
 
+def send_service_worker_mails(mail_texts: list[list[str, str]]):
+    """
+    Sends mails to the service worker endpoint on the smart meter application
+    :param mail_texts: Array containing all mails that should be sent. Every mail has the structure [subject, text]
+    :return:
+    """
+    service_worker_mail_endpoint = "http://localhost:25565/service-worker/receive-mails"
+    r = requests.post(service_worker_mail_endpoint, json=mail_texts)
+    if r.status_code != 200:
+        print(f"Send mail failed. Statuscode {r.status_code} - {r.text}")
 
 def send_registration_mail(meter_uuid):
     code = base64.b64encode(urandom(10)).decode()
@@ -110,11 +120,8 @@ def send_registration_mail(meter_uuid):
             fi.read(), password=None, backend=default_backend()
         )
     token = jwt.encode(payload, priv_key, "RS512")
-    service_worker_mail_endpoint = "http://localhost:25565/service-worker/receive-mails"
-    r = requests.post(service_worker_mail_endpoint, json=[[f"Registration-Code for meter[{meter_uuid}] installation",
-                                                          f"{token}"]])
-    if r.status_code != 200:
-        print(f"Send mail failed. Statuscode {r.status_code} - {r.text}")
+    send_service_worker_mails([[f"Registration-Code for meter[{meter_uuid}] installation",
+                                                           f"{token}"]])
 
 
 
@@ -125,4 +132,4 @@ if __name__ == "__main__":
     #     csr = f.read()
     # print(sign_cert(csr))
     #gen_rsa_keypair()
-    send_registration_mail("eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3")
+    send_registration_mail("3b1c877e-c61c-435a-a1b3-9911418a79b6")

@@ -105,7 +105,7 @@ def update_contract_data(_id, date = None, personal_info = None, iban = None, em
     return True
 
 
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login/', methods=['GET','POST'])
 def login():
     print([i for i in request.form])
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
@@ -129,7 +129,7 @@ def logout():
     session.clear()
     return response
 
-@app.route('/register', methods=['GET','POST'])
+@app.route('/register/', methods=['GET','POST'])
 def register():
     #{"username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
     print( [i for i in  request.form])
@@ -153,21 +153,14 @@ def register():
             return render_template('register.html', error='invalid data')
     return render_template('register.html')
 
-@app.route('/home', methods=['GET','POST'])
+@app.route('/home/', methods=['GET','POST'])
 def home():
     user_data = check_session(session.get('uuid'))
     if user_data:
         return render_template('home.html')
     return redirect(url_for('login'))
 
-@app.route('/profile', methods=['GET','POST'])
-def profile():
-    user_data = check_session(session.get('uuid'))
-    if user_data:
-        return render_template('profile.html', first_name=user_data['first_name'], last_name=user_data['last_name'], em_id=user_data['em_id'], em_reading=user_data['em_reading'], iban=user_data['iban'], phone=user_data['phone'], email=user_data['email'] )
-    return redirect(url_for('login'))
-
-@app.route('/edit_profile', methods=['GET','POST'])
+@app.route('/profile/', methods=['GET','POST'])
 def edit_profile():
     user_data = check_session(session.get('uuid'))
     if user_data:
@@ -183,8 +176,8 @@ def edit_profile():
                 return redirect(url_for('profile'))
             else:
                 #returns error if it cant update
-                return render_template('edit_profile', username=username, email=email, phone=phone, error='Cant update your Profile')
-        return render_template('edit_profile.html', username=user_data['username'], email=user_data['email'], phone=user_data['phone'], iban=user_data['iban'])
+                return render_template('edit_profile', profile=user_data, error='Cant update your Profile')
+        return render_template('edit_profile.html', profile=user_data)
     return redirect(url_for('login'))
 
 if __name__ == "__main__":

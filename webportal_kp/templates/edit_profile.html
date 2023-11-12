@@ -1,22 +1,75 @@
 {% extends 'layout.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Profile{% endblock %}
 
 {% block content %}
-<div class="edit_profile">
-<h2>Home Page</h2>
-<form action="{{ url_for('edit_profile') }}" method="post" autocomplete="off">
-    <label for="username"><p>Username</p></label>
-    <input type="text" name="username" value="{{ username }}">
-    <label for="email"><p>Email address</p></label>
-    <input type="email" name="email" value="{{ email }}">
-    <label for="phone"><p>Phone number</p></label>
-    <input type="tel" name="phone" value="{{ phone }}">
-    <div class="error">{{ error }}</div>
-    <input type="submit" value="Submit Changes">
-</form>
-<form action="{{ url_for('profile') }}">
-    <input type="submit" value="Cancel">
-</form>
+<div class="container-fluid m-4">
+    <form action="{{ url_for('edit_profile') }}" method="post">
+        <div class="accordion" id="contract-data-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonalData" aria-expanded="false" aria-controls="collapsePersonalData">
+                      Persönliche Daten
+                    </button>
+                </h2>
+                <div id="collapsePersonalData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-first-name" class="form-label">Vorname</label>
+                                <input class="form-control" id="contract-first-name" placeholder="{{ profile["first_name"] }}">
+                            </div>
+                            <div class="col">
+                                <label for="contract-last-name" class="form-label">Nachname</label>
+                                <input class="form-control" id="contract-last-name" placeholder="{{ profile["last_name"] }}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-email" class="form-label">E-Mail Adresse</label>
+                                <input class="form-control" id="contract-email" placeholder="{{ profile["email"] }}" type="email">
+                            </div>
+                            <div class="col">
+                                <label for="contract-tel" class="form-label">Telefonnummer</label>
+                                <input class="form-control" id="contract-tel" placeholder="{{ profile["phone"] }}" type="tel">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-iban" class="form-label">IBAN</label>
+                                <input class="form-control" id="contract-iban" placeholder="{{ profile["iban"] }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContractData" aria-expanded="false" aria-controls="collapseContractData">
+                      Stromzähler
+                    </button>
+                </h2>
+                <div id="collapseContractData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-uuid" class="form-label">Zählernummer</label>
+                                <input class="form-control" id="contract-meter-uuid" placeholder="{{ profile["em_id"] }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-consumption" class="form-label">Zählerstand</label>
+                                <input class="form-control" id="contract-meter-consumption" placeholder="{{ profile["em_reading"] }}" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row py-1">
+            <button type="submit" class="btn btn-success w-25">Absenden</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
