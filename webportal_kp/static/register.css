@@ -1,0 +1,10 @@
+.register-right{
+    background: #f8f9fa;
+    border-top-left-radius: 10% 50%;
+    border-bottom-left-radius: 10% 50%;
+    padding: 3rem 4rem!important;
+}
+
+.register{
+    background: -webkit-linear-gradient(0deg, rgba(34,87,122,1) 0%, rgba(56,163,165,1) 11%, rgba(0,212,255,1) 100%);
+}

@@ -1,45 +1,84 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>Register</title>
-		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-	</head>
-	<body>
-		<div class="register">
-			<h1>Register</h1>
-			<div class="links">
-				<a href="{{ url_for('login') }}">Login</a>
-				<a href="{{ url_for('register') }}">Register</a>
-				<a href="{{ url_for('home') }}">Home</a>
-			</div>
-			<div class="error">{{ error }}</div>
-			<form action="{{ url_for('register') }}" method="post" autocomplete="off">
-				<label for="username"><p>Username</p></label>
-				<input type="text" name="username" placeholder="name used to login with" required>
-				<label for="password"><p>Password</p></label>
-				<input type="password" name="password" placeholder="Password" required>
-				<label for="first_name"><p>First name</p></label>
-				<input type="text" name="first_name" placeholder="your lovely first name" required>
-				<label for="last_name"><p>Last name</p></label>
-				<input type="text" name="last_name" placeholder="your very special last name" required>
-				<label for="email"><p>Email adress</p></label>
-				<input type="email" name="email" placeholder="Email" required>
-				<label for="iban"><p>IBAN</p></label>
-				<input type="text" name="iban" placeholder="Bank details" required>
-				<label for="phone"><p>Phone number</p></label>
-				<input type="text" name="phone" placeholder="tiktok screen" required>
-				<label for="city"><p>City</p></label>
-				<input type="text" name="city" placeholder="Baldurs Gate" required>
-				<label for="zip_code"><p>PLZ</p></label>
-				<input type="text" name="zip_code" placeholder="Baldurs Gate" required>
-				<label for="address"><p>Address</p></label>
-				<input type="text" name="address" placeholder="where are you fapping" required>
-				<label for="em_id"><p>Eletricity meter ID</p></label>
-				<input type="text" name="em_id" placeholder="counts your electrons" required>
-				<input type="submit" value="Register">
-			</form>
-		</div>
-	</body>
-</html>
+{% extends 'layout.html' %}
+
+{% block title %}Register{% endblock %}
+{% block additional_headers %}
+<link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid d-flex align-items-center justify-content-end p-0 m-0 register">
+        <div class="border border-success register-right">
+            <h3 class="p-3">Jetzt Vertrag abschließen</h3>
+            <form action="{ url_for('register')}", method="post" autocomplete="off" class="d-flex flex-column justify-content-center">
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-firstname" class="form-control" placeholder="Vorname" name="first_name">
+                    </div>
+                    <div class="col">
+
+                        <input id="register-lastname" class="form-control" placeholder="Nachname" name="last_name">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-email" class="form-control" placeholder="Email" name="email" type="email">
+                    </div>
+                    <div class="col">
+
+                        <input id="register-tel" class="form-control" placeholder="Telefon" name="phone" type="tel">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-address" class="form-control" placeholder="Adresse" name="address">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-zip" class="form-control" placeholder="Postleitzahl" name="zip_code" type="number">
+                    </div>
+                    <div class="col">
+
+                        <input id="register-city" class="form-control" placeholder="Stadt" name="city">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-iban" class="form-control" placeholder="IBAN" name="iban">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-username" class="form-control" placeholder="Nutzername" name="username">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+
+                        <input id="register-password" class="form-control" type="password" name="password" placeholder="Passwort">
+                    </div>
+                    <div class="col">
+
+                        <input id="register-repeat-pw" class="form-control" type="password" placeholder="Wiederhole Passwort">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <h5>Besitzt bereits einen smarten Stromzähler?</h5>
+                    <div class="col">
+
+                        <input id="register-em-id" class="form-control" placeholder="Hier ID deines Stromzählers eintragen" name="em_id">
+                    </div>
+                </div>
+                <div class="row p-3">
+                    <button type="submit" class="btn btn-success">Vertrag abschließen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
