@@ -180,4 +180,7 @@ def edit_profile():
         return render_template('edit_profile.html', profile=user_data)
     return redirect(url_for('login'))
 
-app.run(debug=True, port=4000)
+if __name__ == "__main__":
+    context = ('cert.pem', 'key.pem')
+    context = ('localhost.crt', 'localhost.key')
+    app.run(host='0.0.0.0', port=4000, debug=True, ssl_context=context)#, ssl_context=context)

@@ -1,8 +1,6 @@
 import datetime
 import logging
-
 import jwt
-import requests
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
@@ -268,4 +266,7 @@ def handle_support_case():
     return render_template("technician.html", case_data=case_data)
 
 
-app.run(debug=True, port=5000)
+if __name__ == "__main__":
+    context = ('cert.pem', 'key.pem')
+    context = ('localhost.crt', 'localhost.key')
+    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=context)#, ssl_context=context)
