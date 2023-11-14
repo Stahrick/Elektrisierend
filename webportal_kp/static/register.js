@@ -17,5 +17,18 @@ const togglePWVisibility = () => {
     })
 }
 
+const compare_pws = () => {
+    if(pw_inputs[0].value !== pw_inputs[1].value) {
+        pw_inputs[0].setCustomValidity("Passwörter sind nicht gleich");
+    }else{
+        pw_inputs[0].setCustomValidity("");
+    }
+}
+
+
 pw_toggle.addEventListener("click", togglePWVisibility)
 pw_toggle2.addEventListener("click", togglePWVisibility)
+
+pw_inputs.forEach((elem) => {
+    elem.addEventListener("input", compare_pws)
+})
