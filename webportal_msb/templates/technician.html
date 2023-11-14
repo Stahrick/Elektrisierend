@@ -23,7 +23,7 @@
                     </div>
                     <div class="col-5 col-sm-6 my-1">
                         <label for="case-opened" class="form-label">Eröffnet am</label>
-                        <div id="case-opened" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["opened"] }}</div>
+                        <div id="case-opened" class="px-2 py-1 border border-primary rounded-1 text-bg-secondary">{{ case_data["opened"].strftime('%d.%m.%Y %H:%M') }}</div>
                     </div>
                 </div>
                 <div class="row d-flex justify-content-between">
@@ -56,7 +56,7 @@
                                 🧑 {{ comment["name"] }}
                             </div>
                             <div class="badge text-bg-success">
-                                {{ comment["time"] }}
+                                {{ comment["time"].strftime('%d.%m.%Y %H:%M')  }}
                             </div>
                         </div>
                         <div>
