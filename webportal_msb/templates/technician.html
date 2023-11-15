@@ -67,13 +67,17 @@
                 </div>
             </div>
         {% else %}
-            <form action="/support-case/", method="get", enctype="application/x-www-form-urlencoded">
-                <div class="mb-3">
-                    <label for="case-id" class="form-label">Support Fall ID</label>
-                    <input name="case-id" id="case-id" type="number" class="form-control" required/>
+            <div class="position-absolute top-50 start-50 translate-middle">
+                <div class="container border border-dark rounded-3 p-3">
+                    <form action="/support-case/", method="get", enctype="application/x-www-form-urlencoded">
+                        <div class="mb-3">
+                            <label for="case-id" class="form-label">Support Fall ID</label>
+                            <input name="case-id" id="case-id" type="number" class="form-control" required/>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Absenden</button>
+                    </form>
                 </div>
-                <button type="submit" class="btn btn-primary">Absenden</button>
-            </form>
+            </div>
         {% endif %}
     </div>
 
