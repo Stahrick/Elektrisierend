@@ -11,26 +11,28 @@
         {% endblock %}
     </head>
 	<body>
-        <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
-            <div class="container-fluid">
-                <a id="" class="navbar-brand" href="{{ url_for('home') }}">
-                    <img src="{{ url_for('static', filename='stromi.png')}}" alt="Firmenlogo" class="rounded-circle">
-                    Strömende Strauß
-                </a>
-                <div class="d-flex">
-                    <ul class="navbar-nav ml-auto d-flex flex-row">
-                        <li class="nav-item p-1">
-                            <a class="nav-link" href="{{ url_for('home') }}">Home</a>
-                        </li>
-                        <li class="nav-item p-1">
-                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-                        </li>
-                    </ul>
+        <div class="container-fluid d-flex flex-column vh-100 p-0">
+            <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+                <div class="container-fluid">
+                    <a id="" class="navbar-brand" href="{{ url_for('home') }}">
+                        <img src="{{ url_for('static', filename='stromi.png')}}" alt="Firmenlogo" class="rounded-circle">
+                        Strömende Strauß
+                    </a>
+                    <div class="d-flex">
+                        <ul class="navbar-nav ml-auto d-flex flex-row">
+                            <li class="nav-item p-1">
+                                <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                            </li>
+                            <li class="nav-item p-1">
+                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+            </nav>
+            <div class="content flex-grow-1 d-flex flex-row">
+                {% block content %}{% endblock %}
             </div>
-        </nav>
-		<div class="content">
-			{% block content %}{% endblock %}
-		</div>
+        </div>
 	</body>
 </html>
