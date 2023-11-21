@@ -3,6 +3,9 @@ import logging
 import jwt
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from uuid import uuid4
+import requests
+from config import kp_url, service_url
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from os import urandom, getenv
@@ -136,6 +139,22 @@ def check_em_id(id):
 def activate_maintenance(id):
     return True
 
+def _create_em(em_id):
+    # TODO put meter into db
+    return True
+
+def create_em():
+    em_id = requests.post(service_url+"/meter/order/", json={}).text
+    if _create_em(em_id):
+        return True   
+    return False
+
+def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str):
+    em_id = create_em() 
+    # TODO creates new MSB Contract with given data  + em_id
+    return True
+
+
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -264,6 +283,26 @@ def handle_support_case():
                       "time": datetime.datetime.now()}]
     }
     return render_template("technician.html", case_data=case_data)
+
+@app.route("/new-contract/", methods=["GET", "POST"])
+def new_contract():
+    cert = request.headers.get('X-Client-Certificate')
+    if cert == "123": 
+        # TODO add real cert of KP
+        if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form:
+            date = request.form['date']
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            phone = request.form['phone']
+            email = request.form['email']
+            iban = request.form['iban']
+            state = request.form['state']
+            city = request.form['city']
+            zip_code = request.form['zip_code']
+            address = request.form['address']
+            if create_contract(date, first_name, last_name, phone, email,  iban, state, city, zip_code, address):
+                return make_response("successful", 200)    
+    return make_response("Unauthorized", 401)
 
 
 if __name__ == "__main__":
