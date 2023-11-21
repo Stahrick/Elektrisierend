@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives import serialization
 from flask import request
 
 from GlobalStorage import list_meters, get_meter
-from Stromzähler.Config import cookie_sign_key
+from Config import cookie_sign_key
 
 import re
 

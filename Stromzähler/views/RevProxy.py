@@ -12,7 +12,7 @@ from flask import Blueprint, make_response, request, redirect, url_for
 
 from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
-from Stromzähler.Config import cookie_sign_key
+from Config import cookie_sign_key
 from security.Decorator import clearance_level_required, device_required, ClearanceLevel
 
 logging.getLogger(__name__)
