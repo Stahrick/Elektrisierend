@@ -40,7 +40,7 @@ def meter_creation():
     uuid = data["uuid"]
     meter = Meter(uuid)
     add_meter(meter)
-    return f"Meter ordered with UUID ({meter.uuid})", 200
+    return f"{meter.uuid}", 200
 
 
 @revproxy.route("/setup/", methods=["POST"])
