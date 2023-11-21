@@ -4,6 +4,10 @@ from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
 from database.InternalDataclasses import Account, Contract
 from dotenv import load_dotenv
+import requests
+from datetime import datetime
+
+from config import msb_url, service_url
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
@@ -45,15 +49,16 @@ def check_register(username,
                     personal_info, 
                     iban, em_id, 
                     ctr_state, ctr_city, 
-                    ctr_zip_code, ctr_address,
+                    ctr_zip_code, ctr_address, date
                     ) -> bool:
     
     #Check if username is already in use, TODO check for the rest of bs
+    print("hallo")
     if db_acc_handler.get_account_by_username(username):
         return False
     #TODO check for em_id?
     #TODO insert current date or what else
-    contract = Contract("date",personal_info,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
+    contract = Contract(date,personal_info,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
     if contract_db:
         if not pw_salt: pw_salt = 123 #NOTE remove when implemented
@@ -104,6 +109,22 @@ def update_contract_data(_id, date = None, personal_info = None, iban = None, em
             return db_acc_handler.update_account_by_id(_id,param)
     return True
 
+def _create_em(em_id):
+    # TODO put meter into db
+    return True
+
+def create_em():
+    em_id = requests.post(service_url+"/meter/order/", json={}, headers={"X-Client-Certificate": "123"}).text
+    if _create_em(em_id):
+        return True   
+    return False
+
+def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
+    response = requests.post("https://localhost:5000/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
+    print(response)
+    if response.status_code == 200:
+        return True
+    return False
 
 @app.route('/login/', methods=['GET','POST'])
 def login():
@@ -133,8 +154,7 @@ def logout():
 def register():
     #{"username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
     print( [i for i in  request.form])
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'email' in request.form and 'iban' in request.form and 'phone' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
-        
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'email' in request.form and 'iban' in request.form and 'phone' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form and 'state' in request.form:
         username = request.form['username']
         password = request.form['password']
         first_name = request.form['first_name']
@@ -146,8 +166,16 @@ def register():
         zip_code = request.form['zip_code']
         address = request.form['address']
         em_id = request.form['em_id']
-        print(iban)
-        if check_register(username, password, first_name, last_name, email, iban, phone, city, zip_code, address, em_id):
+        state = request.form['state']
+        personal_info = "Mutterficker"
+        if not em_id:
+            em_id = create_em()
+            if not em_id:
+                return render_template('register.html', error='error while creating electricity meter, please try again')
+        date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        print("ich bin gekommen \n\n\n")
+        if check_register(username, password, None, first_name, last_name, email, phone, state, city, zip_code, address, personal_info, iban, em_id, state, city, zip_code, address, date):
+            create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:
             return render_template('register.html', error='invalid data')

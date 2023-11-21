@@ -139,18 +139,7 @@ def check_em_id(id):
 def activate_maintenance(id):
     return True
 
-def _create_em(em_id):
-    # TODO put meter into db
-    return True
-
-def create_em():
-    em_id = requests.post(service_url+"/meter/order/", json={}).text
-    if _create_em(em_id):
-        return True   
-    return False
-
-def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str):
-    em_id = create_em() 
+def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str, em_id : str):
     # TODO creates new MSB Contract with given data  + em_id
     return True
 
@@ -289,7 +278,7 @@ def new_contract():
     cert = request.headers.get('X-Client-Certificate')
     if cert == "123": 
         # TODO add real cert of KP
-        if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form:
+        if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             date = request.form['date']
             first_name = request.form['first_name']
             last_name = request.form['last_name']
@@ -300,7 +289,8 @@ def new_contract():
             city = request.form['city']
             zip_code = request.form['zip_code']
             address = request.form['address']
-            if create_contract(date, first_name, last_name, phone, email,  iban, state, city, zip_code, address):
+            em_id = request.form['em_id']
+            if create_contract(date, first_name, last_name, phone, email,  iban, state, city, zip_code, address, em_id):
                 return make_response("successful", 200)    
     return make_response("Unauthorized", 401)
 
