@@ -181,6 +181,22 @@ def register():
             return render_template('register.html', error='invalid data')
     return render_template('register.html')
 
+@app.route('/forgot-password/', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'GET':
+        return render_template('forgot_password.html')
+    elif request.method == 'POST':
+        username = request.form.get("username", "")
+        code = request.form.get("code", "")
+        new_pw = request.form.get("password", "")
+        if "" in {username, code, new_pw}:
+            return render_template('forgot_password.html', username=username, code=code)
+        else:
+            # Always redirect to deny account enumeration
+            if code == "31":
+                # TODO Set new password on account
+                pass
+            return redirect(url_for('login'))
 @app.route('/home/', methods=['GET','POST'])
 def home():
     user_data = check_session(session.get('uuid'))
