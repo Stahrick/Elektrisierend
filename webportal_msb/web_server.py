@@ -196,7 +196,8 @@ def home():
 def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
-        if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
+        if request.method == 'POST':
+            # TODO requested data doesn't fit form data
             # checks if post request with correct data value pairs
             username = request.form['username']
             email = request.form['email']
