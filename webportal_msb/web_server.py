@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives import serialization
 from uuid import uuid4
 import requests
 from config import kp_url, service_url
+from passlib.hash import argon2
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from os import urandom, getenv
@@ -54,8 +55,12 @@ def check_session(uuid):
 def check_login(username, password):
     res = db_acc_handler.get_account_by_username(username)
     if res[0]:
-       if password == res[0]['pw_hash']: #TODO hash
-           return {'uuid': res[0]['_id'], 'role': res[0]['role']}
+        res = res[0]
+        try:
+            if argon2.verify(password,res['pw_hash']):        
+                return {'uuid': res['_id'], 'role': res['role']}
+        except:
+            return None
     return None
 
 def check_register(data):
@@ -65,8 +70,7 @@ def check_register(data):
 # updates account data by given fields, ignores params all if data is given directly
 # TODO please test
 def update_user_data(acc_id, ctr_id,
-                     username=None,
-                     pw_hash=None, pw_salt=None,
+                     username=None, pw_hash=None,
                      first_name=None, last_name=None,
                      email=None, phone=None,
                      acc_city=None, acc_zip_code=None,
@@ -78,7 +82,8 @@ def update_user_data(acc_id, ctr_id,
                      ctr_zip_code=None, ctr_address=None,
                      ctr_data: dict = None,
                      ) -> bool:
-    b1 = update_acc_data(acc_id, username, pw_hash, pw_salt, first_name, last_name, email, phone, acc_city,
+    pw_hash = argon2.hash(pw_hash)
+    b1 = update_acc_data(acc_id, username, pw_hash, first_name, last_name, email, phone, acc_city,
                          acc_zip_code, acc_address, acc_contract_id, acc_data)
     b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,
                               ctr_data)
@@ -87,7 +92,7 @@ def update_user_data(acc_id, ctr_id,
     return False
 
 
-def update_acc_data(_id, username=None, pw_hash=None, pw_salt=None, first_name=None, last_name=None, email=None,
+def update_acc_data(_id, username=None, pw_hash=None, first_name=None, last_name=None, email=None,
                     phone=None, city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
     param = locals()
     if param:
