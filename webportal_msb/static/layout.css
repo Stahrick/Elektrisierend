@@ -26,3 +26,9 @@
 		           rotate(480deg);
 	}
 }
+
+.img-fit {
+	display: block;
+    width: auto;
+    max-height: 100%;
+}
