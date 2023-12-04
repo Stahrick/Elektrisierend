@@ -6,6 +6,8 @@ from database.InternalDataclasses import Account, Contract
 from dotenv import load_dotenv
 import requests
 from datetime import datetime
+import ssl
+import werkzeug.serving
 
 from config import msb_url, service_url
 
@@ -22,6 +24,32 @@ db_ctr_handler = ContractHandler(username,pw,dbname)
 
 #todo: login, register, logout logic; fingerprint, css, database, password requirements
 #support, "email confirm"
+
+class PeerCertWSGIRequestHandler( werkzeug.serving.WSGIRequestHandler ):
+    """
+    We subclass this class so that we can gain access to the connection
+    property. self.connection is the underlying client socket. When a TLS
+    connection is established, the underlying socket is an instance of
+    SSLSocket, which in turn exposes the getpeercert() method.
+    The output from that method is what we want to make available elsewhere
+    in the application.
+    """
+    def make_environ(self):
+        """
+        The superclass method develops the environ hash that eventually
+        forms part of the Flask request object.
+        We allow the superclass method to run first, then we insert the
+        peer certificate into the hash. That exposes it to us later in
+        the request variable that Flask provides
+        """
+        environ = super(PeerCertWSGIRequestHandler, self).make_environ()
+        x509_binary = self.connection.getpeercert(True)
+        if x509_binary:
+            x509 = OpenSSL.crypto.load_certificate( OpenSSL.crypto.FILETYPE_ASN1, x509_binary )
+            environ['peercert'] = x509
+            return environ
+        environ['peercert'] = None
+        return environ
 
 def check_session(uuid):
     
@@ -211,4 +239,7 @@ def edit_profile():
 if __name__ == "__main__":
     context = ('cert.pem', 'key.pem')
     context = ('localhost.crt', 'localhost.key')
+    ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=context[0] )
+    ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
+    ssl_context.verify_mode = ssl.CERT_OPTIONAL
     app.run(host='0.0.0.0', port=4000, debug=True, ssl_context=context)#, ssl_context=context)
