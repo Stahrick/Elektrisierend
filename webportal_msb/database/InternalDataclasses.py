@@ -13,6 +13,9 @@ class Contract:
     zip_code : int
     address : str
 
+    def __post_init__(self):
+        self._id = str(uuid4())
+
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
 
@@ -24,6 +27,9 @@ class Em:
     em_cost : float
     hist_id : str
 
+    def __post_init__(self):
+        self._id = str(uuid4())
+
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
 
@@ -31,6 +37,9 @@ class Em:
 class HistData:
     _id : str = field(init = False, repr = False)
     data : list
+
+    def __post_init__(self):
+        self._id = str(uuid4())
 
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
@@ -41,7 +50,6 @@ class Account:
     role : str
     username : str 
     pw_hash : int
-    pw_salt : int
     first_name : str
     last_name : str
     email : str 
@@ -62,3 +70,21 @@ class Account:
 
     #moved em_reading and em_id to Contract
 
+@dataclass
+class Ticket:
+    _id: str = field(init = False, repr = False)
+    title: str
+    opened: str
+    status: str
+    device_uuid: str
+    description: str
+    opened_by: str
+    comments : list
+
+    def __post_init__(self):
+        self._id = str(uuid4())
+
+
+    def dict(self):
+        return {k: str(v) for k, v in asdict(self).items()}
+    

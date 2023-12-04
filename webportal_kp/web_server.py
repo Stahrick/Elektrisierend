@@ -2,12 +2,15 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
+from database.EmDBkp import EmHandler
 from database.InternalDataclasses import Account, Contract
 from dotenv import load_dotenv
 import requests
 from datetime import datetime
 import ssl
 import werkzeug.serving
+from passlib.hash import argon2
+from password_validation import PasswordPolicy
 
 from config import msb_url, service_url
 
@@ -21,8 +24,10 @@ username = getenv('StromiUser')
 dbname = getenv('StromiDB')
 db_acc_handler = AccountHandler(username,pw,dbname)
 db_ctr_handler = ContractHandler(username,pw,dbname)
+db_elmo_handler = EmHandler(username, pw, dbname)
+pw_policy = PasswordPolicy(lowercase=12,uppercase=1,symbols=1,numbers=1,whitespace=1,min_length=16)
 
-#todo: login, register, logout logic; fingerprint, css, database, password requirements
+#TODO: login, register, logout logic; fingerprint, css, database, password requirements
 #support, "email confirm"
 
 class PeerCertWSGIRequestHandler( werkzeug.serving.WSGIRequestHandler ):
@@ -52,7 +57,6 @@ class PeerCertWSGIRequestHandler( werkzeug.serving.WSGIRequestHandler ):
         return environ
 
 def check_session(uuid):
-    
     #checks if uuid exists and is valid returns account data
     if uuid == None:
         return False
@@ -64,12 +68,16 @@ def check_session(uuid):
 def check_login(username, password):
     res = db_acc_handler.get_account_by_username(username)
     if res and res[0]:
-       if password == res[0]['pw_hash']: #TODO hash
-           return {'_id': res[0]['_id']}
+        res = res[0]
+        print(res)
+        try:
+            if argon2.verify(password,res['pw_hash']):
+                return {'_id': res['_id']}
+        except:
+            return None
     return None
 
-def check_register(username, 
-                    pw_hash, pw_salt, 
+def check_register(username, pw, 
                     first_name, last_name, 
                     email , phone , 
                     acc_state, acc_city , acc_zip_code, 
@@ -80,24 +88,27 @@ def check_register(username,
                     ctr_zip_code, ctr_address, date
                     ) -> bool:
     
-    #Check if username is already in use, TODO check for the rest of bs
+    #Check if username is already in use, or if em_id is already in used by another contract
+    if not pw_policy.validate(pw):
+        missed_reqs = pw_policy.test_password(pw)#TODO how do i get this out of here
+        return False
     print("hallo")
-    if db_acc_handler.get_account_by_username(username):
+    if db_acc_handler.get_account_by_username(username) or db_elmo_handler.get_Em_by_id(em_id):
         return False
     #TODO check for em_id?
     #TODO insert current date or what else
     contract = Contract(date,personal_info,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
+    a2pw = argon2.hash(pw)
     if contract_db:
-        if not pw_salt: pw_salt = 123 #NOTE remove when implemented
-        acc = Account(username,pw_hash, pw_salt,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['_id'])
+        acc = Account(username,a2pw,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['id'])
         acc_db = db_acc_handler.create_account(acc)
         if acc_db:
             return True #NOTE return acc_db maybe?
+    return False
     
 def update_user_data(acc_id, ctr_id,
-                     username  = None, 
-                     pw_hash = None, pw_salt = None, 
+                     username  = None, pw = None,
                      first_name = None, last_name = None, 
                      email  = None, phone  = None, 
                      acc_state = None,
@@ -110,12 +121,17 @@ def update_user_data(acc_id, ctr_id,
                      ctr_zip_code = None, ctr_address = None, 
                      ctr_data : dict = None,
                      ) -> bool:
-    b1 = update_acc_data(acc_id, username, pw_hash, pw_salt, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
+    if pw:
+        if not pw_policy.validate(pw):
+            missed_reqs = pw_policy.test_password(pw)#TODO how do i get this out of here
+            return False
+    pw = argon2.hash(pw)#should only be accessible if already authenticated so np
+    b1 = update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
     b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
     if b1 and b2:
         return True
     return False
-def update_acc_data(_id,username  = None, pw_hash = None, pw_salt = None, first_name = None, last_name = None, email  = None, phone  = None, state = None, city  = None, zip_code = None, address  = None, contract_id = None, data : dict = None) -> bool:
+def update_acc_data(_id,username  = None, pw = None, first_name = None, last_name = None, email  = None, phone  = None, state = None, city  = None, zip_code = None, address  = None, contract_id = None, data : dict = None) -> bool:
     param = locals()
     if param:
         del(param['_id'])
@@ -202,13 +218,29 @@ def register():
                 return render_template('register.html', error='error while creating electricity meter, please try again')
         date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         print("ich bin gekommen \n\n\n")
-        if check_register(username, password, None, first_name, last_name, email, phone, state, city, zip_code, address, personal_info, iban, em_id, state, city, zip_code, address, date):
+        if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, personal_info, iban, em_id, state, city, zip_code, address, date):
             create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:
             return render_template('register.html', error='invalid data')
     return render_template('register.html')
 
+@app.route('/forgot-password/', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'GET':
+        return render_template('forgot_password.html')
+    elif request.method == 'POST':
+        username = request.form.get("username", "")
+        code = request.form.get("code", "")
+        new_pw = request.form.get("password", "")
+        if "" in {username, code, new_pw}:
+            return render_template('forgot_password.html', username=username, code=code)
+        else:
+            # Always redirect to deny account enumeration
+            if code == "31":
+                # TODO Set new password on account
+                pass
+            return redirect(url_for('login'))
 @app.route('/home/', methods=['GET','POST'])
 def home():
     user_data = check_session(session.get('uuid'))
