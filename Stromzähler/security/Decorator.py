@@ -30,9 +30,10 @@ def clearance_level_required(level):
             uuid = str(kwargs.get("device_uuid"))
             if level == ClearanceLevel.LOW:
                 return func(*args, **kwargs)
-            elif level == ClearanceLevel.MEDIUM and request.headers.get('X-Client-Certificate'):
+            elif level == ClearanceLevel.MEDIUM and "peercert" in request.environ:
                 # Perform certificate verification logic here
-                cert = request.headers.get('X-Client-Certificate')
+                cert = request.environ["peercert"]
+                # TODO implementori
                 return func(*args, **kwargs)
             elif level == ClearanceLevel.HIGH and ("maintenance-"+uuid) in request.cookies:
                 cookie = request.cookies["maintenance-"+uuid]
