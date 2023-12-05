@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import threading
+from urllib.parse import urlparse, parse_qs, urlencode
 
 import jwt
 from cryptography.hazmat.backends import default_backend
@@ -36,9 +37,10 @@ sessions_in_use = {}
 def meter_creation():
     data = request.json
     if "uuid" not in data:
-        return "No uuid provided", 400
-    uuid = data["uuid"]
-    meter = Meter(uuid)
+        meter = Meter()
+    else:
+        uuid = data["uuid"]
+        meter = Meter(uuid)
     add_meter(meter)
     return f"{meter.uuid}", 200
 
@@ -81,16 +83,19 @@ def meter_maintenance_activation(device_uuid, device: Meter):
         return "Auth code was already redeemed", 400
     sessions_in_use[temp_code["user_id"], temp_code["device_uuid"]] = temp_code["exp"]
 
-    # TODO check re url
+    # TODO check re url and when not acceptable, then fallback to default url
     redirect_url = request.args.get('next') or request.referrer
     if not redirect_url or not re.compile("^https?://(localhost|127\\.0\\.0\\.1):5000/").match(redirect_url):
         redirect_url = url_for("service-worker.index")
-
+    red_url_parsed = urlparse(redirect_url)
+    red_url_params = parse_qs(red_url_parsed.query)
     # Create meter cookie
     payload = {"iss": "smartmeter", "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5),
                "id": temp_code["user_id"], "device_uuid": temp_code["device_uuid"]}
     cookie = jwt.encode(payload, cookie_sign_key, algorithm="HS512")
     logging.info(f"Activated maintenance for {payload["id"]} on meter {device_uuid}")
+    red_url_params["msg"] = "active"
+    modified_query = urlencode(red_url_params, doseq=True)
     resp = make_response(redirect(redirect_url))
     resp.set_cookie("maintenance-" + str(device_uuid), cookie, secure=True, httponly=True, expires=payload["exp"],
                     max_age=datetime.timedelta(minutes=5))
