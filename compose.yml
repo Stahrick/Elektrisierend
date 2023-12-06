@@ -3,6 +3,8 @@ services:
   meter:
     build: stromzähler/
     restart: unless-stopped
+    volumes:
+      - ./app/save_meters.json:./stromzähler/save_meters.json
     networks:
       stromi_net:
   msb:
@@ -29,5 +31,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    networks:
+      stromi_net:
 networks:
   stromi_net:
