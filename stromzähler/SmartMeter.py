@@ -48,7 +48,7 @@ class Meter:
         privkey_path, csr = create_X509_csr(self.uuid)
         req_data = {"uuid": self.uuid, "code": code, "meter-cert": csr}
         try:
-            r = requests.post(f"{registration_config["url"]}/register/", json=req_data)
+            r = requests.post(f"{registration_config['url']}/register/", json=req_data)
             if r.status_code != 200:
                 self.configuration["own_cert"] = None
                 return make_response("Meter registration failed", 406)
@@ -103,7 +103,7 @@ class Meter:
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
         self.meter += passed_sec * amount_added
         # TODO add verify= to check server cert
-        requests.post(f"{self.configuration["maintainer_url"]}/data/",
+        requests.post(f"{self.configuration['maintainer_url']}/data/",
                       json={"uuid": self.uuid, "consumption": self.meter},
                       cert=(self.configuration["own_cert"], self.configuration["priv_key"]))
         logging.info(f"SEND meter data {self.meter} Kwh")

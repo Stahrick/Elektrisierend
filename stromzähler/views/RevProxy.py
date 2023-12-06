@@ -79,7 +79,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     if temp_code["device_uuid"] != str(device_uuid):
         return "Problem with provided device uuid", 400
     if (temp_code["user_id"], temp_code["device_uuid"]) in sessions_in_use:
-        logging.error(f"Duplicate auth code redemption for {(temp_code["user_id"], temp_code["device_uuid"])}")
+        logging.error(f"Duplicate auth code redemption for {(temp_code['user_id'], temp_code['device_uuid'])}")
         return "Auth code was already redeemed", 400
     sessions_in_use[temp_code["user_id"], temp_code["device_uuid"]] = temp_code["exp"]
 
@@ -93,7 +93,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     payload = {"iss": "smartmeter", "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5),
                "id": temp_code["user_id"], "device_uuid": temp_code["device_uuid"]}
     cookie = jwt.encode(payload, cookie_sign_key, algorithm="HS512")
-    logging.info(f"Activated maintenance for {payload["id"]} on meter {device_uuid}")
+    logging.info(f"Activated maintenance for {payload['id']} on meter {device_uuid}")
     red_url_params["msg"] = "active"
     modified_query = urlencode(red_url_params, doseq=True)
     resp = make_response(redirect(redirect_url))
