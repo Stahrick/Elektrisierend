@@ -57,7 +57,7 @@ class Meter:
                 self.configuration["own_cert"] = None
                 return make_response("Meter registration failed", 406)
 
-            cert_path = str(Path(__file__).parent / f"MeterCerts/{self.uuid}.pem")
+            cert_path = str(Path(__file__).parent / f"metercerts/{self.uuid}.pem")
             with open(cert_path, "w") as f:
                 f.write(res["meter_cert"])
             self.configuration["own_cert"] = cert_path
