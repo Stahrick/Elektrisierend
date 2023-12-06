@@ -73,7 +73,7 @@ def check_login(username, password):
         try:
             if argon2.verify(password,res['pw_hash']):
                 return {'_id': res['_id']}
-        except:
+        except Exception as e:
             return None
     return None
 
