@@ -4,12 +4,13 @@ from os import getenv
 
 load_dotenv()
 ip = getenv('DBIP')
+port = getenv('DBPORT')
 class MoronDB:
 
    client = None
    db = None
 
-   def __init__(self, port, username, password,dbname):
+   def __init__(self, username, password,dbname):
       uri =  f"mongodb://{username}:{password}@{ip}:{port}/{dbname}?authSource=admin"
       self.client = MongoClient(uri) 
       self.db = self.client[dbname]

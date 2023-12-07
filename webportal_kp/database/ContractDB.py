@@ -6,7 +6,7 @@ class ContractHandler:
     collection = 'contracts'
 
     def __init__(self, username, password, dbname, collection = 'contracts'):
-        self.db = MoronDB(27018,username,password,dbname)
+        self.db = MoronDB(username,password,dbname)
         if collection:
             self.collection = collection
         print()
@@ -14,6 +14,7 @@ class ContractHandler:
         try:
             return self.db.insert_item(collection = self.collection, data= c.dict())
         except Exception as e:
+            print(e)
             return False
     
     def delete_contract_by_id(self, id : int):

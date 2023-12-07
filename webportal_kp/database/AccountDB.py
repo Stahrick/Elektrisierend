@@ -6,7 +6,7 @@ class AccountHandler:
     collection = 'accounts' 
 
     def __init__(self, username, password, dbname, collection = 'accounts'):
-        self.db = MoronDB(27018,username,password,dbname)
+        self.db = MoronDB(username,password,dbname)
         if collection:
             self.collection = collection
         print()
