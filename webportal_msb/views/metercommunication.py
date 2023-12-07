@@ -17,6 +17,7 @@ def register_meter():
 
 @meter.route("/data/", methods=["POST"])
 def get_meter_data():
+    # TODO in die Verbrauchsdatenbank rein 
     data = request.json
     uuid = data["uuid"]
     consumption_data = data["consumption"]
