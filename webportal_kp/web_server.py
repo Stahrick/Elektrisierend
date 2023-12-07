@@ -167,7 +167,7 @@ def create_em():
     return False
 
 def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post("https://localhost:5000/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
+    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
     print(response)
     if response.status_code == 200:
         return True
