@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from uuid import uuid4
 import requests
-from config import kp_url, service_url
+from config import kp_url, meter_url
 from passlib.hash import argon2
 
 import ssl
@@ -285,7 +285,7 @@ def maintenance():
                     logging.info(f"User [{cookie_data['user_id']}] activated maintenance for "
                                  f"device [{cookie_data['device_uuid']}] connected to support case [{case_id}]")
                     return redirect(
-                        f"http://localhost:25565/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
+                        f"{meter_url}/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
     return redirect(url_for('home') + '?msg=invalid')
 
 

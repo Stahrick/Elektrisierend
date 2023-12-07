@@ -13,7 +13,7 @@ from flask import Blueprint, make_response, request, redirect, url_for
 
 from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
-from Config import cookie_sign_key
+from Config import COOKIE_SIGN_KEY
 from security.Decorator import clearance_level_required, device_required, ClearanceLevel
 
 logging.getLogger(__name__)
@@ -92,7 +92,7 @@ def meter_maintenance_activation(device_uuid, device: Meter):
     # Create meter cookie
     payload = {"iss": "smartmeter", "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5),
                "id": temp_code["user_id"], "device_uuid": temp_code["device_uuid"]}
-    cookie = jwt.encode(payload, cookie_sign_key, algorithm="HS512")
+    cookie = jwt.encode(payload, COOKIE_SIGN_KEY, algorithm="HS512")
     logging.info(f"Activated maintenance for {payload['id']} on meter {device_uuid}")
     red_url_params["msg"] = "active"
     modified_query = urlencode(red_url_params, doseq=True)
