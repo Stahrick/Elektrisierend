@@ -14,7 +14,7 @@ in_transit_mails = []
 
 @management.route("/", methods=["GET"])
 def index():
-    return render_template("management.html", meter_list=list_meters())
+    return render_template("Management.html", meter_list=list_meters())
 
 
 @management.route("/list/", methods=["GET"])
