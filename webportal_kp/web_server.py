@@ -274,4 +274,4 @@ if __name__ == "__main__":
     ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=context[0] )
     ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
-    app.run(host='0.0.0.0', port=4000, debug=True, ssl_context=context)#, ssl_context=context)
+    app.run(host='0.0.0.0', port=4000, debug=True, ssl_context=context)

@@ -5,6 +5,7 @@ import OpenSSL
 from flask import Flask
 from os.path import exists
 from pathlib import Path
+import werkzeug.serving
 
 import views.RevProxy
 from views.ServiceWorker import management
@@ -16,7 +17,7 @@ import logging
 import atexit
 import threading
 
-class PeerCertWSGIRequestHandler( werkzeug.serving.WSGIRequestHandler ):
+class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler ):
     """
     We subclass this class so that we can gain access to the connection
     property. self.connection is the underlying client socket. When a TLS
@@ -36,7 +37,7 @@ class PeerCertWSGIRequestHandler( werkzeug.serving.WSGIRequestHandler ):
         environ = super(PeerCertWSGIRequestHandler, self).make_environ()
         x509_binary = self.connection.getpeercert(True)
         if x509_binary:
-            x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, x509_binary )
+            x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, x509_binary)
             environ['peercert'] = x509
             return environ
         environ['peercert'] = None
@@ -77,8 +78,9 @@ cleaner_thread.daemon = True
 cleaner_thread.start()
 start_server()
 
-context = ('localhost.crt', 'localhost.key')
-ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=context[0] )
-ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None )
-ssl_context.verify_mode = ssl.CERT_OPTIONAL
-app.run(host='0.0.0.0', port=25565, debug=True, ssl_context=context)
+if __name__ == "__main__":
+    context = ('localhost.crt', 'localhost.key')
+    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=context[0])
+    ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None )
+    ssl_context.verify_mode = ssl.CERT_OPTIONAL
+    app.run(host='0.0.0.0', port=25565, debug=True, ssl_context=context)
