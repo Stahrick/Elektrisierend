@@ -5,4 +5,4 @@ COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 COPY ./ ./
 RUN chmod +x /app/web_server.py
-CMD [ "python", "web_server.py"]
+CMD [ "uwsgi", "--socket", "0.0.0.0:5000", "--protocol=http", "-w", "wsgi:app"]
