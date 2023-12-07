@@ -4,34 +4,37 @@ services:
     build: stromzähler/
     restart: unless-stopped
     volumes:
-      - ./app/save_meters.json:./stromzähler/save_meters.json
+      - ./meter_data/save_meters.json:/app/save_meters.json
     networks:
       stromi_net:
   msb:
     build: ./webportal_msb/
     restart: unless-stopped
     env_file: .env
-    depends_on:
-      - mongo
     networks:
       stromi_net:
+      mongo_net:
   kp:
     build: ./webportal_kp/
     restart: unless-stopped
     env_file: .env
-    depends_on:
-      - mongo
     networks:
       stromi_net:
+      mongo_net:
   nginx:
-    image: nginx:latest
-    container_name: production_nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '4000:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
     networks:
       stromi_net:
 networks:
   stromi_net:
+  mongo_net:
+    name: mongo_net
+    external: true
