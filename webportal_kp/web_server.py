@@ -343,7 +343,14 @@ def reset_password():
 def home():
     user_data = check_session(session.get('uuid'))
     if user_data:
-        return render_template('home.html')
+        ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
+        print(ctr)
+        print()
+        em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
+        print(em)
+        print()
+        hist_data = get_hist_data(ctr['em_id'])['data']
+        return render_template('home.html',  h_data=hist_data, em=em, e_tips=energiespartipps)
     return redirect(url_for('login'))
 
 
