@@ -236,13 +236,11 @@ def home():
 def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
-        if request.method == 'POST':
+        if request.method == 'POST' and request.form:
+            for form_data in request.form:
+                pass
             # TODO requested data doesn't fit form data
             # checks if post request with correct data value pairs
-            username = request.form['username']
-            email = request.form['email']
-            phone = request.form['phone']
-            iban = request.form['iban']
             if update_user_data(user_data['_id'], username=username, email=email, phone=phone):
                 # trys to update database and redirects to profile if it did
                 # updates values for account that owns the cookie
