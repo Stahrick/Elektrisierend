@@ -12,7 +12,7 @@ from views.ServiceWorker import management
 from views.RevProxy import meter_management
 from GlobalStorage import export_meters, import_meters
 from SmartMeter import Meter
-from Config import mycert
+from Config import mycert, root_ca
 
 import logging
 import atexit
@@ -81,7 +81,7 @@ start_server()
 
 if __name__ == "__main__":
     context = mycert
-    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile='RootCA.crt')
+    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=root_ca)
     ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None)
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
     app.run(host='0.0.0.0', port=25565, debug=True, ssl_context=context, request_handler=PeerCertWSGIRequestHandler)
