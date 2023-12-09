@@ -3,12 +3,14 @@ const meter_selection = document.getElementById("meter_selection");
 
 const toastLive = document.getElementById('liveToast')
 
+let base_url = window.location.origin;
 let url_prefix = "/service-worker"
 let meter_prefix = "/meter"
 
 const send_api_request = (url, method, payload, callbackfunc) => {
     let xhr = new XMLHttpRequest();
-    xhr.open(method, url, true);
+    let complete_url = `${base_url}${url}`
+    xhr.open(method, complete_url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     if(method == "POST") {
         xhr.send(payload);

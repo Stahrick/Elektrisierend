@@ -54,13 +54,19 @@
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-meter-uuid" class="form-label">Zählernummer</label>
-                                <input class="form-control" id="contract-meter-uuid" placeholder="{{ profile["em_id"] }}" disabled>
+                                <input class="form-control" id="contract-meter-uuid" placeholder="{{ em["_id"] }}" disabled>
                             </div>
                         </div>
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-meter-consumption" class="form-label">Zählerstand</label>
-                                <input class="form-control" id="contract-meter-consumption" placeholder="{{ profile["em_reading"] }}" disabled>
+                                <input class="form-control" id="contract-meter-consumption" placeholder="{{ em["em_consumption"] }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-historic-data" class="form-label">Historischer Verbrauch</label>
+                                <input class="form-control" id="contract-meter-hist-data" placeholder="{{ h_data["data"] }}" disabled>
                             </div>
                         </div>
                     </div>
