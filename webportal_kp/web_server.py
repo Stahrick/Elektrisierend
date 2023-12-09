@@ -322,13 +322,13 @@ def reset_password():
         username = request.form.get("username", "")
         code = request.form.get("code", "")
         new_pw = request.form.get("password", "")
-        new_pw = argon2.hash(new_pw)
         if "" in {username, code, new_pw}:
             return render_template('forgot_password.html', username=username, code=code)
         else:
             # Always redirect to deny account enumeration
             if code == "31":
                 if pw_policy.validate(pw):
+                    new_pw = argon2.hash(new_pw)
                     # TODO Set new password on account
                     pass
             return redirect(url_for('login'))
