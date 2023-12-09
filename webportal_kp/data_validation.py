@@ -6,7 +6,7 @@ class DataValidator:
         if not isinstance(name, str):
             return False
         try:
-            if not re.match(r"^[a-zA-Z]{2,}$", name):
+            if not re.match(r"^[a-zA-ZßäöüÄÖÜ]{2,}$", name):
                 return False
         except re.error as e:
             return False
@@ -25,7 +25,7 @@ class DataValidator:
         if not isinstance(email, str):
             return False
         try:
-            if not re.match(r"^[a-zA-Z0-9]+([._+-][a-zA-Z0-9]+)*@[0-9a-zA-Z]+.[a-zA-Z]{2,4}+([.][a-zA-Z]{2,3})?$", email):
+            if not re.match(r"^[a-zA-Z0-9ßäöüÄÖÜ]+([._+-][a-zA-Z0-9ßäöüÄÖÜ]+)*@[0-9a-zA-ZßäöüÄÖÜ]+.[a-zA-ZßäöüÄÖÜ]{2,4}+([.][a-zA-ZßäöüÄÖÜ]{2,3})?$", email):
                 return False
         except re.error as e:
             return False
@@ -55,7 +55,7 @@ class DataValidator:
         if not isinstance(address, str):
             return False
         try:
-            if not re.match(r"^([a-zA-Z]{2,})((-([a-zA-Z]{2,}))|([a-zA-Z]{2,}))*\s*(\.|\s)\s*[0-9]{1,4}[a-z]?$", address):
+            if not re.match(r"^([a-zA-ZßäöüÄÖÜ]{2,})(-?[a-zA-ZßäöüÄÖÜ]{2,})*\s*(\.|\s)\s*[0-9]{1,4}[a-z]?$", address):
                 return False
         except re.error as e:
             return False

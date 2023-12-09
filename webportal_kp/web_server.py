@@ -109,7 +109,7 @@ def check_register(username, pw,
         invalid_data.append("Invalid address")
     if not DataValidator.is_valid_iban(iban):
         invalid_data.append("Invalid iban")
-    if not DataValidator.is_valid_em_id(em_id):
+    if len(em_id) > 0 and not DataValidator.is_valid_em_id(em_id):
         invalid_data.append("Invalid meter id")
     if not DataValidator.is_valid_phone_number(phone):
         invalid_data.append("Invalid phone number")
