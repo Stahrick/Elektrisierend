@@ -15,6 +15,7 @@ from uuid import uuid4
 
 from security.Certificate import create_X509_csr
 from GlobalStorage import remove_meter, add_meter
+from config import root_ca as ROOT_CA
 
 logging.getLogger(__name__)
 
@@ -42,19 +43,21 @@ class Meter:
     def setup_meter(self, registration_config):
         # Check uuid in registration_code with device uuid
         if self.uuid != registration_config["uuid"]:
-            logging.info(f"Invalid registration config provided for device({self.uuid}): {registration_config}")
+            logging.warning(f"Invalid registration config provided for device({self.uuid}): {registration_config}")
             return make_response("Invalid registration code provided", 400)
         code = registration_config["code"]
         privkey_path, csr = create_X509_csr(self.uuid)
         req_data = {"uuid": self.uuid, "code": code, "meter-cert": csr}
         try:
-            r = requests.post(f"{registration_config['url']}/register/", json=req_data, verify='RootCA.crt')
+            r = requests.post(f"{registration_config['url']}/register/", json=req_data, verify=ROOT_CA)
             if r.status_code != 200:
                 self.configuration["own_cert"] = None
+                logging.warning(f"Meter[{self.uuid}] setup failed by invalid response code[{r.status_code}]")
                 return make_response("Meter registration failed", 406)
             res = r.json()
             if "meter_cert" not in res:
                 self.configuration["own_cert"] = None
+                logging.warning(f"Meter[{self.uuid}] setup failed because \'meter_cert\' not in response from msb")
                 return make_response("Meter registration failed", 406)
 
             cert_path = str(Path(__file__).parent / f"metercerts/{self.uuid}.pem")
@@ -63,6 +66,7 @@ class Meter:
             self.configuration["own_cert"] = cert_path
             self.configuration["priv_key"] = privkey_path
         except (requests.exceptions.InvalidSchema, requests.exceptions.ConnectionError) as e:
+            logging.error(f"Setup of meter[{self.uuid}] failed with exception: {e}")
             return make_response("Meter registration failed", 406)
         self.meter = random.randrange(0, 50)
         self.last_update = datetime.now()
@@ -77,7 +81,7 @@ class Meter:
         logging.info(f"SET meter to {self.meter}")
         return make_response(f"Set consumption to {self.meter}", 200)
 
-    #@check_setup_complete
+    @check_setup_complete
     def restart(self):
         # Restart device
         def add_again(): add_meter(self)
@@ -96,8 +100,6 @@ class Meter:
     @check_setup_complete
     def send_meter(self):
         global average_kwh_per_sec
-        # if self.configuration["maintainer_url"] is None:
-        #    return
         cur_time = datetime.now()
         passed_sec = (cur_time - self.last_update).total_seconds()
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
@@ -106,7 +108,7 @@ class Meter:
         try:
             requests.post(f"{self.configuration['maintainer_url']}/data/",
                           json={"uuid": self.uuid, "consumption": self.meter},
-                          cert=(self.configuration["own_cert"], self.configuration["priv_key"]), verify='RootCA.crt')
+                          cert=(self.configuration["own_cert"], self.configuration["priv_key"]), verify=ROOT_CA)
         except Exception as e:
             logging.error(f"Failed to send data with exception {e}")
             return
