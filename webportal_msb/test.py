@@ -2,20 +2,21 @@ from unittest import TestCase
 from unittest.mock import patch, Mock
 import web_server
 import api_requests
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 class API_TEST(TestCase):
-    @patch('requests.post')
+    @patch('os.urandom')
     @patch('datetime.datetime')
-    def test_send_registration_mail(self, mock_datetime, mock_post):
-        api_requests.send_registration_mail('123')
+    @patch('requests.post')
+    def test_send_registration_mail(self, mock_post, mock_datetime, mock_urandom):
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_now = datetime(2023, 12, 9, 12, 0, 0)  # Set your desired datetime
-
-        # Set the return value of datetime.now() to the mock datetime
-        mock_datetime.now.return_value = mock_now
-        mock_datetime.timedelta = datetime.timedelta(days=2)
-        # Set the return value of requests.post to the mock response
         mock_post.return_value = mock_response
-        mock_post.assert_called_with(url='https://localhost:25565/service-worker/receive-mails', json=[['Registration-Code for meter[123] installation', 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtc2IiLCJhdWQiOiIxMjMiLCJleHAiOjE3MDIzMDU5MzEsInV1aWQiOiIxMjMiLCJjb2RlIjoiQUM4RmdFMnd2VzNubFE9PSIsInVybCI6Imh0dHA6Ly8vbWV0ZXIifQ.AE2Elf70QgQ_Cs48xUVfwwyaWkWN0liImSWxCa_2V7QPTxhjKsRck_vFsbkrIrI6RPgC5NmOCng0htZu7dU1tRfsMu5F_ubrIKcx4pR-YYVuucKIpBCOah6TbhAg6u6y2ECCWsALX8AlSrZjc8i1QEk7lhzZWiCvmMSMEDZTdYNWZKJfgWWySoe2MLQOXiEzFzwtw-hHSCQrp8eLbzsrS2fHJfJN1QnsQZh2-v0L1GdMaFxFY-niylCcJVi5B3oduQVLthq8Ac30QaeGv0sVwA49JWNSkphOPoE7B9Wvc5pO82RHIvkQsVJ2Qfd_oi0XREBvbuINeomsucALttDLf88j_tfn6fe4f2c8r_F-r-7Dpmq6miV9O2ETotQAoPIe3z6kv5HNWX9ccJ-CIhu-XVIKAAXnr23jdrTLpnTaex1lumherE0muYopXGYNKL3809MeGih2NOmFDnWLvyTNEQsAOuzr-13BN7SUwUgpfFZvvKa7vrZZDwbIFy5yjtbhhuParBUUEXYKvzMUY9L0jlj5y_GubdujvWdBFTYi12YEWf3eASdRc3W3XrxLNZ9Avbu3yv0AYmA2br1LlXhhSnE90HRPPrl-2YLO6lqKfav2NtK-74sDuUbexryjL1HI8ItO2HXPewaXm-R26wnr3X1fVNXRsvX0SyCWR5JoCxM']])
+
+        mock_now = datetime(2023, 12, 9, 12, 0, 0, tzinfo=timezone.utc)
+        mock_datetime.now.return_value = mock_now
+        mock_datetime.timedelta = timedelta(days=2)
+
+        mock_urandom.return_value = b'\x00'*10
+        api_requests.send_registration_mail('123')
+        mock_post.assert_called_with('https://localhost:25565/service-worker/receive-mails', json=[['Registration-Code for meter[123] installation', 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtc2IiLCJhdWQiOiIxMjMiLCJleHAiOjE3MDIyOTYwMDAsInV1aWQiOiIxMjMiLCJjb2RlIjoiQUFBQUFBQUFBQUFBQUE9PSIsInVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMC9tZXRlciJ9.vWcc6KNy4pI_I1ZilSSOC_JJRtGGAWzlzxifWQmD0K1FR32i2lHulceMxo_0h_pikbBZnyOCtzZJEeqHSPxwp9FzmB8_nCdo7i8XAD4WZ0mxRjbcy28ZYlvwiJg64xdJPa-BGMrk3dJ6VsN94KekXgew2kA2puk--EOenxrsqPzF8tunKRad9oRb8uz9aq12_9VFDbm-K4P9hSgnt-R9X8r_aGm1W7FfoaKYjKtFSN63JNBTFLDXXpQCdb1J2-1eHsZq4etB0VFgH-S-BBjjtnIOhafqk0Wl2xAKuVzDfnadOKLPRSAYbJErZkPoH_DH2PTwCscuoEjVsWyRBOPxvDJ8o75jPpwYXGzJARVmW_VifQzRG9c_oZnoSinIP9o83FAd9NMzxi6HiJMQGE5E6qnUkhTYurHnW3skXSUfl7RI2XbWprVf0ImjrrrkCMMGy9x0SObZz3aiGAhs3R9rrIlB0_IArDK9E299CucFyufC6BUcQWyN6BiuS7XT4JbNWdbAUHA0v-BEoi9H7FmhSIsOM45UZEy6F6vjBmWg8-Ls8JuyyV1mWboOPbKcHVQGJrubezakw99VXn5Gm6xb5wHURr9FB7KWRe-T0TOqU7cQENvghVR-jIY4k7s0I7SpDxz8u-ZaApEdOcFzhiw6IlQtqpZB_KuuKDKz1tF2J50']], cert=('localhost.crt', 'localhost.key'), verify='RootCA.crt')
