@@ -38,6 +38,9 @@ class AccountHandler:
     
     def update_account_by_id(self, id, data : dict):
         try:
+            if 'pw' in data:
+                data.update({"pw_hash" : data['pw']})
+                del data['pw']
             return self.db.update_item_by_id(self.collection, id, data)
         except:
             return False
