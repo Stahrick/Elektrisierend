@@ -1,4 +1,9 @@
 /.venv
 *__pycache__
 *log.txt
+*.key
 .env
+*.json
+server.py
+test.py
+register.html
