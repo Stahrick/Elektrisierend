@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import serialization
 import datetime
 from cryptography.hazmat.primitives.asymmetric import rsa
 import jwt
-from config import meter_url, own_url
+from config import meter_url, own_url, mycert
 
 def place_order():
     new_uuid = str(uuid4())
@@ -32,13 +32,13 @@ def swap_cert(uuid, cert):
 
 def sign_cert(csr):
     pem_data = ''
-    #with open('private_key', 'rb') as pem_in:
-    #    pem_data = pem_in.read()
-    #key = load_pem_private_key(pem_data, password=None)
-    key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
+    with open(mycert[1], 'rb') as pem_in:
+        pem_data = pem_in.read()
+    key = load_pem_private_key(pem_data, password=None)
+    #key = rsa.generate_private_key(
+    #    public_exponent=65537,
+    #    key_size=2048,
+    #)
     csr_data = x509.load_pem_x509_csr(csr)
     subject = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, csr_data.subject.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value ),
@@ -60,7 +60,7 @@ def sign_cert(csr):
     ).issuer_name(
         issuer
     ).public_key(
-        key.public_key()
+        csr_data.public_key()
     ).serial_number(
         x509.random_serial_number()
     ).not_valid_before(

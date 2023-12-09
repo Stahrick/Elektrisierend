@@ -3,7 +3,7 @@ from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
 from database.EmDBkp import EmHandler
-from database.InternalDataclasses import Account, Contract
+from database.InternalDataclasses import Account, Contract, Em
 from dotenv import load_dotenv
 import requests
 from datetime import datetime
@@ -12,7 +12,7 @@ import werkzeug.serving
 from passlib.hash import argon2
 from password_validation import PasswordPolicy
 
-from config import msb_url, meter_url
+from config import msb_url, meter_url, mycert
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
@@ -156,21 +156,18 @@ def update_contract_data(_id, date = None, personal_info = None, iban = None, em
             return db_acc_handler.update_account_by_id(_id,param)
     return True
 
-def _create_em(em_id):
-    # TODO put meter into db
-    return True
-
 def create_em():
-    em_id = requests.post(meter_url + "/meter/order/", json={}, headers={"X-Client-Certificate": "123"}).text
-    if _create_em(em_id):
-        return True   
-    return False
+    em_id = requests.post(meter_url + "/meter/order/", json={}, cert=('localhost.crt', 'localhost.key'), verify=False).text
+    e = Em(em_id,0,None)
+    if db_elmo_handler.create_Em(e):
+        return em_id   
+    return None
 
 def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
+    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, verify=False)
     print(response)
     if response.status_code == 200:
-        return True
+        return response.text
     return False
 
 @app.route('/login/', methods=['GET','POST'])
@@ -220,7 +217,6 @@ def register():
             if not em_id:
                 return render_template('register.html', error='error while creating electricity meter, please try again')
         date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        print("ich bin gekommen \n\n\n")
         if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, personal_info, iban, em_id, state, city, zip_code, address, date):
             create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
@@ -272,8 +268,7 @@ def edit_profile():
     return redirect(url_for('login'))
 
 if __name__ == "__main__":
-    context = ('cert.pem', 'key.pem')
-    context = ('localhost.crt', 'localhost.key')
+    context = mycert
     ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=context[0] )
     ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
