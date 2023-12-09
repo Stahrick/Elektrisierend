@@ -151,9 +151,7 @@ def update_contract_data(_id, date=None, personal_info=None, iban=None, em_id=No
 def get_contract_data(contract_id):
     res = db_ctr_handler.get_contract_by_id(contract_id)
     print(res)
-    return {"uuid": 123, "username": "testo", "first_name": "Shadow", "last_name": "Sama", "email": "cum@me.com",
-            "iban": "DE123654", "phone": "+49112", "state": "Germany", "city": "Madenheim", "zip_code": "69069",
-            "address": "Wallstreet 3", "em_id": "DEADBEEF4269", "em_reading": 911.69, "contract_id": "\{\{ 7*7 \}\}"}
+    return res
 
 
 def get_ems_by_contract():
@@ -176,8 +174,9 @@ def activate_maintenance(id):
     return True
 
 def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str, em_id : str):
-    # TODO creates new MSB Contract with given data  + em_id
-    return True
+    c = Contract(data = date,iban = iban, em_id = em_id,state=state,city=city,zip_code=zip_code,address = address)
+    ctr = db_ctr_handler.create_contract(c)
+    return ctr
 
 
 
@@ -332,6 +331,18 @@ def new_contract():
                 return make_response("successful", 200)    
     return make_response("Unauthorized", 401)
 
+
+@app.route('/data/', methods=['POST'])
+def accept_em_data():
+    #TODO certs
+    if request.method == 'POST' and 'uuid' in request.form and 'consumption' in request.form:
+        em = db_elmo_handler.get_Em_by_id(request.form['uuid'])
+        if em:
+            em.em_consumption = request.form['consumption']
+            success = db_elmo_handler.update_Em_by_id(request.form['uuid'],{"em_consumption": request.form['consumption']})
+            if success:
+                requests.post(f"{kp_url}/data/",json={"em": em})
+        return False
 
 if __name__ == "__main__":
     context = mycert
