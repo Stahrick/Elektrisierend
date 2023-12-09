@@ -82,40 +82,7 @@
                                 <input class="form-control" id="contract-meter-consumption" placeholder="{{ em["em_consumption"] }}" disabled>
                             </div>
                         </div>
-                        <div class="row my-1">
-                            <div class="col">
-                                <div class="card shadow mb-4">
-                                    <div class="card-header py-3">
-                                        <p class="d-none" id="input_data">{{h_data}}</p>
-                                        <h6 class="m-0 font-weight-bold text-primary"> Historical Data</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="chart-area">
-                                            <canvas id="HistoricalDataChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnergiespartips" aria-expanded="false" aria-controls="collapseEnergiespartips">
-                      Energiespartipps
-                    </button>
-                </h2>
-                <div id="collapseEnergiespartips" class="accordion-collapse collapse show multi-collapse">
-                    <div class="accordion-body py-1">
-                        {%for value, index in e_tips.items()%}
-                            <div class="row my-1">
-                                <div class="col">
-                                    <label for="e-tip-"{{index+1}} class="form-label">Energiespartip {{index+1}}:</label>
-                                    <input class="form-control" id="energy-saving-tip-{{index+1}}" placeholder="{{value}}" disabled>
-                                </div>
-                            </div>
-                        {%endfor%}
+                        
                     </div>
                 </div>
             </div>
