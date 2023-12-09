@@ -5,7 +5,6 @@ from uuid import uuid4
 class Contract:
     _id : str = field(init = False, repr = False)
     date : str #TODO what format
-    personal_info : str
     iban : str 
     em_id : str
     state : str

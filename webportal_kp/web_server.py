@@ -82,7 +82,6 @@ def check_register(username, pw,
                     email , phone , 
                     acc_state, acc_city , acc_zip_code, 
                     acc_address,
-                    personal_info, 
                     iban, em_id, 
                     ctr_state, ctr_city, 
                     ctr_zip_code, ctr_address, date
@@ -97,7 +96,7 @@ def check_register(username, pw,
         return False
     #TODO check for em_id?
     #TODO insert current date or what else
-    contract = Contract(date,personal_info,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
+    contract = Contract(date,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
     a2pw = argon2.hash(pw)
     print("argon hashing")
@@ -211,13 +210,12 @@ def register():
         address = request.form['address']
         em_id = request.form['em_id']
         state = request.form['state']
-        personal_info = "Mutterficker"
         if not em_id:
             em_id = create_em()
             if not em_id:
                 return render_template('register.html', error='error while creating electricity meter, please try again')
         date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, personal_info, iban, em_id, state, city, zip_code, address, date):
+        if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, iban, em_id, state, city, zip_code, address, date):
             create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:

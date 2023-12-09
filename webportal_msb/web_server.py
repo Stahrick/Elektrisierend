@@ -107,7 +107,6 @@ def update_user_data(acc_id, ctr_id,
                      acc_city=None, acc_zip_code=None,
                      acc_address=None, acc_contract_id=None,
                      acc_data: dict = None,
-                     personal_info=None,
                      iban=None, em_id=None,
                      ctr_state=None, ctr_city=None,
                      ctr_zip_code=None, ctr_address=None,
@@ -116,7 +115,7 @@ def update_user_data(acc_id, ctr_id,
     pw_hash = argon2.hash(pw_hash)
     b1 = update_acc_data(acc_id, username, pw_hash, first_name, last_name, email, phone, acc_city,
                          acc_zip_code, acc_address, acc_contract_id, acc_data)
-    b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,
+    b2 = update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,
                               ctr_data)
     if b1 and b2:
         return True
@@ -137,7 +136,7 @@ def update_acc_data(_id, username=None, pw_hash=None, first_name=None, last_name
     return True
 
 
-def update_contract_data(_id, date=None, personal_info=None, iban=None, em_id=None, state=None, city=None,
+def update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None,
                          zip_code=None, address=None, data: dict = None):
     param = locals()
     if param:
@@ -174,7 +173,7 @@ def activate_maintenance(id):
     return True
 
 def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str, em_id : str):
-    c = Contract(data = date,iban = iban, em_id = em_id,state=state,city=city,zip_code=zip_code,address = address)
+    c = Contract(date = date,iban = iban, em_id = em_id,state=state,city=city,zip_code=zip_code,address = address)
     ctr = db_ctr_handler.create_contract(c)
     return ctr
 
@@ -313,7 +312,7 @@ def handle_support_case():
 def new_contract():
     print("i am atomic")
     cert = request.headers.get('X-Client-Certificate')
-    if cert == True: 
+    if True: 
         # TODO add real cert of KP
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             date = request.form['date']
