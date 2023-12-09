@@ -7,6 +7,7 @@ from uuid import uuid4
 import requests
 from config import kp_url, meter_url, mycert, root_ca
 from passlib.hash import argon2
+from api_requests import send_registration_mail
 
 import ssl
 import werkzeug.serving
@@ -168,10 +169,6 @@ def check_em_id(id):
         return True
     return False
 
-
-def activate_maintenance(id):
-    return True
-
 def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str, em_id : str):
     c = Contract(date = date,iban = iban, em_id = em_id,state=state,city=city,zip_code=zip_code,address = address)
     ctr = db_ctr_handler.create_contract(c)
@@ -274,20 +271,19 @@ def maintenance():
                 if request.referrer != valid_referrer:
                     # Ensure user requests from support ticket or seriously manipulate request
                     return redirect(url_for('home') + '?msg=invalid')
-                if activate_maintenance(id):
-                    with open("./sign_test_key.pem", "rb") as f:
-                        priv_key = serialization.load_pem_private_key(
-                            f.read(), password=None, backend=default_backend()
-                        )
-                    cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id),
-                                   "user_id": user_data["_id"],
-                                   "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
-                    encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
-                    red_url_enc = quote(urljoin(request.url_root, url_for("home")), safe="")
-                    logging.info(f"User [{cookie_data['user_id']}] activated maintenance for "
-                                 f"device [{cookie_data['device_uuid']}] connected to support case [{case_id}]")
-                    return redirect(
-                        f"{meter_url}/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
+                with open("./sign_test_key.pem", "rb") as f:
+                    priv_key = serialization.load_pem_private_key(
+                        f.read(), password=None, backend=default_backend()
+                    )
+                cookie_data = {"iss": "msb", "aud": "smartmeter", "device_uuid": str(id),
+                                "user_id": user_data["_id"],
+                                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)}
+                encoded = jwt.encode(cookie_data, priv_key, algorithm="RS512")
+                red_url_enc = quote(urljoin(request.url_root, url_for("home")), safe="")
+                logging.info(f"User [{cookie_data['user_id']}] activated maintenance for "
+                                f"device [{cookie_data['device_uuid']}] connected to support case [{case_id}]")
+                return redirect(
+                    f"{meter_url}/meter/{id}/activate-maintenance/?code={encoded}&next={red_url_enc}")
     return redirect(url_for('home') + '?msg=invalid')
 
 
@@ -335,13 +331,12 @@ def new_contract():
 @app.route("/new-em/", methods=["GET", "POST"])
 def new_em():
     print("i am not atomic")
-    cert = request.headers.get('X-Client-Certificate')
     data = request.json
-    if True: 
-        # TODO add real cert of KP
+    if request.environ['peercert']:
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             consumption = data['consumption']
             em_id = data['em_id']
+            send_registration_mail(em_id)
             hist_id = data['hist_id']
             if not db_elmo_handler.get_Em_by_id(em_id):
                 e = Em(consumption, hist_id, em_id)
