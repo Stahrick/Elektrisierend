@@ -114,7 +114,7 @@ def send_registration_mail(meter_uuid):
     exp = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=2)
     payload = {"iss": "msb", "aud": meter_uuid, "exp": exp, "uuid": meter_uuid, "code": code, "url": msb_url }
 
-    with open("../sign_test_key.pem", "rb") as fi:
+    with open("./sign_test_key.pem", "rb") as fi:
         priv_key = serialization.load_pem_private_key(
             fi.read(), password=None, backend=default_backend()
         )
@@ -131,4 +131,4 @@ if __name__ == "__main__":
     #     csr = f.read()
     # print(sign_cert(csr))
     #gen_rsa_keypair()
-    send_registration_mail("3b1c877e-c61c-435a-a1b3-9911418a79b6")
+    send_registration_mail("44296d46-9e0d-4439-b603-57e5b25222aa")
