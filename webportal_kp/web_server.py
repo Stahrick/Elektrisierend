@@ -191,7 +191,6 @@ def update_user_data(acc_id, ctr_id = None,
         return True
     return False
 
-
 def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None, email=None, phone=None, state=None,
                     city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
     param = locals()
@@ -204,7 +203,6 @@ def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=Non
         else:
             return db_acc_handler.update_account_by_id(_id, param)
     return True
-
 
 def _update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None, zip_code=None, address=None,
                          data: dict = None):
@@ -324,6 +322,7 @@ def reset_password():
         username = request.form.get("username", "")
         code = request.form.get("code", "")
         new_pw = request.form.get("password", "")
+        new_pw = argon2.hash(new_pw)
         if "" in {username, code, new_pw}:
             return render_template('forgot_password.html', username=username, code=code)
         else:
