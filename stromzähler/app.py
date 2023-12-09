@@ -1,5 +1,6 @@
 import json
 import ssl
+import os
 
 import OpenSSL
 from flask import Flask
@@ -18,7 +19,8 @@ import logging
 import atexit
 import threading
 
-class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler ):
+
+class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler):
     """
     We subclass this class so that we can gain access to the connection
     property. self.connection is the underlying client socket. When a TLS
@@ -27,6 +29,7 @@ class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler ):
     The output from that method is what we want to make available elsewhere
     in the application.
     """
+
     def make_environ(self):
         """
         The superclass method develops the environ hash that eventually
@@ -44,12 +47,14 @@ class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler ):
         environ['peercert'] = None
         return environ
 
+
 app = Flask(__name__)
 
 app.register_blueprint(management, url_prefix="/service-worker")
 app.register_blueprint(meter_management, url_prefix="/meter")
 
 path = Path(__file__).parent
+
 
 def start_server():
     if exists(path / "save_meters.json"):
@@ -65,6 +70,10 @@ def stop_server():
     with open(path / "save_meters.json", "w") as f:
         json.dump(export_meters(), f)
 
+
+if not os.path.isdir("metercerts"):
+    # If folder doesn't exist, create it
+    os.mkdir(os.path.join(path, "metercerts"))
 
 # logging.basicConfig(filename="./log.txt", encoding="UTF-8", format='%(asctime)s %(levelname)s:%(message)s',
 #                    filemode="w", level=logging.DEBUG)
