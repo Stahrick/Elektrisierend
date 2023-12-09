@@ -159,21 +159,21 @@ def update_user_data(acc_id, ctr_id = None,
                      ctr_zip_code=None, ctr_address=None,
                      ctr_data: dict = None,
                      ) -> bool:
-    if not DataValidator.is_valid_first_name(first_name):
+    if first_name and not DataValidator.is_valid_first_name(first_name):
         return False
-    if not DataValidator.is_valid_last_name(last_name):
+    if last_name and not DataValidator.is_valid_last_name(last_name):
         return False
-    if not DataValidator.is_valid_email(email):
+    if email and not DataValidator.is_valid_email(email):
         return False
-    if not DataValidator.is_valid_state(acc_state):
+    if acc_state and not DataValidator.is_valid_state(acc_state):
         return False
-    if not DataValidator.is_valid_address(acc_address):
+    if acc_address and not DataValidator.is_valid_address(acc_address):
         return False
-    if not DataValidator.is_valid_iban(iban):
+    if iban and not DataValidator.is_valid_iban(iban):
         return False
-    if not DataValidator.is_valid_em_id(em_id):
+    if em_id and not DataValidator.is_valid_em_id(em_id):
         return False
-    if not DataValidator.is_valid_phone_number(phone):
+    if phone and not DataValidator.is_valid_phone_number(phone):
         return False
     if not ctr_id:
         acc = db_acc_handler.get_account_by_id(acc_id)
@@ -193,7 +193,8 @@ def update_user_data(acc_id, ctr_id = None,
 
 def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None, email=None, phone=None, state=None,
                     city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
-    param = locals()
+    params = locals()
+    param = {k: v for k, v in params.items() if v is not None}
     if param:
         del (param['_id'])
         if db_acc_handler.get_account_by_username(username):
@@ -202,16 +203,17 @@ def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=Non
             return db_acc_handler.update_account_by_id(_id, data)
         else:
             return db_acc_handler.update_account_by_id(_id, param)
-    return True
+    return False
 
 def _update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None, zip_code=None, address=None,
                          data: dict = None):
-    param = locals()
+    params = locals()
+    param = {k: v for k, v in params.items() if v is not None}
     if param:
         del (param['_id'])
         if 'data' in param:
             return db_acc_handler.update_account_by_id(_id, data)
-        else:
+        elif param:
             return db_acc_handler.update_account_by_id(_id, param)
     return True
 
@@ -328,7 +330,10 @@ def reset_password():
             # Always redirect to deny account enumeration
             if code == "31":
                 if pw_policy.validate(pw):
-                    new_pw = argon2.hash(new_pw)
+                    user = db_acc_handler.get_account_by_username(username)[0]
+                    print(user)
+                    if update_user_data(user['_id'],pw = new_pw):
+                        return redirect(url_for('login'))
                     # TODO Set new password on account
                     pass
             return redirect(url_for('login'))
