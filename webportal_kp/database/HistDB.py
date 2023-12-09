@@ -5,7 +5,7 @@ class HistDataHandler:
     db : MoronDB    
     collection = 'hist'
 
-    def __init__(self, username, password, dbname, collection = 'ems'):
+    def __init__(self, username, password, dbname, collection = 'hist'):
         self.db = MoronDB(username,password,dbname)
         if collection:
             self.collection = collection

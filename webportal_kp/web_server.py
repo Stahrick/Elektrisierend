@@ -223,14 +223,14 @@ def create_em():
     h = HistData([])
     e = Em(0, h._id, _id=em_id)
     if db_elmo_handler.create_Em(e):
-        if create_hist(h._id):
+        if create_hist_data(h._id):
             res = create_msb_ems(e)
             print(res)
             return em_id
     return None
 
 
-def create_hist(hist_id):
+def create_hist_data(hist_id):
     return db_hist_handler.create_HistData(HistData([], _id=hist_id))
 
 
@@ -351,7 +351,7 @@ def home():
 def edit_profile():
     user_data = check_session(session.get('uuid'))
     if user_data:
-        if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
+        if request.method == 'POST' and request.form:
             # checks if post request with correct data value pairs
             username = request.form['username']
             email = request.form['email']
