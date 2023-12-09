@@ -161,16 +161,16 @@ def _create_em(em_id):
     return True
 
 def create_em():
-    em_id = requests.post(meter_url + "/meter/order/", json={}, headers={"X-Client-Certificate": "123"}).text
+    em_id = requests.post(meter_url + "/meter/order/", json={}, cert=('localhost.crt', 'localhost.key'), verify=False).text
     if _create_em(em_id):
-        return True   
+        return em_id   
     return False
 
 def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
+    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, verify=False)
     print(response)
     if response.status_code == 200:
-        return True
+        return response.text
     return False
 
 @app.route('/login/', methods=['GET','POST'])
@@ -220,7 +220,6 @@ def register():
             if not em_id:
                 return render_template('register.html', error='error while creating electricity meter, please try again')
         date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        print("ich bin gekommen \n\n\n")
         if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, personal_info, iban, em_id, state, city, zip_code, address, date):
             create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
