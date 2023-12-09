@@ -12,7 +12,7 @@ import werkzeug.serving
 from passlib.hash import argon2
 from password_validation import PasswordPolicy
 
-from config import msb_url, service_url
+from config import msb_url, meter_url
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
@@ -100,10 +100,13 @@ def check_register(username, pw,
     contract = Contract(date,personal_info,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
     a2pw = argon2.hash(pw)
+    print("argon hashing")
     if contract_db:
+        print("contract_db true")
         acc = Account(username,a2pw,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['id'])
         acc_db = db_acc_handler.create_account(acc)
         if acc_db:
+            print("acc_db")
             return True #NOTE return acc_db maybe?
     return False
     
@@ -158,13 +161,13 @@ def _create_em(em_id):
     return True
 
 def create_em():
-    em_id = requests.post(service_url+"/meter/order/", json={}, headers={"X-Client-Certificate": "123"}).text
+    em_id = requests.post(meter_url + "/meter/order/", json={}, headers={"X-Client-Certificate": "123"}).text
     if _create_em(em_id):
         return True   
     return False
 
 def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post("https://localhost:5000/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
+    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, headers={"X-Client-Certificate":"123"}, verify=False)
     print(response)
     if response.status_code == 200:
         return True

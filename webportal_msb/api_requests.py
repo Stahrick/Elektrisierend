@@ -12,20 +12,19 @@ from cryptography.hazmat.primitives import serialization
 import datetime
 from cryptography.hazmat.primitives.asymmetric import rsa
 import jwt
-
-url = 'http://localhost:25565'
+from config import meter_url, own_url
 
 def place_order():
     new_uuid = str(uuid4())
     data = { "uuid": new_uuid}
-    r = requests.post(f"{url}/meter/order/", json=data)
+    r = requests.post(f"{meter_url}/meter/order/", json=data)
     if r.status_code == 200:
         return new_uuid
     else:
         return False 
 
 def swap_cert(uuid, cert):
-    r = requests.post(f"{url}/meter/{uuid}/swap-certificate", file=cert)
+    r = requests.post(f"{meter_url}/meter/{uuid}/swap-certificate", file=cert)
     if r.status_code == 200:
         return True
     else:
@@ -102,7 +101,7 @@ def send_service_worker_mails(mail_texts: list[list[str, str]]):
     :param mail_texts: Array containing all mails that should be sent. Every mail has the structure [subject, text]
     :return:
     """
-    service_worker_mail_endpoint = "http://localhost:25565/service-worker/receive-mails"
+    service_worker_mail_endpoint = f"{meter_url}/service-worker/receive-mails"
     r = requests.post(service_worker_mail_endpoint, json=mail_texts)
     if r.status_code != 200:
         print(f"Send mail failed. Statuscode {r.status_code} - {r.text}")
@@ -111,7 +110,7 @@ def send_registration_mail(meter_uuid):
     code = base64.b64encode(urandom(10)).decode()
     # TODO Bind code with contract
     # TODO adjust url
-    msb_url = "http://127.0.0.1:5000/meter"
+    msb_url = f"{own_url}/meter"
     exp = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=2)
     payload = {"iss": "msb", "aud": meter_uuid, "exp": exp, "uuid": meter_uuid, "code": code, "url": msb_url }
 
