@@ -48,7 +48,7 @@ class Meter:
         privkey_path, csr = create_X509_csr(self.uuid)
         req_data = {"uuid": self.uuid, "code": code, "meter-cert": csr}
         try:
-            r = requests.post(f"{registration_config['url']}/register/", json=req_data)
+            r = requests.post(f"{registration_config['url']}/register/", json=req_data, verify='RootCA.crt')
             if r.status_code != 200:
                 self.configuration["own_cert"] = None
                 return make_response("Meter registration failed", 406)
@@ -106,7 +106,7 @@ class Meter:
         try:
             requests.post(f"{self.configuration['maintainer_url']}/data/",
                           json={"uuid": self.uuid, "consumption": self.meter},
-                          cert=(self.configuration["own_cert"], self.configuration["priv_key"]))
+                          cert=(self.configuration["own_cert"], self.configuration["priv_key"]), verify='RootCA.crt')
         except Exception as e:
             logging.error(f"Failed to send data with exception {e}")
             return
@@ -141,10 +141,4 @@ class Meter:
         meter.last_update = datetime.fromisoformat(data["last_update"]) if data["last_update"] else None
         meter.configuration = data["configuration"]
         return meter
-
-class MeterEncoder(JSONEncoder):
-    def default(self, o):
-        #return {"uuid": o.uuid, "meter": o.meter,
-        #        "last_update": o.last_update, "configuration": o.configuration}
-        return o.__dict__
 
