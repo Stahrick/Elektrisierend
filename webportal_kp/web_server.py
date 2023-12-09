@@ -3,7 +3,8 @@ from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
 from database.EmDBkp import EmHandler
-from database.InternalDataclasses import Account, Contract, Em
+from database.HistDB import HistDataHandler
+from database.InternalDataclasses import Account, Contract, Em, HistData
 from dotenv import load_dotenv
 import requests
 from datetime import datetime
@@ -22,9 +23,10 @@ load_dotenv()
 pw = getenv('StromiPW')
 username = getenv('StromiUser')
 dbname = getenv('StromiDB')
-db_acc_handler = AccountHandler(username,pw,dbname)
-db_ctr_handler = ContractHandler(username,pw,dbname)
+db_acc_handler = AccountHandler(username, pw, dbname)
+db_ctr_handler = ContractHandler(username, pw, dbname)
 db_elmo_handler = EmHandler(username, pw, dbname)
+db_hist_handler = HistDataHandler(username, pw, dbname)
 pw_policy = PasswordPolicy(lowercase=12,uppercase=1,symbols=1,numbers=1,whitespace=1,min_length=16)
 
 #TODO: login, register, logout logic; fingerprint, css, database, password requirements
@@ -170,6 +172,12 @@ def create_msb_contract(date, first_name, last_name, email, iban, phone, state, 
         return response.text
     return False
 
+def get_hist_data(em_id):
+    em = db_elmo_handler.get_Em_by_id(em_id)
+    h_data = db_hist_handler.get_HistData_by_id(em['hist_id'])
+    return h_data
+
+
 @app.route('/login/', methods=['GET','POST'])
 def login():
     print([i for i in request.form])
@@ -264,8 +272,45 @@ def edit_profile():
             else:
                 #returns error if it cant update
                 return render_template('edit_profile', profile=user_data, error='Cant update your Profile')
-        return render_template('edit_profile.html', profile=user_data)
+        print(user_data)
+        ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
+        print(ctr)
+        print()
+        em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
+        print(em)
+        print()
+        hist_data = get_hist_data(ctr['em_id'])
+        print(hist_data)
+        print()
+        return render_template('edit_profile.html', profile=user_data, h_data = hist_data,em = em)
     return redirect(url_for('login'))
+
+@app.route('/data/', methods=['POST'])
+def accept_em_data():
+    #TODO certs
+    if request.method == 'POST' and 'em' in request.form and 'consumption' in request.form:
+        r_em = request.form
+        em = db_elmo_handler.get_Em_by_id(r_em['_id'])
+        if em:
+            h_data_old = db_hist_handler.get_HistData_by_id(em['hist_id'])
+            em.em_consumption = request.form['consumption']
+            data = h_data_old['data'].append(em.em_consumption)
+            success = db_elmo_handler.update_Em_by_id(r_em['_id'],{"em_consumption": request.form['consumption']})
+            success2 = db_hist_handler.update_HistData_by_id(em['hist_id'],{"data":data})
+            if success and success2:
+                return 
+        else:#create, dont care
+
+            e = Em(None,r_em['consumption'],None)
+            em = db_elmo_handler.create_Em(e)
+            if em:
+                h = HistData([])
+                h_data = db_hist_handler.create_HistData(h)
+                if h_data:
+                    return make_response("successful", 200)    
+    return make_response("internal server error", 500)
+        #always great success
+        #return False
 
 if __name__ == "__main__":
     context = ('cert.pem', 'key.pem')
