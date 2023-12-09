@@ -103,9 +103,13 @@ class Meter:
         amount_added = random.uniform(average_kwh_per_sec - float("1e-5"), average_kwh_per_sec + float("1e-5"))
         self.meter += passed_sec * amount_added
         # TODO add verify= to check server cert
-        requests.post(f"{self.configuration['maintainer_url']}/data/",
-                      json={"uuid": self.uuid, "consumption": self.meter},
-                      cert=(self.configuration["own_cert"], self.configuration["priv_key"]))
+        try:
+            requests.post(f"{self.configuration['maintainer_url']}/data/",
+                          json={"uuid": self.uuid, "consumption": self.meter},
+                          cert=(self.configuration["own_cert"], self.configuration["priv_key"]))
+        except Exception as e:
+            logging.error(f"Failed to send data with exception {e}")
+            return
         logging.info(f"SEND meter data {self.meter} Kwh")
 
     @check_setup_complete
