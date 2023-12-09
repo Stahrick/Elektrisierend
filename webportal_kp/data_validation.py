@@ -64,3 +64,11 @@ class DataValidator:
         if not re.match(r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"):
             return False
         return True
+
+    @staticmethod
+    def is_valid_phone_number(phone_number: str):
+        if not isinstance(phone_number, str):
+            return False
+        if not re.match(r"^+?[0-9]{2,}([0-9]|\s)*$"):
+            return False
+        return True
