@@ -28,7 +28,7 @@ db_acc_handler = AccountHandler(username, pw, dbname)
 db_ctr_handler = ContractHandler(username, pw, dbname)
 db_elmo_handler = EmHandler(username, pw, dbname)
 db_hist_handler = HistDataHandler(username, pw, dbname)
-pw_policy = PasswordPolicy(min_length=16)
+pw_policy = PasswordPolicy(min_length=12, min_entropy=0.0000001)
 
 with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for v, k in enumerate(f.readlines())}
 
@@ -146,7 +146,7 @@ def check_register(username, pw,
         return True, []  # NOTE return acc_db maybe?
 
 
-def update_user_data(acc_id, ctr_id,
+def update_user_data(acc_id, ctr_id = None,
                      username=None, pw=None,
                      first_name=None, last_name=None,
                      email=None, phone=None,
@@ -175,21 +175,24 @@ def update_user_data(acc_id, ctr_id,
         return False
     if not DataValidator.is_valid_phone_number(phone):
         return False
-
+    if not ctr_id:
+        acc = db_acc_handler.get_account_by_id(acc_id)
+        if acc:
+            ctr_id = acc['contract_id']
     if pw:
         if not pw_policy.validate(pw):
             missed_reqs = pw_policy.test_password(pw)  # TODO how do i get this out of here
             return False
     pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
-    b1 = update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code,
+    b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code,
                          acc_address, acc_contract_id, acc_data)
-    b2 = update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
     if b1 and b2:
         return True
     return False
 
 
-def update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None, email=None, phone=None, state=None,
+def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None, email=None, phone=None, state=None,
                     city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
     param = locals()
     if param:
@@ -203,7 +206,7 @@ def update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None
     return True
 
 
-def update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None, zip_code=None, address=None,
+def _update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None, zip_code=None, address=None,
                          data: dict = None):
     param = locals()
     if param:

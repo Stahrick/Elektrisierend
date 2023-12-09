@@ -310,7 +310,7 @@ def handle_support_case():
 
 @app.route("/new-contract/", methods=["GET", "POST"])
 def new_contract():
-    print("i am atomic", request.environ['peercert'])
+    print("i am not atomic", request.environ['peercert'])
     if request.environ['peercert']:
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             date = request.form['date']
@@ -333,6 +333,8 @@ def new_em():
     print("i am not atomic")
     data = request.json
     if request.environ['peercert']:
+        print("i am atomic", request.environ['peercert'])
+        data = request.json
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             consumption = data['consumption']
             em_id = data['em_id']
