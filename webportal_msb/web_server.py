@@ -120,9 +120,14 @@ def update_user_data(acc_id, ctr_id = None,
         if acc:
             ctr_id = acc['contract_id']
     pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
-    b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code,
-                         acc_address, acc_contract_id, acc_data)
-    b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
+        b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
+    else:
+        b1 = True
+    if ctr_id or iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data:
+        b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    else:
+        b2 = True
     if b1 and b2:
         return True
     return False
