@@ -13,7 +13,7 @@ from flask import Blueprint, make_response, request, redirect, url_for
 
 from GlobalStorage import list_meters, get_meter, add_meter
 from SmartMeter import Meter
-from Config import COOKIE_SIGN_KEY
+from config import COOKIE_SIGN_KEY
 from security.Decorator import clearance_level_required, device_required, ClearanceLevel
 
 logging.getLogger(__name__)

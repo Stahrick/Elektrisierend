@@ -88,7 +88,7 @@ class DataValidator:
         if not isinstance(phone_number, str):
             return False
         try:
-            if not re.match(r"^+?[0-9]{2,}([0-9]|\s)*$", phone_number):
+            if not re.match(r"^\+?[0-9]{2,}([0-9]|\s)*$", phone_number):
                 return False
         except re.error as e:
             return False

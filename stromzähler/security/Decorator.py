@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives import serialization
 from flask import request
 
 from GlobalStorage import list_meters, get_meter
-from Config import COOKIE_SIGN_KEY
+from config import COOKIE_SIGN_KEY
 
 import re
 
@@ -30,10 +30,8 @@ def clearance_level_required(level):
             uuid = str(kwargs.get("device_uuid"))
             if level == ClearanceLevel.LOW:
                 return func(*args, **kwargs)
-            elif level == ClearanceLevel.MEDIUM: #and "peercert" in request.environ:
-                # Perform certificate verification logic here
-                cert = request.environ.get("peercert", None)
-                # TODO implementori
+            elif level == ClearanceLevel.MEDIUM and "peercert" in request.environ:
+                # If peercert is present, then it was already validated at the connection buildup
                 return func(*args, **kwargs)
             elif level == ClearanceLevel.HIGH and ("maintenance-"+uuid) in request.cookies:
                 cookie = request.cookies["maintenance-"+uuid]

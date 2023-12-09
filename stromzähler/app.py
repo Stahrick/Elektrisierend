@@ -13,7 +13,7 @@ from views.ServiceWorker import management
 from views.RevProxy import meter_management
 from GlobalStorage import export_meters, import_meters
 from SmartMeter import Meter
-from Config import mycert, root_ca
+from config import mycert, root_ca
 
 import logging
 import atexit
