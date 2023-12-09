@@ -5,6 +5,7 @@ from database.ContractDB import ContractHandler
 from database.EmDBkp import EmHandler
 from database.HistDB import HistDataHandler
 from database.InternalDataclasses import Account, Contract, Em, HistData
+from data_validation import DataValidator
 from dotenv import load_dotenv
 import requests
 from datetime import datetime
@@ -90,7 +91,23 @@ def check_register(username, pw,
                     ctr_state, ctr_city, 
                     ctr_zip_code, ctr_address, date
                     ) -> bool:
-    
+
+    if not DataValidator.is_valid_first_name(first_name):
+        return False
+    if not DataValidator.is_valid_last_name(last_name):
+        return False
+    if not DataValidator.is_valid_email(email):
+        return False
+    if not DataValidator.is_valid_state(acc_state):
+        return False
+    if not DataValidator.is_valid_address(acc_address):
+        return False
+    if not DataValidator.is_valid_iban(iban):
+        return False
+    if not DataValidator.is_valid_em_id(em_id):
+        return False
+
+
     #Check if username is already in use, or if em_id is already in used by another contract
     if not pw_policy.validate(pw):
         missed_reqs = pw_policy.test_password(pw)#TODO how do i get this out of here
@@ -132,6 +149,22 @@ def update_user_data(acc_id, ctr_id,
                      ctr_zip_code = None, ctr_address = None, 
                      ctr_data : dict = None,
                      ) -> bool:
+
+    if not DataValidator.is_valid_first_name(first_name):
+        return False
+    if not DataValidator.is_valid_last_name(last_name):
+        return False
+    if not DataValidator.is_valid_email(email):
+        return False
+    if not DataValidator.is_valid_state(acc_state):
+        return False
+    if not DataValidator.is_valid_address(acc_address):
+        return False
+    if not DataValidator.is_valid_iban(iban):
+        return False
+    if not DataValidator.is_valid_em_id(em_id):
+        return False
+
     if pw:
         if not pw_policy.validate(pw):
             missed_reqs = pw_policy.test_password(pw)#TODO how do i get this out of here
@@ -259,8 +292,9 @@ def reset_password():
         else:
             # Always redirect to deny account enumeration
             if code == "31":
-                # TODO Set new password on account
-                pass
+                if pw_policy.validate(pw):
+                    # TODO Set new password on account
+                    pass
             return redirect(url_for('login'))
 @app.route('/home/', methods=['GET','POST'])
 def home():
