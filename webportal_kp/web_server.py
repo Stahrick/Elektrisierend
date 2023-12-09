@@ -95,31 +95,35 @@ def check_register(username, pw,
                    iban, em_id,
                    ctr_state, ctr_city,
                    ctr_zip_code, ctr_address, date
-                   ) -> bool:
+                   ) -> (bool, list):
+    invalid_data = []
     if not DataValidator.is_valid_first_name(first_name):
-        return False
+        invalid_data.append("Invalid first name")
     if not DataValidator.is_valid_last_name(last_name):
-        return False
+        invalid_data.append("Invalid last name")
     if not DataValidator.is_valid_email(email):
-        return False
+        invalid_data.append("Invalid email")
     if not DataValidator.is_valid_state(acc_state):
-        return False
+        invalid_data.append("Invalid state")
     if not DataValidator.is_valid_address(acc_address):
-        return False
+        invalid_data.append("Invalid address")
     if not DataValidator.is_valid_iban(iban):
-        return False
+        invalid_data.append("Invalid iban")
     if not DataValidator.is_valid_em_id(em_id):
-        return False
+        invalid_data.append("Invalid meter id")
     if not DataValidator.is_valid_phone_number(phone):
-        return False
+        invalid_data.append("Invalid phone number")
 
     # Check if username is already in use, or if em_id is already in used by another contract
     if not pw_policy.validate(pw):
         missed_reqs = pw_policy.test_password(pw)  # TODO how do i get this out of here
-        return False
+        invalid_data.extend(missed_reqs)
     print("hallo")
     if db_acc_handler.get_account_by_username(username) or db_elmo_handler.get_Em_by_id(em_id):
-        return False
+        invalid_data.append("Occupied username")
+
+    if invalid_data:
+        return False, invalid_data
     # TODO check for em_id?
     # TODO insert current date or what else
     a2pw = argon2.hash(pw)
@@ -127,19 +131,19 @@ def check_register(username, pw,
     if not em_id:
         em_id = create_em()
     if not em_id:
-        return False
+        return False, []
     contract = Contract(date, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
 
     if not contract_db:
-        return False
+        return False, []
     print("contract_db true")
     acc = Account(username, a2pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address,
                   contract_db['id'])
     acc_db = db_acc_handler.create_account(acc)
     if acc_db:
         print("acc_db")
-        return True  # NOTE return acc_db maybe?
+        return True, []  # NOTE return acc_db maybe?
 
 
 def update_user_data(acc_id, ctr_id,
@@ -299,13 +303,14 @@ def register():
         em_id = request.form['em_id']
         state = request.form['state']
         date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, iban,
-                          em_id, state, city, zip_code, address, date):
+        check = check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, iban,
+                          em_id, state, city, zip_code, address, date)
+        if check[0]:
             create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:
-            return render_template('register.html', error='error while creating electricity meter, please try again')
-    return render_template('register.html')
+            return render_template('register.html', errors=check[1], sub_data=request.form)
+    return render_template('register.html', sub_data={})
 
 
 @app.route('/forgot-password/', methods=['GET', 'POST'])
