@@ -1,7 +1,7 @@
 import base64
 
 import requests
-from os import urandom
+import os
 from uuid import uuid4
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -107,7 +107,7 @@ def send_service_worker_mails(mail_texts: list[list[str, str]]):
         print(f"Send mail failed. Statuscode {r.status_code} - {r.text}")
 
 def send_registration_mail(meter_uuid):
-    code = base64.b64encode(urandom(10)).decode()
+    code = base64.b64encode(os.urandom(10)).decode()
     # TODO Bind code with contract
     # TODO adjust url
     msb_url = f"{own_url}/meter"
