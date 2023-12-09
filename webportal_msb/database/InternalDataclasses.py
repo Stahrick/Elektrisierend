@@ -22,9 +22,7 @@ class Contract:
 @dataclass
 class Em:
     _id : str = field(init = False, repr = False)
-    em_data : float
     em_consumption : float
-    em_cost : float
     hist_id : str
 
     def __post_init__(self):

@@ -21,14 +21,14 @@ class Contract:
 
 @dataclass
 class Em:
-    _id : str = field(init = False, repr = False)
-    em_data : float
+    _id : str
     em_consumption : float
-    em_cost : float
     hist_id : str
 
     def __post_init__(self):
         self._id = str(uuid4())
+        if not self.hist_id:
+            self.hist_id = str(uuid4())
 
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
@@ -40,6 +40,7 @@ class HistData:
     
     def __post_init__(self):
         self._id = str(uuid4())
+            
 
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
