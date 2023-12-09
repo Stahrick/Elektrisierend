@@ -2,6 +2,7 @@
 *__pycache__
 *log.txt
 *.key
+*.pem
 .env
 *.json
 server.py
