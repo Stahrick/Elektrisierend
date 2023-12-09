@@ -14,7 +14,8 @@ def create_X509_csr(uuid) -> (str, str):
         public_exponent=65537,
         key_size=4096
     )
-    priv_path = str(Path(__file__).parent / f"../MeterCerts/{uuid}.key")
+    # TODO check if folder exist, otherwise create
+    priv_path = str(Path(__file__).parent / f"../metercerts/{uuid}.key")
     with open(priv_path, "wb") as f:
         f.write(key.private_bytes(
             encoding=serialization.Encoding.PEM,
