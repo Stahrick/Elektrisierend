@@ -55,7 +55,7 @@ class DataValidator:
         if not isinstance(address, str):
             return False
         try:
-            if not re.match(r"^([a-zA-ZßäöüÄÖÜ]{2,})(-?[a-zA-ZßäöüÄÖÜ]{2,})*\s*(\.|\s)\s*[0-9]{1,4}[a-z]?$", address):
+            if not re.match(r"^([a-zA-ZßäöüÄÖÜ]{2,})([-\s]?[a-zA-ZßäöüÄÖÜ]{2,})*\s*(\.|\s)\s*[0-9]{1,4}[a-z]?$", address):
                 return False
         except re.error as e:
             return False
