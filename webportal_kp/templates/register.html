@@ -9,56 +9,63 @@
 {% block content %}
     <div class="container-fluid d-flex align-items-center justify-content-end p-0 m-0 register">
         <div class="border border-success register-right">
+            {% if errors %}
+                {% for error in errors %}
+                    <div class="alert alert-info" role="alert">
+                      {{ error }}
+                    </div>
+                {% endfor %}
+            {% endif %}
             <h3 class="p-3">Jetzt Vertrag abschließen {{ error }}</h3>
             <form action="{{ url_for('register') }}", method="post" autocomplete="off" class="d-flex flex-column justify-content-center">
                 <div class="row my-2">
                     <div class="col">
-                        <input id="register-firstname" class="form-control" placeholder="Vorname" name="first_name">
+                        <input id="register-firstname" class="form-control" placeholder="Vorname" name="first_name", value="{{ sub_data.get("first_name", "") }}">
                     </div>
                     <div class="col">
-                        <input id="register-lastname" class="form-control" placeholder="Nachname" name="last_name">
-                    </div>
-                </div>
-                <div class="row my-2">
-                    <div class="col">
-                        <input id="register-email" class="form-control" placeholder="Email" name="email" type="email">
-                    </div>
-                    <div class="col">
-                        <input id="register-tel" class="form-control" placeholder="Telefon" name="phone" type="tel">
+                        <input id="register-lastname" class="form-control" placeholder="Nachname" name="last_name", value="{{ sub_data.get("last_name", "") }}">
                     </div>
                 </div>
                 <div class="row my-2">
                     <div class="col">
-                        <input id="register-address" class="form-control" placeholder="Adresse" name="address">
+                        <input id="register-email" class="form-control" placeholder="Email" name="email" type="email", value="{{ sub_data.get("email", "") }}">
+                    </div>
+                    <div class="col">
+                        <input id="register-tel" class="form-control" placeholder="Telefon" name="phone" type="tel", value="{{ sub_data.get("phone", "") }}">
                     </div>
                 </div>
                 <div class="row my-2">
                     <div class="col">
-                        <input id="register-state" class="form-control" placeholder="Bundesland" name="state">
+                        <input id="register-address" class="form-control" placeholder="Adresse" name="address", value="{{ sub_data.get("address", "") }}">
                     </div>
                 </div>
                 <div class="row my-2">
                     <div class="col">
-                        <input id="register-zip" class="form-control" placeholder="Postleitzahl" name="zip_code" type="number">
-                    </div>
-                    <div class="col">
-                        <input id="register-city" class="form-control" placeholder="Stadt" name="city">
+                        <input id="register-state" class="form-control" placeholder="Bundesland" name="state", value="{{ sub_data.get("state", "") }}">
                     </div>
                 </div>
                 <div class="row my-2">
                     <div class="col">
-                        <input id="register-iban" class="form-control" placeholder="IBAN" name="iban">
+                        <input id="register-zip" class="form-control" placeholder="Postleitzahl" name="zip_code" type="number", value="{{ sub_data.get("zip_code", "") }}">
+                    </div>
+                    <div class="col">
+                        <input id="register-city" class="form-control" placeholder="Stadt" name="city", value="{{ sub_data.get("city", "") }}">
                     </div>
                 </div>
                 <div class="row my-2">
                     <div class="col">
-                        <input id="register-username" class="form-control" placeholder="Nutzername" name="username">
+                        <input id="register-iban" class="form-control" placeholder="IBAN" name="iban", value="{{ sub_data.get("iban", "") }}">
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+                        <input id="register-username" class="form-control" placeholder="Nutzername" name="username", value="{{ sub_data.get("username", "") }}">
                     </div>
                 </div>
                 <div class="row my-2">
                     <div class="col">
                         <div class="input-group">
-                            <input id="register-password" class="form-control" type="password" name="password" placeholder="Passwort">
+                            <input id="register-password" class="form-control" type="password" name="password" placeholder="Passwort", value="{{ sub_data.get("password", "") }}">
                             <i id="register-toggle-pw" type="button" class="btn btn-outline-dark bi bi-eye-slash-fill"
                                 aria-label="Show password as plain text. Warning: this will display your password on the screen.">
                             </i>
@@ -66,7 +73,7 @@
                     </div>
                     <div class="col">
                         <div class="input-group">
-                            <input id="register-repeat-pw" class="form-control" type="password" placeholder="Wiederhole Passwort">
+                            <input id="register-repeat-pw" class="form-control" type="password" placeholder="Wiederhole Passwort", value="{{ sub_data.get("password", "") }}">
                             <i id="register-toggle-pw2" type="button" class="btn btn-outline-dark bi bi-eye-slash-fill"
                                 aria-label="Show password as plain text. Warning: this will display your password on the screen.">
                             </i>
@@ -76,7 +83,7 @@
                 <div class="row my-2">
                     <h5>Besitzt bereits einen smarten Stromzähler?</h5>
                     <div class="col">
-                        <input id="register-em-id" class="form-control" placeholder="Hier ID deines Stromzählers eintragen" name="em_id">
+                        <input id="register-em-id" class="form-control" placeholder="Hier ID deines Stromzählers eintragen" name="em_id", value="{{ sub_data.get("em_id", "") }}">
                     </div>
                 </div>
                 <div class="row p-3">

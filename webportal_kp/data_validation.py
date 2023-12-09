@@ -5,7 +5,10 @@ class DataValidator:
     def _validate_name(name: str):
         if not isinstance(name, str):
             return False
-        if not re.match(r"^[a-zA-Z]{2,}$", name):
+        try:
+            if not re.match(r"^[a-zA-Z]{2,}$", name):
+                return False
+        except re.error as e:
             return False
         return True
 
@@ -21,7 +24,10 @@ class DataValidator:
     def is_valid_email(email: str):
         if not isinstance(email, str):
             return False
-        if not re.match(r"^[a-zA-Z0-9]+([._+-][a-zA-Z0-9]+)*@[0-9a-zA-Z]+.[a-zA-Z]{2,4}+([.][a-zA-Z]{2,3})?$", email):
+        try:
+            if not re.match(r"^[a-zA-Z0-9]+([._+-][a-zA-Z0-9]+)*@[0-9a-zA-Z]+.[a-zA-Z]{2,4}+([.][a-zA-Z]{2,3})?$", email):
+                return False
+        except re.error as e:
             return False
         return True
 
@@ -37,7 +43,10 @@ class DataValidator:
     def valid_zip_code(zip_code: str):
         if not isinstance(zip_code, str):
             return False
-        if not re.match(r"^(?!01000|99999)(0[1-9]\d{3}|[1-9]\d{4})$"):
+        try:
+            if not re.match(r"^(?!01000|99999)(0[1-9]\d{3}|[1-9]\d{4})$", zip_code):
+                return False
+        except re.error as e:
             return False
         return True
 
@@ -45,7 +54,10 @@ class DataValidator:
     def is_valid_address(address: str):
         if not isinstance(address, str):
             return False
-        if not re.match(r"^([a-zA-Z]{2,})((-([a-zA-Z]{2,}))|([a-zA-Z]{2,}))*\s*(\.|\s)\s*[0-9]{1,4}[a-z]?$"):
+        try:
+            if not re.match(r"^([a-zA-Z]{2,})((-([a-zA-Z]{2,}))|([a-zA-Z]{2,}))*\s*(\.|\s)\s*[0-9]{1,4}[a-z]?$", address):
+                return False
+        except re.error as e:
             return False
         return True
 
@@ -53,7 +65,10 @@ class DataValidator:
     def is_valid_iban(iban: str):
         if not isinstance(iban, str):
             return False
-        if not re.match(r"^[0-9]+([0-9]|\s)*$"):
+        try:
+            if not re.match(r"^[0-9]+([0-9]|\s)*$", iban):
+                return False
+        except re.error as e:
             return False
         return True
 
@@ -61,7 +76,10 @@ class DataValidator:
     def is_valid_em_id(em_id: str):
         if not isinstance(em_id, str):
             return False
-        if not re.match(r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"):
+        try:
+            if not re.match(r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$", em_id):
+                return False
+        except re.error as e:
             return False
         return True
 
@@ -69,6 +87,9 @@ class DataValidator:
     def is_valid_phone_number(phone_number: str):
         if not isinstance(phone_number, str):
             return False
-        if not re.match(r"^+?[0-9]{2,}([0-9]|\s)*$"):
+        try:
+            if not re.match(r"^+?[0-9]{2,}([0-9]|\s)*$", phone_number):
+                return False
+        except re.error as e:
             return False
         return True
