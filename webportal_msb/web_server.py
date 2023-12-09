@@ -102,10 +102,11 @@ def check_register(data):
 
 # updates account data by given fields, ignores params all if data is given directly
 # TODO please test
-def update_user_data(acc_id, ctr_id,
-                     username=None, pw_hash=None,
+def update_user_data(acc_id, ctr_id = None,
+                     username=None, pw=None,
                      first_name=None, last_name=None,
                      email=None, phone=None,
+                     acc_state=None,
                      acc_city=None, acc_zip_code=None,
                      acc_address=None, acc_contract_id=None,
                      acc_data: dict = None,
@@ -114,18 +115,22 @@ def update_user_data(acc_id, ctr_id,
                      ctr_zip_code=None, ctr_address=None,
                      ctr_data: dict = None,
                      ) -> bool:
-    pw_hash = argon2.hash(pw_hash)
-    b1 = update_acc_data(acc_id, username, pw_hash, first_name, last_name, email, phone, acc_city,
-                         acc_zip_code, acc_address, acc_contract_id, acc_data)
-    b2 = update_contract_data(ctr_id,iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,ctr_data)
+    if not ctr_id:
+        acc = db_acc_handler.get_account_by_id(acc_id)
+        if acc:
+            ctr_id = acc['contract_id']
+    pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
+    b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code,
+                         acc_address, acc_contract_id, acc_data)
+    b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
     if b1 and b2:
         return True
     return False
 
-
-def update_acc_data(_id, username=None, pw_hash=None, first_name=None, last_name=None, email=None,
-                    phone=None, city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
-    param = locals()
+def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None, email=None, phone=None, state=None,
+                    city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
+    params = locals()
+    param = {k: v for k, v in params.items() if v is not None}
     if param:
         del (param['_id'])
         if db_acc_handler.get_account_by_username(username):
@@ -134,19 +139,19 @@ def update_acc_data(_id, username=None, pw_hash=None, first_name=None, last_name
             return db_acc_handler.update_account_by_id(_id, data)
         else:
             return db_acc_handler.update_account_by_id(_id, param)
-    return True
+    return False
 
-
-def update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None,
-                         zip_code=None, address=None, data: dict = None):
-    param = locals()
+def _update_contract_data(_id, date=None, iban=None, em_id=None, state=None, city=None, zip_code=None, address=None,
+                         data: dict = None):
+    params = locals()
+    param = {k: v for k, v in params.items() if v is not None}
     if param:
         del (param['_id'])
         if 'data' in param:
-            return db_ctr_handler.update_contract_by_id(_id,data)
-        else:
-            return db_ctr_handler.update_contract_by_id(_id,param)
-
+            return db_acc_handler.update_account_by_id(_id, data)
+        elif param:
+            return db_acc_handler.update_account_by_id(_id, param)
+    return True
 
 def get_contract_data(contract_id):
     res = db_ctr_handler.get_contract_by_id(contract_id)
