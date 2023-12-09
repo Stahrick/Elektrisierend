@@ -17,14 +17,14 @@ from config import meter_url, own_url, mycert
 def place_order():
     new_uuid = str(uuid4())
     data = { "uuid": new_uuid}
-    r = requests.post(f"{meter_url}/meter/order/", json=data)
+    r = requests.post(f"{meter_url}/meter/order/", json=data,cert=mycert)
     if r.status_code == 200:
         return new_uuid
     else:
         return False 
 
 def swap_cert(uuid, cert):
-    r = requests.post(f"{meter_url}/meter/{uuid}/swap-certificate", file=cert)
+    r = requests.post(f"{meter_url}/meter/{uuid}/swap-certificate", file=cert, cert=mycert)
     if r.status_code == 200:
         return True
     else:
@@ -102,7 +102,7 @@ def send_service_worker_mails(mail_texts: list[list[str, str]]):
     :return:
     """
     service_worker_mail_endpoint = f"{meter_url}/service-worker/receive-mails"
-    r = requests.post(service_worker_mail_endpoint, json=mail_texts)
+    r = requests.post(service_worker_mail_endpoint, json=mail_texts ,cert=mycert)
     if r.status_code != 200:
         print(f"Send mail failed. Statuscode {r.status_code} - {r.text}")
 

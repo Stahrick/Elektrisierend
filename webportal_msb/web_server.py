@@ -341,7 +341,7 @@ def accept_em_data():
             em.em_consumption = request.form['consumption']
             success = db_elmo_handler.update_Em_by_id(request.form['uuid'],{"em_consumption": request.form['consumption']})
             if success:
-                requests.post(f"{kp_url}/data/",json={"em": em})
+                requests.post(f"{kp_url}/data/",json={"em": em},cert=mycert)
         return False
 
 if __name__ == "__main__":

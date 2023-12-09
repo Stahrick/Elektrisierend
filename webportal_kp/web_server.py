@@ -157,14 +157,14 @@ def update_contract_data(_id, date = None, personal_info = None, iban = None, em
     return True
 
 def create_em():
-    em_id = requests.post(meter_url + "/meter/order/", json={}, cert=('localhost.crt', 'localhost.key'), verify=False).text
+    em_id = requests.post(meter_url + "/meter/order/", json={}, cert=mycert).text
     e = Em(em_id,0,None)
     if db_elmo_handler.create_Em(e):
         return em_id   
     return None
 
 def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, verify=False)
+    response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, cert=mycert)
     print(response)
     if response.status_code == 200:
         return response.text
