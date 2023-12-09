@@ -3,7 +3,7 @@ from database.InternalDataclasses import HistData
 class HistDataHandler:
 
     db : MoronDB    
-    collection = 'ems'
+    collection = 'hist'
 
     def __init__(self, username, password, dbname, collection = 'ems'):
         self.db = MoronDB(username,password,dbname)

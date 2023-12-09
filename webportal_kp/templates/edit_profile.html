@@ -66,9 +66,28 @@
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-meter-historic-data" class="form-label">Historischer Verbrauch</label>
-                                <input class="form-control" id="contract-meter-hist-data" placeholder="{{ h_data["data"] }}" disabled>
+                                <input class="form-control" id="contract-meter-hist-data" placeholder="{{ h_data }}" disabled>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnergiespartips" aria-expanded="false" aria-controls="collapseEnergiespartips">
+                      Energiespartipps
+                    </button>
+                </h2>
+                <div id="collapseEnergiespartips" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                        {%for value, index in e_tips.items()%}
+                            <div class="row my-1">
+                                <div class="col">
+                                    <label for="e-tip-"{{index+1}} class="form-label">Energiespartip {{index+1}}:</label>
+                                    <input class="form-control" id="energy-saving-tip-{{index+1}}" placeholder="{{value}}" disabled>
+                                </div>
+                            </div>
+                        {%endfor%}
                     </div>
                 </div>
             </div>

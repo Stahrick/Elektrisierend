@@ -24,7 +24,7 @@ class EmHandler:
     
     def get_Em_by_id(self, id) -> Em:
         try:
-            return self.db.get_item_by_id(self.collection, id)  
+            return self.db.get_item_by_id(self.collection, id)
         except:
             return False 
     def get_all(self):

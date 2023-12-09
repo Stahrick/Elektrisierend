@@ -27,7 +27,9 @@ db_acc_handler = AccountHandler(username, pw, dbname)
 db_ctr_handler = ContractHandler(username, pw, dbname)
 db_elmo_handler = EmHandler(username, pw, dbname)
 db_hist_handler = HistDataHandler(username, pw, dbname)
-pw_policy = PasswordPolicy(lowercase=12,uppercase=1,symbols=1,numbers=1,whitespace=1,min_length=16)
+pw_policy = PasswordPolicy(min_length=16)
+
+with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for v, k in enumerate(f.readlines())}
 
 #TODO: login, register, logout logic; fingerprint, css, database, password requirements
 #support, "email confirm"
@@ -98,18 +100,24 @@ def check_register(username, pw,
         return False
     #TODO check for em_id?
     #TODO insert current date or what else
+    a2pw = argon2.hash(pw)
+
+    if not em_id:
+        em_id = create_em()    
+    if not em_id:
+        return False
     contract = Contract(date,iban,em_id,ctr_state,ctr_city,ctr_zip_code,ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
-    a2pw = argon2.hash(pw)
-    print("argon hashing")
-    if contract_db:
-        print("contract_db true")
-        acc = Account(username,a2pw,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['id'])
-        acc_db = db_acc_handler.create_account(acc)
-        if acc_db:
-            print("acc_db")
-            return True #NOTE return acc_db maybe?
-    return False
+
+
+    if not contract_db:
+        return False
+    print("contract_db true")
+    acc = Account(username,a2pw,first_name,last_name,email,phone,acc_state,acc_city,acc_zip_code,acc_address,contract_db['id'])
+    acc_db = db_acc_handler.create_account(acc)
+    if acc_db:
+        print("acc_db")
+        return True #NOTE return acc_db maybe?
     
 def update_user_data(acc_id, ctr_id,
                      username  = None, pw = None,
@@ -119,7 +127,6 @@ def update_user_data(acc_id, ctr_id,
                      acc_city  = None, acc_zip_code = None, 
                      acc_address  = None, acc_contract_id = None, 
                      acc_data : dict = None, 
-                     personal_info = None, 
                      iban = None, em_id = None, 
                      ctr_state = None, ctr_city = None, 
                      ctr_zip_code = None, ctr_address = None, 
@@ -131,7 +138,7 @@ def update_user_data(acc_id, ctr_id,
             return False
     pw = argon2.hash(pw)#should only be accessible if already authenticated so np
     b1 = update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
-    b2 = update_contract_data(ctr_id, personal_info, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+    b2 = update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
     if b1 and b2:
         return True
     return False
@@ -147,7 +154,7 @@ def update_acc_data(_id,username  = None, pw = None, first_name = None, last_nam
             return db_acc_handler.update_account_by_id(_id,param)
     return True
     
-def update_contract_data(_id, date = None, personal_info = None, iban = None, em_id = None, state = None, city = None, zip_code = None, address = None, data : dict = None):
+def update_contract_data(_id, date = None, iban = None, em_id = None, state = None, city = None, zip_code = None, address = None, data : dict = None):
     param = locals()
     if param:
         del(param['_id'])
@@ -159,10 +166,18 @@ def update_contract_data(_id, date = None, personal_info = None, iban = None, em
 
 def create_em():
     em_id = requests.post(meter_url + "/meter/order/", json={}, cert=mycert, verify='RootCA.crt').text
-    e = Em(em_id,0,None)
+    h = HistData([])
+    e = Em(0,h._id,_id = em_id)
     if db_elmo_handler.create_Em(e):
-        return em_id   
+        if create_hist(h._id):
+            res = create_msb_ems(e)
+            print(res)
+            return em_id   
     return None
+def create_hist(hist_id):
+    return db_hist_handler.create_HistData(HistData([],_id = hist_id))
+
+
 
 def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
     response = requests.post(f"{msb_url}/new-contract/", files={"date":(None, date), "first_name":(None, first_name), "last_name":(None, last_name), "email":(None, email), "iban":(None, iban), "phone":(None, phone), "state":(None, state), "city":(None, city), "zip_code":(None, zip_code), "address":(None, address), "em_id":(None, em_id) }, cert=mycert, verify='RootCA.crt')
@@ -170,6 +185,11 @@ def create_msb_contract(date, first_name, last_name, email, iban, phone, state, 
     if response.status_code == 200:
         return response.text
     return False
+def create_msb_ems(em):    
+    consumption = em.em_consumption
+    hist_id = em.hist_id
+    em_id = em._id
+    return requests.post(f"{msb_url}/new-em/",json = {"consumption": consumption,"hist_id":hist_id,"em_id": em_id}, cert=mycert, verify='RootCA.crt')
 
 def get_hist_data(em_id):
     em = db_elmo_handler.get_Em_by_id(em_id)
@@ -218,16 +238,12 @@ def register():
         address = request.form['address']
         em_id = request.form['em_id']
         state = request.form['state']
-        if not em_id:
-            em_id = create_em()
-            if not em_id:
-                return render_template('register.html', error='error while creating electricity meter, please try again')
         date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         if check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, iban, em_id, state, city, zip_code, address, date):
             create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:
-            return render_template('register.html', error='invalid data')
+            return render_template('register.html', error='error while creating electricity meter, please try again')
     return render_template('register.html')
 
 @app.route('/forgot-password/', methods=['GET', 'POST'])
@@ -277,15 +293,16 @@ def edit_profile():
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         print(em)
         print()
-        hist_data = get_hist_data(ctr['em_id'])
+        hist_data = get_hist_data(ctr['em_id'])['data']
         print(hist_data)
         print()
-        return render_template('edit_profile.html', profile=user_data, h_data = hist_data,em = em)
+        return render_template('edit_profile.html', profile=user_data, h_data = hist_data,em = em, e_tips = energiespartipps)
     return redirect(url_for('login'))
 
 @app.route('/data/', methods=['POST'])
 def accept_em_data():
     if request.environ['peercert']:
+        #TODO certs
         if request.method == 'POST' and 'em' in request.form and 'consumption' in request.form:
             r_em = request.form
             em = db_elmo_handler.get_Em_by_id(r_em['_id'])
@@ -298,12 +315,12 @@ def accept_em_data():
                 if success and success2:
                     return 
             else:#create, dont care
-
                 e = Em(None,r_em['consumption'],None)
                 em = db_elmo_handler.create_Em(e)
                 if em:
-                    h = HistData([])
+                    h = HistData([],_id = em.hist_id)
                     h_data = db_hist_handler.create_HistData(h)
+                    print(h_data)
                     if h_data:
                         return make_response("successful", 200)    
         return make_response("internal server error", 500)

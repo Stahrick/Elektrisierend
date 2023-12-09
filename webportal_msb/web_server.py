@@ -18,7 +18,7 @@ from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
 from database.EMDB import EmHandler
 from database.HistDataDB import HistDataHandler
-from database.InternalDataclasses import Account, Contract
+from database.InternalDataclasses import Account, Contract, Em, HistData
 from dotenv import load_dotenv
 from urllib.parse import urljoin, quote
 
@@ -116,8 +116,7 @@ def update_user_data(acc_id, ctr_id,
     pw_hash = argon2.hash(pw_hash)
     b1 = update_acc_data(acc_id, username, pw_hash, first_name, last_name, email, phone, acc_city,
                          acc_zip_code, acc_address, acc_contract_id, acc_data)
-    b2 = update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,
-                              ctr_data)
+    b2 = update_contract_data(ctr_id,iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address,ctr_data)
     if b1 and b2:
         return True
     return False
@@ -178,7 +177,11 @@ def create_contract(date : str, first_name : str, last_name, phone : str, email 
     ctr = db_ctr_handler.create_contract(c)
     return ctr
 
-
+def create_em(em : Em):
+    e = db_elmo_handler.create_Em(em)
+    h = db_hdt_handler.create_HistData(HistData([],_id = em.hist_id))
+    if e and h:
+        return e
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -329,18 +332,23 @@ def new_contract():
                 return make_response("successful", 200)    
     return make_response("Unauthorized", 401)
 
-
-@app.route('/data/', methods=['POST'])
-def accept_em_data():
-    if request.environ['peercert']:
-        if request.method == 'POST' and 'uuid' in request.form and 'consumption' in request.form:
-            em = db_elmo_handler.get_Em_by_id(request.form['uuid'])
-            if em:
-                em.em_consumption = request.form['consumption']
-                success = db_elmo_handler.update_Em_by_id(request.form['uuid'],{"em_consumption": request.form['consumption']})
-                if success:
-                    requests.post(f"{kp_url}/data/",json={"em": em},cert=mycert, verify='RootCA.crt')
-            return False
+@app.route("/new-em/", methods=["GET", "POST"])
+def new_em():
+    print("i am not atomic")
+    cert = request.headers.get('X-Client-Certificate')
+    data = request.json
+    if True: 
+        # TODO add real cert of KP
+        if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
+            consumption = data['consumption']
+            em_id = data['em_id']
+            hist_id = data['hist_id']
+            if not db_elmo_handler.get_Em_by_id(em_id):
+                e = Em(consumption, hist_id, em_id)
+                if create_em(e):
+                    return make_response("successful", 200)    
+            return make_response("internal server error",500)
+    return make_response("Unauthorized", 401)
 
 if __name__ == "__main__":
     context = mycert

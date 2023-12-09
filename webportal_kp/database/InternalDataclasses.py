@@ -20,12 +20,13 @@ class Contract:
 
 @dataclass
 class Em:
-    _id : str
     em_consumption : float
-    hist_id : str
+    hist_id : str = field(default=None)
+    _id : str = field(repr = False, default=None)
 
     def __post_init__(self):
-        self._id = str(uuid4())
+        if not self._id:
+            self._id = str(uuid4())
         if not self.hist_id:
             self.hist_id = str(uuid4())
 
@@ -34,11 +35,12 @@ class Em:
 
 @dataclass
 class HistData:
-    _id : str = field(init = False, repr = False)
     data : list
+    _id : str = field(default = None, repr = False)
     
     def __post_init__(self):
-        self._id = str(uuid4())
+        if not self._id:
+            self._id = str(uuid4())
             
 
     def dict(self):
