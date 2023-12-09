@@ -12,6 +12,7 @@ from views.ServiceWorker import management
 from views.RevProxy import meter_management
 from GlobalStorage import export_meters, import_meters
 from SmartMeter import Meter
+from Config import mycert
 
 import logging
 import atexit
@@ -79,8 +80,8 @@ cleaner_thread.start()
 start_server()
 
 if __name__ == "__main__":
-    context = ('localhost.crt', 'localhost.key')
+    context = mycert
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=context[0])
-    ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None )
+    ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None)
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
     app.run(host='0.0.0.0', port=25565, debug=True, ssl_context=context)
