@@ -57,7 +57,7 @@ def meter_setup(device_uuid, device: Meter):
         with open("./sign_test_key.pub", "rb") as f:
             pub_key = serialization.load_pem_public_key(f.read(), backend=default_backend())
         reg_code = jwt.decode(data["registrationCode"], pub_key, issuer="msb", audience=str(device_uuid), algorithms="RS512")
-    except jwt.exceptions.InvalidTokenError:
+    except jwt.exceptions.InvalidTokenError as e:
         return "registrationCode invalid", 400
     return device.setup_meter(reg_code)
 
