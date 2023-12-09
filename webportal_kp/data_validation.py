@@ -66,7 +66,7 @@ class DataValidator:
         if not isinstance(iban, str):
             return False
         try:
-            if not re.match(r"^[0-9]+([0-9]|\s)*$", iban):
+            if not re.match(r"^[A-Za-z]{2}\s?[0-9]+([0-9]|\s)*$", iban):
                 return False
         except re.error as e:
             return False
