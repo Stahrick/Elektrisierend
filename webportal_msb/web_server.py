@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from uuid import uuid4
 import requests
-from config import kp_url, meter_url, mycert
+from config import kp_url, meter_url, mycert, root_ca
 from passlib.hash import argon2
 
 import ssl
@@ -65,6 +65,7 @@ class PeerCertWSGIRequestHandler( werkzeug.serving.WSGIRequestHandler ):
         """
         environ = super(PeerCertWSGIRequestHandler, self).make_environ()
         x509_binary = self.connection.getpeercert(True)
+        print(x509_binary) 
         if x509_binary:
             x509 = OpenSSL.crypto.load_certificate( OpenSSL.crypto.FILETYPE_ASN1, x509_binary )
             environ['peercert'] = x509
@@ -310,10 +311,8 @@ def handle_support_case():
 
 @app.route("/new-contract/", methods=["GET", "POST"])
 def new_contract():
-    print("i am atomic")
-    cert = request.headers.get('X-Client-Certificate')
-    if True: 
-        # TODO add real cert of KP
+    print("i am atomic", request.environ['peercert'])
+    if request.environ['peercert']:
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             date = request.form['date']
             first_name = request.form['first_name']
@@ -333,19 +332,19 @@ def new_contract():
 
 @app.route('/data/', methods=['POST'])
 def accept_em_data():
-    #TODO certs
-    if request.method == 'POST' and 'uuid' in request.form and 'consumption' in request.form:
-        em = db_elmo_handler.get_Em_by_id(request.form['uuid'])
-        if em:
-            em.em_consumption = request.form['consumption']
-            success = db_elmo_handler.update_Em_by_id(request.form['uuid'],{"em_consumption": request.form['consumption']})
-            if success:
-                requests.post(f"{kp_url}/data/",json={"em": em},cert=mycert, verify='RootCA.crt')
-        return False
+    if request.environ['peercert']:
+        if request.method == 'POST' and 'uuid' in request.form and 'consumption' in request.form:
+            em = db_elmo_handler.get_Em_by_id(request.form['uuid'])
+            if em:
+                em.em_consumption = request.form['consumption']
+                success = db_elmo_handler.update_Em_by_id(request.form['uuid'],{"em_consumption": request.form['consumption']})
+                if success:
+                    requests.post(f"{kp_url}/data/",json={"em": em},cert=mycert, verify='RootCA.crt')
+            return False
 
 if __name__ == "__main__":
     context = mycert
-    ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=context[0] )
+    ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=root_ca)#root_ca)
     ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
-    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=context)#, ssl_context=context)
+    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=ssl_context, request_handler=PeerCertWSGIRequestHandler)
