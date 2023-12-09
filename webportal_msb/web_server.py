@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from uuid import uuid4
 import requests
-from config import kp_url, meter_url
+from config import kp_url, meter_url, mycert
 from passlib.hash import argon2
 
 import ssl
@@ -312,8 +312,9 @@ def handle_support_case():
 
 @app.route("/new-contract/", methods=["GET", "POST"])
 def new_contract():
+    print("i am atomic")
     cert = request.headers.get('X-Client-Certificate')
-    if cert == "123": 
+    if cert == True: 
         # TODO add real cert of KP
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             date = request.form['date']
@@ -333,8 +334,7 @@ def new_contract():
 
 
 if __name__ == "__main__":
-    context = ('cert.pem', 'key.pem')
-    context = ('localhost.crt', 'localhost.key')
+    context = mycert
     ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=context[0] )
     ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
     ssl_context.verify_mode = ssl.CERT_OPTIONAL

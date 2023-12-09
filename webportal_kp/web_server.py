@@ -12,7 +12,7 @@ import werkzeug.serving
 from passlib.hash import argon2
 from password_validation import PasswordPolicy
 
-from config import msb_url, meter_url
+from config import msb_url, meter_url, mycert
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
@@ -271,8 +271,7 @@ def edit_profile():
     return redirect(url_for('login'))
 
 if __name__ == "__main__":
-    context = ('cert.pem', 'key.pem')
-    context = ('localhost.crt', 'localhost.key')
+    context = mycert
     ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=context[0] )
     ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
