@@ -350,7 +350,7 @@ def handle_support_case():
         "title": "Example title",
         "opened": datetime.datetime.now(),
         "status": "Open",
-        "device_uuid": "5f27812d-a9b4-4945-a195-8b0d2b889967",
+        "device_uuid": "7cba2246-0dbc-4ee0-b551-927736085256",
         "description": "Consumption goes up too fast. User complains about high usage and resulting fees",
         "opened_by": "Deez Nutz",
         "comments": [{"name": "Popi Aram", "comment": "Maybe has to be restarted.", "time": datetime.datetime.now()},

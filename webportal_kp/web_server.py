@@ -15,7 +15,7 @@ from passlib.hash import argon2
 from password_validation import PasswordPolicy
 
 from config import msb_url, meter_url, mycert, root_ca
-
+import OpenSSL
 import mimetypes
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
@@ -421,16 +421,9 @@ def accept_em_data():
         
 @app.route('/data/user/', methods=['GET','POST'])
 def get_user_for_msb():
-    print(request.json)
-    print(request.environ)
-    #TODO WARNING WARNING PEERCERT HELLO
-    #if request.environ['peercert']:
-    print('cert')
-    if request.method == 'POST':
-        print(0)
+    if request.method == 'POST' and request.environ["peercert"]:
         input = request.json
         if 'contract_id' in input:
-            print(0)
             acc = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
             if acc and acc[0]:
                 acc = acc[0]
@@ -473,4 +466,4 @@ if __name__ == "__main__":
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=root_ca)
     ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None)
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
-    app.run(host='0.0.0.0', port=4000, debug=True, ssl_context=context, request_handler=PeerCertWSGIRequestHandler)
+    app.run(host='0.0.0.0', port=4000, debug=True, ssl_context=ssl_context, request_handler=PeerCertWSGIRequestHandler)
