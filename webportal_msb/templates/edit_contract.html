@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="content-fluid m-4">
-    <form action="{{ url_for('edit_contract') }}" method="post" autocomplete="off">
+    <form action="{{ url_for('edit_contract') }}" method="post" autocomplete="off" enctype="multipart/form-data">
         <div class="accordion" id="contract-data-accordion">
             <div class="accordion-item">
                 <h2 class="accordion-header">
@@ -17,33 +17,39 @@
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-id" class="form-label">Vertragsnummer</label>
-                                <input name="contract-id" class="form-control" id="contract-id" placeholder="{{ contract["contract_id"] }}" disabled>
+                                <input name="contract-id" class="form-control" id="contract-id" placeholder="{{ contract["_id"] }}" disabled>
                             </div>
                         </div>
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-first-name" class="form-label">Vorname</label>
-                                <input  name="first_name" class="form-control" id="contract-first-name" placeholder="{{ contract["first_name"] }}">
+                                <input  name="first_name" class="form-control" id="contract-first-name" placeholder="{{ user["first_name"] }}">
                             </div>
                             <div class="col">
                                 <label for="contract-last-name" class="form-label">Nachname</label>
-                                <input name="last_name" class="form-control" id="contract-last-name" placeholder="{{ contract["last_name"] }}">
+                                <input name="last_name" class="form-control" id="contract-last-name" placeholder="{{ user["last_name"] }}">
                             </div>
                         </div>
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-email" class="form-label">E-Mail Adresse</label>
-                                <input  name="email" class="form-control" id="contract-email" placeholder="{{ contract["email"] }}" type="email">
+                                <input  name="email" class="form-control" id="contract-email" placeholder="{{ user["email"] }}" type="email">
                             </div>
                             <div class="col">
                                 <label for="contract-tel" class="form-label">Telefonnummer</label>
-                                <input  name="tel" class="form-control" id="contract-tel" placeholder="{{ contract["phone"] }}" type="tel">
+                                <input  name="tel" class="form-control" id="contract-tel" placeholder="{{ user["phone"] }}" type="tel">
                             </div>
                         </div>
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-iban" class="form-label">IBAN</label>
                                 <input  name="iban" class="form-control" id="contract-iban" placeholder="{{ contract["iban"] }}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-uuid" class="form-label">Zählernummer</label>
+                                <input name = "contract_id" class="form-control" id="contract-meter-uuid" placeholder="{{ contract["em_id"] }}" disabled>
                             </div>
                         </div>
                     </div>
@@ -100,7 +106,7 @@
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-meter-consumption" class="form-label">Zählerstand</label>
-                                <input class="form-control" id="contract-meter-consumption" placeholder="{{ contract["em_reading"] }}" disabled>
+                                <input name = "contract_id" class="form-control" id="contract-meter-consumption" placeholder="{{ contract["em_reading"] }}" disabled>
                             </div>
                         </div>
                     </div>

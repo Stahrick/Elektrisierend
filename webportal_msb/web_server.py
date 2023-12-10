@@ -122,11 +122,11 @@ def update_user_data(acc_id, ctr_id = None,
     if pw:
         pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
     if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
-        b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
+        b1 = _update_acc_data(acc_id, username= username, pw = pw, first_name = first_name, last_name = last_name, email = email, phone = phone, state= acc_state, city = acc_city, zip_code = acc_zip_code, address = acc_address, contract_id = acc_contract_id , data = acc_data)
     else:
         b1 = True
     if ctr_id or iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data:
-        b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
+        b2 = _update_contract_data(ctr_id, iban = iban, em_id = em_id, state = ctr_state, city = ctr_city, zip_code = ctr_zip_code, address = ctr_address, data = ctr_data)
     else:
         b2 = True
     if b1 and b2:
@@ -154,9 +154,9 @@ def _update_contract_data(_id, date=None, iban=None, em_id=None, state=None, cit
     if param:
         del (param['_id'])
         if 'data' in param:
-            return db_acc_handler.update_account_by_id(_id, data)
+            return db_ctr_handler.update_contract_by_id(_id, data)
         elif param:
-            return db_acc_handler.update_account_by_id(_id, param)
+            return db_ctr_handler.update_contract_by_id(_id, param)
     return True
 
 def get_contract_data(contract_id):
@@ -243,6 +243,7 @@ def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
         if request.method == 'POST' and request.form:
+            print(request.form.to_dict())
             first_name = request.form.get('first_name') if request.form.get('first_name') else None
             last_name = request.form.get('last_name') if request.form.get('last_name') else None
             email = request.form.get('email') if request.form.get('email') else None
@@ -252,9 +253,7 @@ def edit_contract():
             city = request.form.get('city') if request.form.get('city') else None
             zip_code = request.form.get('zip') if request.form.get('zip') else None
             address = request.form.get('address') if request.form.get('address') else None
-            print("Das ist die coole nummer", request.form)
-            # TODO update user data does not work how intended, is not true even if values are send
-            # checks if post request with correct data value pairs
+            #contract_data = get_contract_data(request.args.get('contract_id'))
             if update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=tel, iban=iban, ctr_state=state, ctr_city=city, ctr_zip_code=zip_code, ctr_address=address ):
                 # trys to update database and redirects to profile if it did
                 # updates values for account that owns the cookie
@@ -267,7 +266,7 @@ def edit_contract():
         if request.args.get('contract_id') is not None:
             contract_data = get_contract_data(request.args.get('contract_id'))
             if contract_data:
-                return render_template('edit_contract.html', contract=contract_data)
+                return render_template('edit_contract.html', user=user_data,contract=contract_data)
         return redirect(url_for('home') + '?msg=ici')
     return redirect(url_for('login'))
 
