@@ -3,7 +3,6 @@ from uuid import uuid4
 
 @dataclass
 class Contract:
-    _id : str = field(init = False, repr = False)
     date : str #TODO what format
     iban : str 
     em_id : str
@@ -11,9 +10,11 @@ class Contract:
     city : str
     zip_code : int
     address : str
+    _id : str = field(default = False, repr = False)
 
     def __post_init__(self):
-        self._id = str(uuid4())
+        if not self._id:
+            self._id = str(uuid4())
 
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}

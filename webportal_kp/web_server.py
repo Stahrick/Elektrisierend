@@ -134,7 +134,7 @@ def check_register(username, pw,
         return False, []
     contract = Contract(date, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
-
+    print(contract_db)
     if not contract_db:
         return False, []
     print("contract_db true")
@@ -142,6 +142,7 @@ def check_register(username, pw,
                   contract_db['id'])
     acc_db = db_acc_handler.create_account(acc)
     if acc_db:
+        create_msb_contract(date, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, contract_db['id'])
         print("acc_db")
         return True, []  # NOTE return acc_db maybe?
 
@@ -184,11 +185,11 @@ def update_user_data(acc_id, ctr_id = None,
             missed_reqs = pw_policy.test_password(pw)  # TODO how do i get this out of here
             return False
         pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
-    if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
+    if  (username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data) and acc_id:
         b1 = _update_acc_data(acc_id, username= username, pw = pw, first_name = first_name, last_name = last_name, email = email, phone = phone, state= acc_state, city = acc_city, zip_code = acc_zip_code, address = acc_address, contract_id = acc_contract_id , data = acc_data)
     else:
         b1 = True
-    if ctr_id or iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data:
+    if (iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data) and ctr_id :
         b2 = _update_contract_data(ctr_id, iban = iban, em_id = em_id, state = ctr_state, city = ctr_city, zip_code = ctr_zip_code, address = ctr_address, data = ctr_data)
     else:
         b2 = True
@@ -239,10 +240,8 @@ def create_hist_data(hist_id):
     return db_hist_handler.create_HistData(HistData([], _id=hist_id))
 
 
-def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post(f"{msb_url}/new-contract/", files={"date": (None, date), "first_name": (None, first_name),
-                                                                "last_name": (None, last_name), "email": (None, email),
-                                                                "iban": (None, iban), "phone": (None, phone),
+def create_msb_contract(date, iban, em_id, state, city, zip_code, address, contract_id):
+    response = requests.post(f"{msb_url}/new-contract/", files={"id": (None, contract_id),"date": (None, date), "iban": (None, iban),
                                                                 "state": (None, state), "city": (None, city),
                                                                 "zip_code": (None, zip_code),
                                                                 "address": (None, address), "em_id": (None, em_id)},
@@ -314,7 +313,6 @@ def register():
         check = check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, iban,
                           em_id, state, city, zip_code, address, date)
         if check[0]:
-            create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:
             return render_template('register.html', errors=check[1], sub_data=request.form)
@@ -423,23 +421,47 @@ def get_user_for_msb():
     #if request.environ['peercert']:
     print('cert')
     if request.method == 'POST':
+        print(0)
         input = request.json
         if 'contract_id' in input:
-            acc = db_acc_handler.get_account_by_ctr_id(input['contract_id'])# same id??
+            print(0)
+            acc = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
+            if acc and acc[0]:
+                acc = acc[0]
             ctr_id = input.pop('contract_id')
-            success = update_user_data(acc_id=acc['_id'],ctr_id=ctr_id,**input) #dark magic
-            if success:
-                return acc 
+            print(input)
             
-    if request.method == 'GET' and 'contract_id' in request.form:
+            first_name = input['first_name'] if'first_name' in input else None
+            last_name = input['last_name'] if 'last_name' in input else None
+            email = input['email'] if'email' in input else None
+            tel = input['tel'] if 'tel' in input else None
+            iban = input['iban'] if 'iban' in input else None
+            state = input['state'] if 'state' in input else None
+            city = input['city'] if 'city' in input else None
+            zip_code = input['zip'] if 'zip' in input else None
+            address = input['address'] if'address' in input else None
+            success = update_user_data(acc_id=acc['_id'],ctr_id=ctr_id,first_name=first_name,last_name=last_name,email=email,phone=tel,iban=iban,acc_state=state,acc_city=city,acc_zip_code=zip_code,acc_address=address)
+            if success:
+                return acc #thats not the updated user
+        else:
+            return make_response("no",404)
+        return make_response("no",500)
+            
+    if request.method == 'GET' and 'contract_id' in request.json:
+        print(1)
         input = request.json
         print(2)
+        print(input['contract_id'])
         user = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
+        print(3)
+        if user and user[0]:
+            user = user[0]
+        else: 
+            return make_response("1internal server error", 500)
         print(user)
         return user
     return make_response("internal server error", 500)
-       
-    return False
+
 if __name__ == "__main__":
     context = mycert
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=root_ca)
