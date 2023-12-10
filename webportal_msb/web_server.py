@@ -119,7 +119,8 @@ def update_user_data(acc_id, ctr_id = None,
         acc = db_acc_handler.get_account_by_id(acc_id)
         if acc:
             ctr_id = acc['contract_id']
-    pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
+    if pw:
+        pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
     if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
         b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
     else:
