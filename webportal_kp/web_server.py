@@ -357,7 +357,8 @@ def home():
         hist_data = get_hist_data(ctr['em_id'])['data']
         if len(hist_data)>12:
             hist_data = hist_data[-12:]
-        return render_template('home.html',  h_data=hist_data, em=em, e_tips=energiespartipps)
+        forecast = hist_data[-1]-hist_data[-2]
+        return render_template('home.html',  forecast = forecast, h_data=hist_data, em=em, e_tips=energiespartipps)
     return redirect(url_for('login'))
 
 
@@ -378,17 +379,10 @@ def edit_profile():
             else:
                 # returns error if it cant update
                 return render_template('edit_profile', profile=user_data, error='Cant update your Profile')
-        print(user_data)
         ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
-        print(ctr)
-        print()
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
-        print(em)
-        print()
         hist_data = get_hist_data(ctr['em_id'])['data']
-        print(hist_data)
-        print()
-        return render_template('edit_profile.html', profile=user_data, h_data=hist_data, em=em, e_tips=energiespartipps)
+        return render_template('edit_profile.html', profile=user_data,iban = ctr['iban'], h_data=hist_data, em=em, e_tips=energiespartipps)
     return redirect(url_for('login'))
 
 

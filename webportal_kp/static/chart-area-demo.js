@@ -31,11 +31,13 @@ function get_value(value){
 // Area Chart Example
 var ctx = document.getElementById("HistoricalDataChart");
 var inpdata = JSON.parse(document.getElementById("input_data").innerHTML)
-console.log(inpdata)
+var l = inpdata.length
+var months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"] //this would normally be dynamic but thats just out of scope :)
+months = months.slice(months.length-l)
 var myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: months,
     datasets: [{
       label: "Verbrauch",
       lineTension: 0.3,
