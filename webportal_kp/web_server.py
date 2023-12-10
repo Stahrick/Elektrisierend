@@ -224,7 +224,7 @@ def _update_contract_data(_id, date=None, iban=None, em_id=None, state=None, cit
 
 
 def create_em():
-    em_id = requests.post(meter_url + "/meter/order/", json={}, cert=mycert, verify='RootCA.crt').text
+    em_id = requests.post(meter_url + "/meter/order/", json={}, cert=mycert, verify=root_ca).text
     h = HistData([])
     e = Em(0, h._id, _id=em_id)
     if db_elmo_handler.create_Em(e):
@@ -246,7 +246,7 @@ def create_msb_contract(date, first_name, last_name, email, iban, phone, state, 
                                                                 "state": (None, state), "city": (None, city),
                                                                 "zip_code": (None, zip_code),
                                                                 "address": (None, address), "em_id": (None, em_id)},
-                             cert=mycert, verify='RootCA.crt')
+                             cert=mycert, verify=root_ca)
     print(response)
     if response.status_code == 200:
         return response.text
@@ -258,7 +258,7 @@ def create_msb_ems(em):
     hist_id = em.hist_id
     em_id = em._id
     return requests.post(f"{msb_url}/new-em/", json={"consumption": consumption, "hist_id": hist_id, "em_id": em_id},
-                         cert=mycert, verify='RootCA.crt')
+                         cert=mycert, verify=root_ca)
 
 
 def get_hist_data(em_id):
