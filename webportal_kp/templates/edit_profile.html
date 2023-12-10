@@ -55,8 +55,14 @@
                         </div>
                         <div class="row my-1">
                             <div class="col">
+                                <label for="contract-id" class="form-label">Vertragsnummer</label>
+                                <input class="form-control" id="contract-id" placeholder="{{ctr['_id']}}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
                                 <label for="contract-iban" class="form-label">IBAN</label>
-                                <input class="form-control" id="contract-iban" placeholder="{{iban}}">
+                                <input class="form-control" id="contract-iban" placeholder="{{ctr['iban']}}">
                             </div>
                         </div>
                     </div>

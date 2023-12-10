@@ -386,7 +386,7 @@ def edit_profile():
         ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         hist_data = get_hist_data(ctr['em_id'])['data']
-        return render_template('edit_profile.html', profile=user_data,iban = ctr['iban'], h_data=hist_data, em=em, e_tips=energiespartipps)
+        return render_template('edit_profile.html', profile=user_data,ctr = ctr, h_data=hist_data, em=em, e_tips=energiespartipps)
     return redirect(url_for('login'))
 
 
