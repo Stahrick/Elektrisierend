@@ -8,6 +8,7 @@ import requests
 from config import kp_url, meter_url, mycert, root_ca
 from passlib.hash import argon2
 from api_requests import send_registration_mail
+import json as JSON
 
 import ssl
 import werkzeug.serving
@@ -121,11 +122,11 @@ def update_user_data(acc_id, ctr_id = None,
             ctr_id = acc['contract_id']
     if pw:
         pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
-    if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
+    if  (username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data) and acc_id:
         b1 = _update_acc_data(acc_id, username= username, pw = pw, first_name = first_name, last_name = last_name, email = email, phone = phone, state= acc_state, city = acc_city, zip_code = acc_zip_code, address = acc_address, contract_id = acc_contract_id , data = acc_data)
     else:
         b1 = True
-    if ctr_id or iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data:
+    if (iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data) and ctr_id :
         b2 = _update_contract_data(ctr_id, iban = iban, em_id = em_id, state = ctr_state, city = ctr_city, zip_code = ctr_zip_code, address = ctr_address, data = ctr_data)
     else:
         b2 = True
@@ -182,8 +183,8 @@ def check_em_id(id):
         return True
     return False
 
-def create_contract(date : str, first_name : str, last_name, phone : str, email : str, iban : str, state : str, city : str, zip_code : int, address : str, em_id : str):
-    c = Contract(date = date,iban = iban, em_id = em_id,state=state,city=city,zip_code=zip_code,address = address)
+def create_contract(_id : str, date : str, iban : str, state : str, city : str, zip_code : int, address : str, em_id : str):
+    c = Contract(date = date,iban = iban, em_id = em_id,state=state,city=city,zip_code=zip_code,address = address, _id = _id)
     ctr = db_ctr_handler.create_contract(c)
     return ctr
 
@@ -238,9 +239,27 @@ def home():
 def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data and session.get('role')=='office':
-        if request.method == 'POST' and request.form and '_id' in request.form:
+        if request.method == 'POST' and request.form and 'contract_id' in request.form:
             print(request.form.to_dict())
-            cid_kun = request.form.get('_id') # TODO EEEEEEEEEEEEEEEEEMILLLLLLLLLLLLLLLLLLLLLLLLLLLLLL <3
+            d = request.form.to_dict()
+            print(d)
+            data = dict()
+            for k,v in d.items():
+                if v and v !='':
+                    data.update({k:v})
+            data.pop('otp')
+            print(data)
+            """data['contract_id'] = d['contract_id']
+            data['first_name'] = d['first_name']
+            data['last_name'] = d['last_name']
+            data['email'] = d['email']
+            data['tel'] = d['tel']
+            data['iban'] = d['iban']
+            data['state'] = d['state']
+            data['city'] = d['city']
+            data['zip'] = d['zip']
+            data['address'] = d['address']
+            cid_kun = request.form.get('contract_id') 
             first_name = request.form.get('first_name') if request.form.get('first_name') else None
             last_name = request.form.get('last_name') if request.form.get('last_name') else None
             email = request.form.get('email') if request.form.get('email') else None
@@ -249,21 +268,40 @@ def edit_contract():
             state = request.form.get('state') if request.form.get('state') else None
             city = request.form.get('city') if request.form.get('city') else None
             zip_code = request.form.get('zip') if request.form.get('zip') else None
-            address = request.form.get('address') if request.form.get('address') else None
+            address = request.form.get('address') if request.form.get('address') else None"""
             #contract_data = get_contract_data(request.args.get('contract_id'))
-            if update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=tel, iban=iban, ctr_state=state, ctr_city=city, ctr_zip_code=zip_code, ctr_address=address ):
-                # trys to update database and redirects to profile if it did
-                # updates values for account that owns the cookie
-                print("ich bin so dolle gekommen")
+            response = requests.post(kp_url + "/data/user/", json=data,cert = mycert, verify=root_ca)
+            if not response.status_code == 200:
+                return render_template('edit_contract.html', user = request.form, contract=request.form,
+                                       error='Cant update your Profile')
+            output = JSON.loads(response.text) #returns user if successful
+            ctr_id =  data['contract_id']
+            first_name = data['first_name'] if'first_name' in data else None
+            last_name = data['last_name'] if 'last_name' in data else None
+            email = data['email'] if'email' in data else None
+            tel = data['tel'] if 'tel' in data else None
+            iban = data['iban'] if 'iban' in data else None
+            state = data['state'] if 'state' in data else None
+            city = data['city'] if 'city' in data else None
+            zip_code = data['zip'] if 'zip' in data else None
+            address = data['address'] if'address' in data else None
+            success = update_user_data(acc_id= None,ctr_id=ctr_id,first_name=first_name,last_name=last_name,email=email,phone=tel,iban=iban,acc_state=state,acc_city=city,acc_zip_code=zip_code,acc_address=address)
+            if success:
                 return redirect(url_for('home'))
             else:
-                # returns error if it cant update
-                return render_template('edit_contract.html', contract=request.form,
+                return render_template('edit_contract.html', user = request.form, contract=request.form,
                                        error='Cant update your Profile')
+                
         if request.args.get('contract_id') is not None:
             contract_data = get_contract_data(request.args.get('contract_id'))
             if contract_data:
-                return render_template('edit_contract.html', user=user_data,contract=contract_data)
+                response = requests.get(kp_url + "/data/user/", json={'contract_id':contract_data['_id']},cert = mycert, verify=root_ca)
+                if not response.status_code == 200:
+                    return render_template('edit_contract.html', user = output,contract=request.form,
+                                       error='Cant update your Profile')
+                user = JSON.loads(response.text)
+                print(user)
+                return render_template('edit_contract.html', user=user,contract=contract_data)
         return redirect(url_for('home') + '?msg=ici')
     return redirect(url_for('login'))
 
@@ -326,19 +364,19 @@ def new_contract():
     print("i am not atomic", request.environ['peercert'])
     if request.environ['peercert']:
         if True: #if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
+            print("\n\n\n\n",request.form.to_dict())
+            _id = request.form['id']
             date = request.form['date']
-            first_name = request.form['first_name']
-            last_name = request.form['last_name']
-            phone = request.form['phone']
-            email = request.form['email']
             iban = request.form['iban']
             state = request.form['state']
             city = request.form['city']
             zip_code = request.form['zip_code']
             address = request.form['address']
             em_id = request.form['em_id']
-            if create_contract(date, first_name, last_name, phone, email,  iban, state, city, zip_code, address, em_id):
-                return make_response("successful", 200)    
+            #NOTE no more user data saved :)
+            c = create_contract(_id, date, iban, state, city, zip_code, address, em_id)
+            if c:
+                return make_response("successful", 200)
     return make_response("Unauthorized", 401)
 
 @app.route("/new-em/", methods=["GET", "POST"])

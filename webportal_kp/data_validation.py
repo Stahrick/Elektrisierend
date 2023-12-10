@@ -25,7 +25,7 @@ class DataValidator:
         if not isinstance(email, str):
             return False
         try:
-            if not re.match(r"^[a-zA-Z0-9ßäöüÄÖÜ]+([._+-][a-zA-Z0-9ßäöüÄÖÜ]+)*@[0-9a-zA-ZßäöüÄÖÜ]+.[a-zA-ZßäöüÄÖÜ]{2,4}+([.][a-zA-ZßäöüÄÖÜ]{2,3})?$", email):
+            if not re.match(r"^[a-zA-Z0-9ßäöüÄÖÜ]+([._+-][a-zA-Z0-9ßäöüÄÖÜ]+)*@[0-9a-zA-ZßäöüÄÖÜ]+.[a-zA-ZßäöüÄÖÜ]{2,4}([.][a-zA-ZßäöüÄÖÜ]{2,3})?$", email):
                 return False
         except re.error as e:
             return False

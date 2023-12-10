@@ -36,6 +36,13 @@ class AccountHandler:
         except:
             return None
     
+     #!could return a list of users    
+    def get_account_by_ctr_id(self, ctr_id):
+        try:
+            return self.db.get_items(self.collection, {"contract_id" : ctr_id})
+        except:
+            return None
+    
     def update_account_by_id(self, id, data : dict):
         try:
             if 'pw' in data:

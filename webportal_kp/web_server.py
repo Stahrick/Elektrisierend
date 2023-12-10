@@ -16,6 +16,10 @@ from password_validation import PasswordPolicy
 
 from config import msb_url, meter_url, mycert, root_ca
 
+import mimetypes
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -30,7 +34,7 @@ db_elmo_handler = EmHandler(username, pw, dbname)
 db_hist_handler = HistDataHandler(username, pw, dbname)
 pw_policy = PasswordPolicy(min_length=12, min_entropy=0.0000001)
 
-with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for v, k in enumerate(f.readlines())}
+with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for k, v in enumerate(f.readlines())}
 
 
 # TODO: login, register, logout logic; fingerprint, css, database, password requirements
@@ -134,7 +138,7 @@ def check_register(username, pw,
         return False, []
     contract = Contract(date, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
-
+    print(contract_db)
     if not contract_db:
         return False, []
     print("contract_db true")
@@ -142,6 +146,7 @@ def check_register(username, pw,
                   contract_db['id'])
     acc_db = db_acc_handler.create_account(acc)
     if acc_db:
+        create_msb_contract(date, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, contract_db['id'])
         print("acc_db")
         return True, []  # NOTE return acc_db maybe?
 
@@ -184,11 +189,11 @@ def update_user_data(acc_id, ctr_id = None,
             missed_reqs = pw_policy.test_password(pw)  # TODO how do i get this out of here
             return False
         pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
-    if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
+    if  (username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data) and acc_id:
         b1 = _update_acc_data(acc_id, username= username, pw = pw, first_name = first_name, last_name = last_name, email = email, phone = phone, state= acc_state, city = acc_city, zip_code = acc_zip_code, address = acc_address, contract_id = acc_contract_id , data = acc_data)
     else:
         b1 = True
-    if ctr_id or iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data:
+    if (iban or em_id or ctr_state or ctr_city or ctr_zip_code or ctr_address or ctr_data) and ctr_id :
         b2 = _update_contract_data(ctr_id, iban = iban, em_id = em_id, state = ctr_state, city = ctr_city, zip_code = ctr_zip_code, address = ctr_address, data = ctr_data)
     else:
         b2 = True
@@ -239,10 +244,8 @@ def create_hist_data(hist_id):
     return db_hist_handler.create_HistData(HistData([], _id=hist_id))
 
 
-def create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id):
-    response = requests.post(f"{msb_url}/new-contract/", files={"date": (None, date), "first_name": (None, first_name),
-                                                                "last_name": (None, last_name), "email": (None, email),
-                                                                "iban": (None, iban), "phone": (None, phone),
+def create_msb_contract(date, iban, em_id, state, city, zip_code, address, contract_id):
+    response = requests.post(f"{msb_url}/new-contract/", files={"id": (None, contract_id),"date": (None, date), "iban": (None, iban),
                                                                 "state": (None, state), "city": (None, city),
                                                                 "zip_code": (None, zip_code),
                                                                 "address": (None, address), "em_id": (None, em_id)},
@@ -314,7 +317,6 @@ def register():
         check = check_register(username, password, first_name, last_name, email, phone, state, city, zip_code, address, iban,
                           em_id, state, city, zip_code, address, date)
         if check[0]:
-            create_msb_contract(date, first_name, last_name, email, iban, phone, state, city, zip_code, address, em_id)
             return redirect(url_for('login'))
         else:
             return render_template('register.html', errors=check[1], sub_data=request.form)
@@ -354,11 +356,13 @@ def home():
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         print(em)
         print()
-        hist_data = get_hist_data(ctr['em_id'])['data']
+        hist_data =  [int(i) if i else 0 for i in ((get_hist_data(ctr['em_id'])['data'])).strip('][').split(', ')]
         if len(hist_data)>12:
             hist_data = hist_data[-12:]
-        forecast = hist_data[-1]-hist_data[-2]
-        return render_template('home.html',  forecast = forecast, h_data=hist_data, em=em, e_tips=energiespartipps)
+        forecast = hist_data[-1]-hist_data[-2] if len(hist_data) > 1 else "not enough data to calculate"
+        resp = make_response(render_template('home.html',  forecast = forecast, h_data=hist_data, em=em, e_tips=energiespartipps))
+        resp.headers['charset'] = 'utf-8'
+        return resp
     return redirect(url_for('login'))
 
 
@@ -382,7 +386,7 @@ def edit_profile():
         ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         hist_data = get_hist_data(ctr['em_id'])['data']
-        return render_template('edit_profile.html', profile=user_data,iban = ctr['iban'], h_data=hist_data, em=em, e_tips=energiespartipps)
+        return render_template('edit_profile.html', profile=user_data,ctr = ctr, h_data=hist_data, em=em, e_tips=energiespartipps)
     return redirect(url_for('login'))
 
 
@@ -413,7 +417,56 @@ def accept_em_data():
         return make_response("internal server error", 500)
         # always great success
         # return False
-
+        
+        
+@app.route('/data/user/', methods=['GET','POST'])
+def get_user_for_msb():
+    print(request.json)
+    print(request.environ)
+    #TODO WARNING WARNING PEERCERT HELLO
+    #if request.environ['peercert']:
+    print('cert')
+    if request.method == 'POST':
+        print(0)
+        input = request.json
+        if 'contract_id' in input:
+            print(0)
+            acc = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
+            if acc and acc[0]:
+                acc = acc[0]
+            ctr_id = input.pop('contract_id')
+            print(input)
+            
+            first_name = input['first_name'] if'first_name' in input else None
+            last_name = input['last_name'] if 'last_name' in input else None
+            email = input['email'] if'email' in input else None
+            tel = input['tel'] if 'tel' in input else None
+            iban = input['iban'] if 'iban' in input else None
+            state = input['state'] if 'state' in input else None
+            city = input['city'] if 'city' in input else None
+            zip_code = input['zip'] if 'zip' in input else None
+            address = input['address'] if'address' in input else None
+            success = update_user_data(acc_id=acc['_id'],ctr_id=ctr_id,first_name=first_name,last_name=last_name,email=email,phone=tel,iban=iban,acc_state=state,acc_city=city,acc_zip_code=zip_code,acc_address=address)
+            if success:
+                return acc #thats not the updated user
+        else:
+            return make_response("no",404)
+        return make_response("no",500)
+            
+    if request.method == 'GET' and 'contract_id' in request.json:
+        print(1)
+        input = request.json
+        print(2)
+        print(input['contract_id'])
+        user = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
+        print(3)
+        if user and user[0]:
+            user = user[0]
+        else: 
+            return make_response("1internal server error", 500)
+        print(user)
+        return user
+    return make_response("internal server error", 500)
 
 if __name__ == "__main__":
     context = mycert
