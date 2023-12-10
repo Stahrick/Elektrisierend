@@ -241,9 +241,10 @@ def home():
 @app.route('/edit_contract/', methods=['GET', 'POST'])
 def edit_contract():
     user_data = check_session(session.get('uuid'))
-    if user_data:
-        if request.method == 'POST' and request.form:
+    if user_data and session.get('role')=='office':
+        if request.method == 'POST' and request.form and '_id' in request.form:
             print(request.form.to_dict())
+            cid_kun = request.form.get('_id') # TODO EEEEEEEEEEEEEEEEEMILLLLLLLLLLLLLLLLLLLLLLLLLLLLLL <3
             first_name = request.form.get('first_name') if request.form.get('first_name') else None
             last_name = request.form.get('last_name') if request.form.get('last_name') else None
             email = request.form.get('email') if request.form.get('email') else None
