@@ -16,6 +16,10 @@ from password_validation import PasswordPolicy
 
 from config import msb_url, meter_url, mycert, root_ca
 
+import mimetypes
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -30,7 +34,7 @@ db_elmo_handler = EmHandler(username, pw, dbname)
 db_hist_handler = HistDataHandler(username, pw, dbname)
 pw_policy = PasswordPolicy(min_length=12, min_entropy=0.0000001)
 
-with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for v, k in enumerate(f.readlines())}
+with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for k, v in enumerate(f.readlines())}
 
 
 # TODO: login, register, logout logic; fingerprint, css, database, password requirements
@@ -352,11 +356,13 @@ def home():
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         print(em)
         print()
-        hist_data = get_hist_data(ctr['em_id'])['data']
+        hist_data =  [int(i) if i else 0 for i in ((get_hist_data(ctr['em_id'])['data'])).strip('][').split(', ')]
         if len(hist_data)>12:
             hist_data = hist_data[-12:]
-        forecast = hist_data[-1]-hist_data[-2]
-        return render_template('home.html',  forecast = forecast, h_data=hist_data, em=em, e_tips=energiespartipps)
+        forecast = hist_data[-1]-hist_data[-2] if len(hist_data) > 1 else "not enough data to calculate"
+        resp = make_response(render_template('home.html',  forecast = forecast, h_data=hist_data, em=em, e_tips=energiespartipps))
+        resp.headers['charset'] = 'utf-8'
+        return resp
     return redirect(url_for('login'))
 
 

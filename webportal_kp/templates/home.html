@@ -27,32 +27,36 @@
     <form action="{{ url_for('edit_profile') }}" method="post">
         <div class="accordion" id="contract-data-accordion">
             <div class="accordion-item">
+
                 <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnergiespartips" aria-expanded="false" aria-controls="collapseEnergiespartips">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistData" aria-expanded="false" aria-controls="collapseHistData">
                         Historische Daten
                     </button>
                 </h2> 
-                <div class="row my-1">
-                    <div class="col">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <p class="d-none" id="input_data">{{h_data}}</p>
-                                <h6 class="m-0 font-weight-bold text-primary"></h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-area">
-                                    <canvas id="HistoricalDataChart"></canvas>
+                <div id="collapseHistData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="row my-1">
+                        <div class="col">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <p class="d-none" id="input_data">{{h_data}}</p>
+                                    <h6 class="m-0 font-weight-bold text-primary"></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="HistoricalDataChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row my-1">
-                    <div class="col">
-                        <label for="forecast" class="form-label">Prognose</label>
-                        <input class="form-control" id="forecast" placeholder="{{ forecast }}" disabled>
+                    <div class="row my-1">
+                        <div class="col">
+                            <label for="forecast" class="form-label">Prognose des nächsten Monats:</label>
+                            <input class="form-control" id="forecast" placeholder="{{ forecast }} kWh" disabled>
+                        </div>
                     </div>
                 </div>
+
                 <h2 class="accordion-header">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnergiespartips" aria-expanded="false" aria-controls="collapseEnergiespartips">
                         Energiespartipps
@@ -60,7 +64,7 @@
                 </h2>                
                 <div id="collapseEnergiespartips" class="accordion-collapse collapse show multi-collapse">
                     <div class="accordion-body py-1">
-                        {%for value, index in e_tips.items()%}
+                        {%for index, value in e_tips.items()%}
                             <div class="row my-1">
                                 <div class="col">
                                     <label for="e-tip-"{{index+1}} class="form-label">Energiespartip {{index+1}}:</label>
