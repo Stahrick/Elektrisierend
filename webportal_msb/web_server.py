@@ -119,7 +119,8 @@ def update_user_data(acc_id, ctr_id = None,
         acc = db_acc_handler.get_account_by_id(acc_id)
         if acc:
             ctr_id = acc['contract_id']
-    pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
+    if pw:
+        pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
     b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code,
                          acc_address, acc_contract_id, acc_data)
     b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
@@ -237,15 +238,19 @@ def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
         if request.method == 'POST' and request.form:
-            for form_data in request.form:
-                pass
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            email = request.form.get('email')
+            tel = request.form.get('tel')
+            iban = request.form.get('iban')
+            print("Das ist die coole nummer", request.form)
             # TODO requested data doesn't fit form data
             # checks if post request with correct data value pairs
-            if update_user_data(user_data['_id'], username=username, email=email, phone=phone):
+            if update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=tel, iban=iban ):
                 # trys to update database and redirects to profile if it did
                 # updates values for account that owns the cookie
-
-                return redirect(url_for('profile'))
+                print("ich bin so dolle gekommen")
+                return redirect(url_for('home'))
             else:
                 # returns error if it cant update
                 return render_template('edit_contract.html', contract=request.form,

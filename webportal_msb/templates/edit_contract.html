@@ -60,21 +60,21 @@
                         <div class="row my-1">
                             <div class="col">
                                 <label for="contract-street" class="form-label">Straße</label>
-                                <input class="form-control" id="contract-street" placeholder="{{ contract["address"] }}">
+                                <input name="address" class="form-control" id="contract-street" placeholder="{{ contract["address"] }}">
                             </div>
                         </div>
                         <div class="row my-1">
                             <div class="col-2">
                                 <label for="contract-zip-code" class="form-label">Postleitzahl</label>
-                                <input class="form-control" id="contract-zip-code" placeholder="{{ contract["zip_code"] }}" type="number">
+                                <input name="zip" class="form-control" id="contract-zip-code" placeholder="{{ contract["zip_code"] }}" type="number">
                             </div>
                             <div class="col">
                                 <label for="contract-city" class="form-label">Stadt</label>
-                                <input class="form-control" id="contract-city" placeholder="{{ contract["city"] }}">
+                                <input name="city" class="form-control" id="contract-city" placeholder="{{ contract["city"] }}">
                             </div>
                             <div class="col-4">
                                 <label for="contract-state" class="form-label">Land</label>
-                                <input class="form-control" id="contract-state" placeholder="{{ contract["state"] }}">
+                                <input name="state" class="form-control" id="contract-state" placeholder="{{ contract["state"] }}">
                             </div>
                         </div>
                         <div class="row my-1">
@@ -110,7 +110,7 @@
         <div class="row py-1">
             <label for="contract-change-otp" class="form-label font-weight-bold">Änderungscode des Kunden</label>
             <div class="col-4 input-group">
-                <input class="form-control form-control-lg border border-2 border-warning" id="contract-change-otp" placeholder="OTP erhalten vom Kunden" required>
+                <input name="otp" class="form-control form-control-lg border border-2 border-warning" id="contract-change-otp" placeholder="OTP erhalten vom Kunden" required>
                 <button type="submit" class="btn btn-success w-25">Absenden</button>
             </div>
         </div>
