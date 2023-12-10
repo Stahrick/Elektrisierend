@@ -34,7 +34,6 @@ db_elmo_handler = EmHandler(username, pw, dbname)
 db_hist_handler = HistDataHandler(username, pw, dbname)
 pw_policy = PasswordPolicy(min_length=12, min_entropy=0.0000001)
 
-with open("textfiles/energietipps.txt") as f: energiespartipps = {k: v for k, v in enumerate(f.readlines())}
 
 
 # TODO: login, register, logout logic; fingerprint, css, database, password requirements
@@ -360,7 +359,7 @@ def home():
         if len(hist_data)>12:
             hist_data = hist_data[-12:]
         forecast = hist_data[-1]-hist_data[-2] if len(hist_data) > 1 else "not enough data to calculate"
-        resp = make_response(render_template('home.html',  forecast = forecast, h_data=hist_data, em=em, e_tips=energiespartipps))
+        resp = make_response(render_template('home.html',  forecast = forecast, h_data=hist_data, em=em))
         resp.headers['charset'] = 'utf-8'
         return resp
     return redirect(url_for('login'))
@@ -386,7 +385,7 @@ def edit_profile():
         ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         hist_data = get_hist_data(ctr['em_id'])['data']
-        return render_template('edit_profile.html', profile=user_data,ctr = ctr, h_data=hist_data, em=em, e_tips=energiespartipps)
+        return render_template('edit_profile.html', profile=user_data,ctr = ctr, h_data=hist_data, em=em)
     return redirect(url_for('login'))
 
 
