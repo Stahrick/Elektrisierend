@@ -129,14 +129,14 @@ def update_user_data(acc_id, ctr_id = None,
         b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
     else:
         b2 = True
-    if b1 or b2:
+    if b1 and b2:
         return True
     return False
 
 def _update_acc_data(_id, username=None, pw=None, first_name=None, last_name=None, email=None, phone=None, state=None,
                     city=None, zip_code=None, address=None, contract_id=None, data: dict = None) -> bool:
     params = locals()
-    param = {k: v for k, v in params.items() if v is not None}
+    param = {k: v for k, v in params.items() if v}
     if param:
         del (param['_id'])
         if db_acc_handler.get_account_by_username(username):
@@ -243,15 +243,19 @@ def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data:
         if request.method == 'POST' and request.form:
-            first_name = request.form.get('first_name')
-            last_name = request.form.get('last_name')
-            email = request.form.get('email')
-            tel = request.form.get('tel')
-            iban = request.form.get('iban')
+            first_name = request.form.get('first_name') if request.form.get('first_name') else None
+            last_name = request.form.get('last_name') if request.form.get('last_name') else None
+            email = request.form.get('email') if request.form.get('email') else None
+            tel = request.form.get('tel') if request.form.get('tel') else None
+            iban = request.form.get('iban') if request.form.get('iban') else None
+            state = request.form.get('state') if request.form.get('state') else None
+            city = request.form.get('city') if request.form.get('city') else None
+            zip_code = request.form.get('zip') if request.form.get('zip') else None
+            address = request.form.get('address') if request.form.get('address') else None
             print("Das ist die coole nummer", request.form)
-            # TODO requested data doesn't fit form data
+            # TODO update user data does not work how intended, is not true even if values are send
             # checks if post request with correct data value pairs
-            if update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=tel, iban=iban ):
+            if update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=tel, iban=iban, ctr_state=state, ctr_city=city, ctr_zip_code=zip_code, ctr_address=address ):
                 # trys to update database and redirects to profile if it did
                 # updates values for account that owns the cookie
                 print("ich bin so dolle gekommen")
