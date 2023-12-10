@@ -388,7 +388,7 @@ def edit_profile():
         hist_data = get_hist_data(ctr['em_id'])['data']
         print(hist_data)
         print()
-        return render_template('edit_profile.html', profile=user_data, h_data=hist_data, em=em, e_tips=energiespartipps)
+        return render_template('edit_profile.html', profile=user_data,iban = ctr['iban'], h_data=hist_data, em=em, e_tips=energiespartipps)
     return redirect(url_for('login'))
 
 
