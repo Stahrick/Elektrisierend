@@ -183,7 +183,7 @@ def update_user_data(acc_id, ctr_id = None,
         if not pw_policy.validate(pw):
             missed_reqs = pw_policy.test_password(pw)  # TODO how do i get this out of here
             return False
-    pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
+        pw = argon2.hash(pw)  # should only be accessible if already authenticated so np
     if acc_id or username or pw or first_name or last_name or email or phone or acc_state or acc_city or acc_zip_code or acc_address or acc_contract_id or acc_data:
         b1 = _update_acc_data(acc_id, username, pw, first_name, last_name, email, phone, acc_state, acc_city, acc_zip_code, acc_address, acc_contract_id, acc_data)
     else:
