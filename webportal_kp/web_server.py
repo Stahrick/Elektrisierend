@@ -413,8 +413,33 @@ def accept_em_data():
         return make_response("internal server error", 500)
         # always great success
         # return False
-
-
+        
+        
+@app.route('/data/user/', methods=['GET','POST'])
+def get_user_for_msb():
+    print(request.json)
+    print(request.environ)
+    #TODO WARNING WARNING PEERCERT HELLO
+    #if request.environ['peercert']:
+    print('cert')
+    if request.method == 'POST':
+        input = request.json
+        if 'contract_id' in input:
+            acc = db_acc_handler.get_account_by_ctr_id(input['contract_id'])# same id??
+            ctr_id = input.pop('contract_id')
+            success = update_user_data(acc_id=acc['_id'],ctr_id=ctr_id,**input) #dark magic
+            if success:
+                return acc 
+            
+    if request.method == 'GET' and 'contract_id' in request.form:
+        input = request.json
+        print(2)
+        user = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
+        print(user)
+        return user
+    return make_response("internal server error", 500)
+       
+    return False
 if __name__ == "__main__":
     context = mycert
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=root_ca)
