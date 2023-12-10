@@ -87,7 +87,7 @@ def check_session(uuid):
 
 def check_login(username, password):
     res = db_acc_handler.get_account_by_username(username)
-    if res[0]:
+    if res and res[0]:
         res = res[0]
         try:
             if argon2.verify(password,res['pw_hash']):        
