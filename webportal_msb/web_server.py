@@ -167,9 +167,11 @@ def get_contract_data(contract_id):
 
 def get_ems_by_contract():
     dbres = db_ctr_handler.get_all()
+    print(dbres)
     l1, l2, l = list(), list(), list()
     for i, r in enumerate(dbres):
-        l1.append(r['em_id'])  # ich hasse konrad
+        print(r)
+        l1.append(r['em_id'])
         l2.append(r['_id'])
     return [l1, l2]
 
@@ -225,14 +227,8 @@ def home():
                 return render_template('office.html', msg=error)
             return render_template('office.html')
         elif session.get('role') == 'technician':
-            msg = request.args.get('msg')
-            if msg is not None:
-                if msg == 'invalid':
-                    msg = 'The selected Elecricity Meter could\'nt be set to maintenance mode'
-                if msg == 'active':
-                    msg = 'Elecricity Meter: ' + request.args.get('id') + ' has been set to maintenance mode'
             em_contracts = get_ems_by_contract()
-            return render_template('technician.html', em_ids=em_contracts, entries=len(em_contracts[0]), msg=msg)
+            return render_template('technician.html')
         else:
             return redirect(url_for('login'))
     return redirect(url_for('login'))
