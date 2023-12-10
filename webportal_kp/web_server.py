@@ -192,7 +192,7 @@ def update_user_data(acc_id, ctr_id = None,
         b2 = _update_contract_data(ctr_id, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address, ctr_data)
     else:
         b2 = True
-    if b1 and b2:
+    if b1 or b2:
         return True
     return False
 
