@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
+from flask_wtf.csrf import CSRFProtect
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
@@ -23,6 +24,7 @@ mimetypes.add_type('text/css', '.css')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
+csrf = CSRFProtect(app)
 
 load_dotenv()
 pw = getenv('StromiPW')
@@ -416,8 +418,8 @@ def accept_em_data():
         return make_response("internal server error", 500)
         # always great success
         # return False
-        
-        
+
+
 @app.route('/data/user/', methods=['GET','POST'])
 def get_user_for_msb():
     if request.method == 'POST' and request.environ["peercert"]:
@@ -428,7 +430,7 @@ def get_user_for_msb():
                 acc = acc[0]
             ctr_id = input.pop('contract_id')
             print(input)
-            
+
             first_name = input['first_name'] if'first_name' in input else None
             last_name = input['last_name'] if 'last_name' in input else None
             email = input['email'] if'email' in input else None
@@ -444,7 +446,7 @@ def get_user_for_msb():
         else:
             return make_response("no",404)
         return make_response("no",500)
-            
+
     if request.method == 'GET' and 'contract_id' in request.json:
         print(1)
         input = request.json
@@ -454,7 +456,7 @@ def get_user_for_msb():
         print(3)
         if user and user[0]:
             user = user[0]
-        else: 
+        else:
             return make_response("1internal server error", 500)
         print(user)
         return user

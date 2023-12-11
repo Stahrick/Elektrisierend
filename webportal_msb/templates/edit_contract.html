@@ -5,6 +5,7 @@
 {% block content %}
 <div class="content-fluid m-4">
     <form action="{{ url_for('edit_contract') }}" method="post" autocomplete="off" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="accordion" id="contract-data-accordion">
             <div class="accordion-item">
                 <h2 class="accordion-header">

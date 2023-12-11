@@ -18,6 +18,7 @@
             {% endif %}
             <h3 class="p-3">Jetzt Vertrag abschließen {{ error }}</h3>
             <form action="{{ url_for('register') }}", method="post" autocomplete="off" class="d-flex flex-column justify-content-center">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row my-2">
                     <div class="col">
                         <input id="register-firstname" class="form-control" placeholder="Vorname" name="first_name", value="{{ sub_data.get("first_name", "") }}">

@@ -80,6 +80,7 @@
                 <div class="col flex-grow-0">
                     <div class="container border border-dark rounded-3 p-3">
                         <form action="/support-case/", method="get", enctype="application/x-www-form-urlencoded">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="mb-3">
                                 <label for="case-id" class="form-label">Support Fall ID</label>
                                 <input name="case-id" id="case-id" type="number" class="form-control" required/>

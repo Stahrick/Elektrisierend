@@ -15,6 +15,7 @@ import werkzeug.serving
 import OpenSSL
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
+from flask_wtf.csrf import CSRFProtect
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
@@ -30,6 +31,7 @@ from views.electricityprovider import provider
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
+csrf = CSRFProtect(app)
 
 load_dotenv()
 pw = getenv('MSBPW')
