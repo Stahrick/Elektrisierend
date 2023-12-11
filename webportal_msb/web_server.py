@@ -45,6 +45,9 @@ db_hdt_handler = HistDataHandler(username, pw, dbname)
 app.register_blueprint(meter, url_prefix="/meter")
 app.register_blueprint(provider, url_prefix="/provider")
 
+csrf.exempt(meter)
+csrf.exempt(provider)
+
 
 # todo: login, register, logout logic; fingerprint, css, database, password requirements
 # support, "email confirm"
@@ -405,4 +408,4 @@ if __name__ == "__main__":
     ssl_context = ssl.create_default_context( purpose=ssl.Purpose.CLIENT_AUTH,cafile=root_ca)#root_ca)
     ssl_context.load_cert_chain( certfile=context[0], keyfile=context[1], password=None )
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
-    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=ssl_context, request_handler=PeerCertWSGIRequestHandler)
+    app.run(host='0.0.0.0', port=5000, debug=False, ssl_context=ssl_context, request_handler=PeerCertWSGIRequestHandler)
