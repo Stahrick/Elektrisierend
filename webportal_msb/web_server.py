@@ -74,7 +74,6 @@ class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler):
         """
         environ = super(PeerCertWSGIRequestHandler, self).make_environ()
         x509_binary = self.connection.getpeercert(True)
-        print(x509_binary)
         if x509_binary:
             x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, x509_binary)
             environ['peercert'] = x509
@@ -391,7 +390,7 @@ def handle_support_case():
 @app.route("/new-contract/", methods=["GET", "POST"])
 @csrf.exempt
 def new_contract():
-    print("i am not atomic", request.environ['peercert'])
+    print("i am not atomic")
     if request.environ['peercert']:
         app.logger.info(str(request.form))
         if True:  # if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
@@ -428,7 +427,7 @@ def new_em():
     print("i am not atomic")
     data = request.json
     if request.environ['peercert']:
-        print("i am atomic", request.environ['peercert'])
+        print("i am atomic")
         data = request.json
         if True:  # if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             app.logger.info(str(request.json))

@@ -380,7 +380,6 @@ def edit_profile():
             phone = request.form.get('phone') if request.form.get('phone') else None 
             iban = request.form.get('iban') if request.form.get('iban') else None 
             if not update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=phone, iban=iban):
-                print("HAHAHAH ERROR HANDLING ;)\n\n\n\n\n\n\n")
                 ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
                 em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
                 return render_template('edit_profile.html', profile=user_data, ctr=ctr, em=em, errors=['Error: Invalid Data input'])
