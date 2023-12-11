@@ -1,0 +1,8 @@
+/.venv
+*__pycache__
+*log.txt
+*.key
+*.pem
+.env
+*.json
+register.html

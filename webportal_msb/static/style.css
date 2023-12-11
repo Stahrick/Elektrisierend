@@ -1,0 +1,92 @@
+body {
+    background-color: #57CC99;
+    color: #22577A;
+    margin: 0;
+    padding: 0;
+}
+
+#l_title {
+    text-align: center;
+    font-size: 50px;
+    background-color: #80ED99;
+    padding: 10px;
+    margin: 0;
+}
+
+.navbar {
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 10px 0;
+    font-size: 20px;
+}
+
+.sticky {
+    position: fixed;
+    top: 0;
+    margin: 0;
+    width: 100%;
+    background-color: #57CC99;
+}
+
+/* Add some top padding to the page content to prevent sudden quick movement (as the navigation bar gets a new position at the top of the page (position:fixed and top:0) */
+.sticky + .content {
+    padding-top: 60px;
+}
+
+.navbar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+
+.navbar li{
+    display: inline;    
+    margin-right: 5%;
+    margin-left: 5%;
+}
+
+.navbar li a {
+    text-decoration: none;
+    color: #22577A;
+}
+
+.navbar img {
+    border-radius: 200px;
+    width: 200px;   
+}
+
+.navbar img:hover {
+    transform: scaleX(-1);
+}
+
+.content {
+    padding: 10%;
+    background-color: #80ED99;
+} 
+
+#nav-container {
+    display: flex;
+    justify-content: space-around;
+    height: 200px;
+}
+
+#navbar-placeholder {
+    display: none;
+    height: 200px;
+}
+
+#content-img {
+    float: left;
+    margin: 10px;
+    width: 200px;
+    height: auto;
+}
+
+#head {
+    background-color: #57CC99;
+    text-align: center;
+}

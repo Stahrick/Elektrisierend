@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Service Worker</title>
+    <link rel="stylesheet" href="/static/Management.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+<body data-bs-theme="dark">
+    <h1>Service Worker</h1>
+    <text style="color:darkred">Only available for simulation purposes.</text>
+    <div>
+        <label for="meter_selection">Wähle Stromzähler</label>
+        <select id="meter_selection" name="meter_uuid" class="form-select">
+            {% for meter in meter_list %}
+                <option>{{ meter }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <hr>
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+             <h2 class="accordion-header">
+                  <button id="mail-open-button" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                      Mails  <span id="amount-new-mails" class="badge text-bg-secondary">0</span>
+                  </button>
+             </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <ul id="mail-list" class="list-group">
+                        <!-- <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Email Inhalt
+                            <span class="badge bg-primary">vor 10 Minuten</span>
+                        </li> -->
+                        <!--<li class="list-group-item d-flex flex-column justify-content-between text-break">
+                            <div class="mail-title-wrapper d-flex flex-row justify-content-between">
+                                <text class="mail-title fs-5">
+                                    Registration-Code for meter[5f27812d-a9b4-4945-a195-8b0d2b889967] installation
+                                </text>
+                                <span class="badge bg-primary ">13:59:14</span>
+                            </div>
+                            eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtc2IiLCJhdWQiOiI1ZjI3ODEyZC1hOWI0LTQ5NDUtYTE5NS04YjBkMmI4ODk5NjciLCJleHAiOjE2OTk2MjExNDksInV1aWQiOiI1ZjI3ODEyZC1hOWI0LTQ5NDUtYTE5NS04YjBkMmI4ODk5NjciLCJjb2RlIjoiNUZvR0ZFSnptU1BFMnc9PSIsInVybCI6Imh0dHA6Ly8xMjcuMC4wLjE6NTAwMC9tZXRlciJ9.YqRVjupTqOzvzqEF49xPpnZDBHRoQy_Hq0heuw6jFhMK1wmrZ76fFySrWiRyGghzsjkEV74dgAfr1cduFBkKA5zboSPxrfAX1hPyrmM4YqcGkeVnAM6NsYZ4Qr9r6rnaC0_kHEDUdypdeZd2QHlZCgZrNO951U2ERnCLTQHorMW-l31LKRMBK05DJVNaJg-AnXK3Y16m9pYMKAU4TtTkkJuREmsfOHwAjG-40t7_xTsEsSgsTlLD94Ju_aWMpj5SOlCbQ3KYhUiXLG3g4LlzhjbuMtPlKwT5wVJrMm8ssi-INfgjzfaAbL6UZfiL3VbiTJcrwvukGErO1WRU4-zYX93ZDVfz7wmWNHIysceG0aZm37tCYa5Q5Uhz3s6npZLjnHCyTcQXWGfOBu1q7cbS74EP_kJ1bGtKs0GQH51uic0a4z_pQmqCE_E_9rB13pWbo7SLbwWWPLNCjkHBjJa-q-Y9utbjHJoeKo-w72Pk8F0xz9y6xzKZXiU_Iq1Q9TBrNJYGSzNSMkETeVJbmJan24iCEUoF43F8SOWULXXJnUlbuR8LE3frxchDBo9L4MtlRuADmg2esTGteXYKmTM4c_UPXRUlhjY2hCJtnn3or1mtYGk8o573nzjdXz5jw4rlQ7IV6XktwsmTAy6P2iWAlIaIyZbpxFLqO1rWdZJH6Bc
+                        </li>-->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="info">
+        <text>Messages</text>
+        <div id="info_content"></div>
+    </div>
+    <div id="control">
+        <button onclick="create_meter()">Bestelle Smartmeter</button>
+        <button onclick="showOverlay(setup_meter, 'Registrierungscode')">Beginne Einrichtung</button>
+        <button onclick="showOverlay(set_meter, 'Zaehlerwert')">Setze Meter Wert</button>
+        <button onclick="restart_meter()">Restart</button>
+    </div>
+    <div class="toast-container position-static">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <img src="..." class="rounded me-2" alt="...">
+                <strong class="me-auto">Action header</strong>
+                <small class="text-body-secondary">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Action Response
+            </div>
+        </div>
+    </div>
+    <div id="overlay" onclick="hideOverlay()">
+        <div id="overlay-box" onclick="event.stopPropagation();">
+            <div class="input-group mb-3">
+                <input type="text" id="action-value" class="form-control" placeholder="" aria-label="Recipient's username" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="trigger-action" class="btn btn-outline-success" type="button">Sende Daten</button>
+                </div>
+            </div>
+            <button id="cancel-action" class="btn btn-danger" onclick="hideOverlay()">Abbrechen</button>
+        </div>
+    </div>
+    <script src="/static/Management.js"></script>
+</body>
+</html>

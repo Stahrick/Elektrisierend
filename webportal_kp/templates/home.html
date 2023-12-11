@@ -1,0 +1,109 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block additional_headers %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>SB Admin 2 - Chart</title>
+
+<!-- Custom fonts for this template-->
+<!--link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css"-->
+<link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link href="../static/sb-admin-2.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h2>Home Page</h2>
+<div class="container-fluid m-4">
+    <form action="{{ url_for('edit_profile') }}" method="post">
+        <div class="accordion" id="contract-data-accordion">
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistData" aria-expanded="false" aria-controls="collapseHistData">
+                        Historische Daten
+                    </button>
+                </h2> 
+                <div id="collapseHistData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="row my-1">
+                        <div class="col">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <p class="d-none" id="input_data">{{h_data}}</p>
+                                    <h6 class="m-0 font-weight-bold text-primary"></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="HistoricalDataChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row my-1">
+                        <div class="col">
+                            <label for="forecast" class="form-label">Prognose: Verbrauch des nächsten Monats:</label>
+                            <input class="form-control" id="forecast" placeholder="{{forecast}} kWh" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnergiespartips" aria-expanded="false" aria-controls="collapseEnergiespartips">
+                        Energiespartipps
+                    </button>
+                </h2>                
+                <div id="collapseEnergiespartips" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                            <div class="row my-1">
+                                <div class="col">
+                                    <label for="e-tip-" class="form-label">Energiespartip 1:</label>
+                                    <input class="form-control" id="energy-saving-tip-1" placeholder="Hausisolierung und Dämmung: Überprüfe regelmäßig Fenster, Türen und Dämmungen auf Undichtigkeiten und repariere sie rechtzeitig, um den Energieverlust zu minimieren." disabled>
+                                </div>
+                            </div>
+                            <div class="row my-1">
+                                <div class="col">
+                                    <label for="e-tip-" class="form-label">Energiespartip 2:</label>
+                                    <input class="form-control" id="energy-saving-tip-2" placeholder="Energieeffiziente Beleuchtung: Investiere in dimmbare LED-Lampen und nutze Lichtschalter mit Bewegungssensoren, um den Energieverbrauch weiter zu reduzieren." disabled>
+                                </div>
+                            </div>
+                            <div class="row my-1">
+                                <div class="col">
+                                    <label for="e-tip-" class="form-label">Energiespartip 3:</label>
+                                    <input class="form-control" id="energy-saving-tip-3" placeholder="Stromsparmaßnahmen im Haushalt: Gewöhne dir an, Elektrogeräte bei Nichtgebrauch vollständig auszuschalten und verwende energiesparende Modi, wo immer möglich.
+                                    " disabled>
+                                </div>
+                            </div>
+                            <div class="row my-1">
+                                <div class="col">
+                                    <label for="e-tip-" class="form-label">Energiespartip 4:</label>
+                                    <input class="form-control" id="energy-saving-tip-4" placeholder="Wassereinsparung: Sammle Regenwasser für die Bewässerung von Pflanzen oder investiere in wassersparende Duschköpfe und Toilettenspülungen.
+                                    " disabled>
+                                </div>
+                            </div>
+                            <div class="row my-1">
+                                <div class="col">
+                                    <label for="e-tip-" class="form-label">Energiespartip 5:</label>
+                                    <input class="form-control" id="energy-saving-tip-5" placeholder="Erneuerbare Energien und Investitionen: Informiere dich über staatliche Förderprogramme und finanzielle Anreize für die Installation von Solaranlagen oder anderen erneuerbaren Energiequellen." disabled>
+                                </div>
+                            </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </form>
+</div>
+<script type="module" src="{{ url_for('static', filename='chart-area-demo.js') }}"></script>
+<script src="{{ url_for('static', filename='Chart.min.js') }}"></script>
+{% endblock %}

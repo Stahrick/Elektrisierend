@@ -1,0 +1,111 @@
+{% extends 'layout.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block additional_headers %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>SB Admin 2 - Chart</title>
+
+<!-- Custom fonts for this template-->
+<!--link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css"-->
+<link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link href="../static/sb-admin-2.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid m-4">
+    <form action="{{ url_for('edit_profile') }}" method="post">
+        {% if errors %}
+        {% for error in errors %}
+            <div class="alert alert-info" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+        {% endif %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="accordion" id="contract-data-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonalData" aria-expanded="false" aria-controls="collapsePersonalData">
+                      Persönliche Daten
+                    </button>
+                </h2>
+                <div id="collapsePersonalData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-first-name" class="form-label">Vorname</label>
+                                <input name="first_name" class="form-control" id="contract-first-name" placeholder="{{ profile["first_name"] }}">
+                            </div>
+                            <div class="col">
+                                <label for="contract-last-name" class="form-label">Nachname</label>
+                                <input name="last_name"class="form-control" id="contract-last-name" placeholder="{{ profile["last_name"] }}">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-email" class="form-label">E-Mail Adresse</label>
+                                <input name="email" class="form-control" id="contract-email" placeholder="{{ profile["email"] }}" type="email">
+                            </div>
+                            <div class="col">
+                                <label for="contract-tel" class="form-label">Telefonnummer</label>
+                                <input name="phone" class="form-control" id="contract-tel" placeholder="{{ profile["phone"] }}" type="tel">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-id" class="form-label">Vertragsnummer</label>
+                                <input name="contract_id" class="form-control" id="contract-id" placeholder="{{ctr['_id']}}" disabled>
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-iban" class="form-label">IBAN</label>
+                                <input name="iban" class="form-control" id="contract-iban" placeholder="{{ctr['iban']}}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContractData" aria-expanded="false" aria-controls="collapseContractData">
+                      Stromzähler
+                    </button>
+                </h2>
+                <div id="collapseContractData" class="accordion-collapse collapse show multi-collapse">
+                    <div class="accordion-body py-1">
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-uuid" class="form-label">Zählernummer</label>
+                                <input class="form-control" id="contract-meter-uuid" placeholder="{{ em["_id"] }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col">
+                                <label for="contract-meter-consumption" class="form-label">Zählerstand</label>
+                                <input class="form-control" id="contract-meter-consumption" placeholder="{{ em["em_consumption"] }}" disabled>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row py-1">
+            <button type="submit" class="btn btn-success w-25 m-4">Absenden</button>
+        </div>
+    </form>
+</div>
+<script type="module" src="{{ url_for('static', filename='chart-area-demo.js') }}"></script>
+<script src="{{ url_for('static', filename='Chart.min.js') }}"></script>
+{% endblock %}
