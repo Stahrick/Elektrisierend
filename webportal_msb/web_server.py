@@ -410,6 +410,17 @@ def new_contract():
                 return make_response("successful", 200)
     return make_response("Unauthorized", 401)
 
+@app.route('/', methods=["GET"])
+def blank():
+    user_data = check_session(session.get('uuid'))
+    if user_data:
+        return redirect(url_for('home'))
+    return redirect(url_for('login'))
+
+@app.route('/impressum', methods=["GET"])
+def impressum():
+    return render_template('impressum.html')
+
 
 @app.route("/new-em/", methods=["GET", "POST"])
 @csrf.exempt

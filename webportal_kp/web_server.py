@@ -467,6 +467,17 @@ def get_user_for_msb():
         return user
     return make_response("internal server error", 500)
 
+@app.route('/', methods=["GET"])
+def blank():
+    user_data = check_session(session.get('uuid'))
+    if user_data:
+        return redirect(url_for('home'))
+    return redirect(url_for('login'))
+
+@app.route('/impressum', methods=["GET"])
+def impressum():
+    return render_template('impressum.html')
+
 if __name__ == "__main__":
     context = mycert
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=root_ca)
