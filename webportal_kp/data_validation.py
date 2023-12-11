@@ -6,7 +6,7 @@ class DataValidator:
         if not isinstance(name, str):
             return False
         try:
-            if not re.match(r"^[a-zA-ZßäöüÄÖÜ]{2,}$", name):
+            if not re.match(r"^[a-zA-ZßäöüÄÖÜ\-\s]{2,}$", name):
                 return False
         except re.error as e:
             return False
