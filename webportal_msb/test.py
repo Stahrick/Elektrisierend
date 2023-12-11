@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 import web_server
 import api_requests
 from datetime import datetime, timedelta, timezone
+from os import urandom
 
 class API_TEST(TestCase):
     @patch('os.urandom')
@@ -79,4 +80,28 @@ fFztaTuSszUEFOg8hs13\n-----END CERTIFICATE REQUEST-----
 '''
         assert api_requests.sign_cert(csr)
 
-    def 
+    @patch('web_server.db_acc_handler.get_account_by_id')
+    def test_check_session(self, mock_db):
+        mock_db.return_value = 1
+        assert web_server.check_session(urandom(10))
+    
+    @patch('web_server.db_acc_handler.get_account_by_username')
+    @patch('web_server.argon2.verify')
+    def test_check_login(self, mock_argon, mock_db):
+        mock_db.return_value = [{'_id':1,'role':1, 'pw_hash': 1}]
+        mock_argon.return_value = True
+        assert web_server.check_login(urandom(10), urandom(10))
+
+    def test_check_register(self):
+        assert web_server.check_register('test') if web_server.check_register('register') else None
+
+    def test__update_account_data(self):
+        assert not web_server._update_acc_data(None)
+
+    def test__update_contract_data(self):
+        assert web_server._update_contract_data(None)
+
+    @patch('web_server.db_elmo_handler.get_Em_by_id')
+    def test_check_em_id(self, mock_handler):
+        mock_handler.return_value = True
+        assert web_server.check_em_id("875e85c2-fb32-4de3-bd2f-bb7b3b6da423")

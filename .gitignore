@@ -5,6 +5,4 @@
 *.pem
 .env
 *.json
-server.py
-test.py
 register.html
