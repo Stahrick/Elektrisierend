@@ -1,8 +1,6 @@
 import ssl
 from config import mycert, root_ca
-from web_server import app, PeerCertWSGIRequestHandler
-
-from app import app
+from app import app, PeerCertWSGIRequestHandler
 
 if __name__ == "__main__":
     context = mycert
