@@ -373,6 +373,7 @@ def edit_profile():
     if user_data:
         if request.method == 'POST' and request.form:
             # checks if post request with correct data value pairs
+            print(request.form)
             username = request.form['username']
             email = request.form['email']
             phone = request.form['phone']
@@ -421,6 +422,7 @@ def accept_em_data():
 
 
 @app.route('/data/user/', methods=['GET','POST'])
+@csrf.exempt
 def get_user_for_msb():
     if request.method == 'POST' and request.environ["peercert"]:
         input = request.json
@@ -447,13 +449,14 @@ def get_user_for_msb():
             return make_response("no",404)
         return make_response("no",500)
 
-    if request.method == 'GET' and 'contract_id' in request.json:
+    if request.method == 'GET' and 'contract_id' in request.json and request.environ['peercert']:
         print(1)
         input = request.json
         print(2)
         print(input['contract_id'])
         user = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
         print(3)
+        print(user)
         if user and user[0]:
             user = user[0]
         else:

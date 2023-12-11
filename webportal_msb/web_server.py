@@ -254,26 +254,6 @@ def edit_contract():
                     data.update({k:v})
             data.pop('otp')
             print(data)
-            """data['contract_id'] = d['contract_id']
-            data['first_name'] = d['first_name']
-            data['last_name'] = d['last_name']
-            data['email'] = d['email']
-            data['tel'] = d['tel']
-            data['iban'] = d['iban']
-            data['state'] = d['state']
-            data['city'] = d['city']
-            data['zip'] = d['zip']
-            data['address'] = d['address']
-            cid_kun = request.form.get('contract_id') 
-            first_name = request.form.get('first_name') if request.form.get('first_name') else None
-            last_name = request.form.get('last_name') if request.form.get('last_name') else None
-            email = request.form.get('email') if request.form.get('email') else None
-            tel = request.form.get('tel') if request.form.get('tel') else None
-            iban = request.form.get('iban') if request.form.get('iban') else None
-            state = request.form.get('state') if request.form.get('state') else None
-            city = request.form.get('city') if request.form.get('city') else None
-            zip_code = request.form.get('zip') if request.form.get('zip') else None
-            address = request.form.get('address') if request.form.get('address') else None"""
             #contract_data = get_contract_data(request.args.get('contract_id'))
             response = requests.post(kp_url + "/data/user/", json=data,cert = mycert, verify=root_ca)
             if not response.status_code == 200:
@@ -290,7 +270,7 @@ def edit_contract():
             city = data['city'] if 'city' in data else None
             zip_code = data['zip'] if 'zip' in data else None
             address = data['address'] if'address' in data else None
-            success = update_user_data(acc_id= None,ctr_id=ctr_id,first_name=first_name,last_name=last_name,email=email,phone=tel,iban=iban,acc_state=state,acc_city=city,acc_zip_code=zip_code,acc_address=address)
+            success = update_user_data(acc_id= None,ctr_id=ctr_id,first_name=first_name,last_name=last_name,email=email,phone=tel,iban=iban,ctr_state=state,ctr_city=city,ctr_zip_code=zip_code,ctr_address=address)
             if success:
                 return redirect(url_for('home'))
             else:
@@ -302,10 +282,12 @@ def edit_contract():
             if contract_data:
                 response = requests.get(kp_url + "/data/user/", json={'contract_id':contract_data['_id']},cert = mycert, verify=root_ca)
                 if not response.status_code == 200:
+                    # TODO hier kackt das programm ab
                     return render_template('edit_contract.html', user = output,contract=request.form,
                                        error='Cant update your Profile')
                 user = JSON.loads(response.text)
-                print(user)
+                print("das hier sind die userdaten", user)
+                print("das hier sind die contract daten", contract_data)
                 return render_template('edit_contract.html', user=user,contract=contract_data)
         return redirect(url_for('home') + '?msg=ici')
     return redirect(url_for('login'))
@@ -365,6 +347,7 @@ def handle_support_case():
     return render_template("technician.html", case_data=case_data)
 
 @app.route("/new-contract/", methods=["GET", "POST"])
+@csrf.exempt
 def new_contract():
     print("i am not atomic", request.environ['peercert'])
     if request.environ['peercert']:
@@ -385,6 +368,7 @@ def new_contract():
     return make_response("Unauthorized", 401)
 
 @app.route("/new-em/", methods=["GET", "POST"])
+@csrf.exempt
 def new_em():
     print("i am not atomic")
     data = request.json

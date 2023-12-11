@@ -19,21 +19,26 @@ class API_TEST(TestCase):
 
         mock_urandom.return_value = b'\x00'*10
         api_requests.send_registration_mail('123')
-        mock_post.assert_called_with('https://localhost:25565/service-worker/receive-mails', json=[['Registration-Code for meter[123] installation', 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtc2IiLCJhdWQiOiIxMjMiLCJleHAiOjE3MDIyOTYwMDAsInV1aWQiOiIxMjMiLCJjb2RlIjoiQUFBQUFBQUFBQUFBQUE9PSIsInVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMC9tZXRlciJ9.vWcc6KNy4pI_I1ZilSSOC_JJRtGGAWzlzxifWQmD0K1FR32i2lHulceMxo_0h_pikbBZnyOCtzZJEeqHSPxwp9FzmB8_nCdo7i8XAD4WZ0mxRjbcy28ZYlvwiJg64xdJPa-BGMrk3dJ6VsN94KekXgew2kA2puk--EOenxrsqPzF8tunKRad9oRb8uz9aq12_9VFDbm-K4P9hSgnt-R9X8r_aGm1W7FfoaKYjKtFSN63JNBTFLDXXpQCdb1J2-1eHsZq4etB0VFgH-S-BBjjtnIOhafqk0Wl2xAKuVzDfnadOKLPRSAYbJErZkPoH_DH2PTwCscuoEjVsWyRBOPxvDJ8o75jPpwYXGzJARVmW_VifQzRG9c_oZnoSinIP9o83FAd9NMzxi6HiJMQGE5E6qnUkhTYurHnW3skXSUfl7RI2XbWprVf0ImjrrrkCMMGy9x0SObZz3aiGAhs3R9rrIlB0_IArDK9E299CucFyufC6BUcQWyN6BiuS7XT4JbNWdbAUHA0v-BEoi9H7FmhSIsOM45UZEy6F6vjBmWg8-Ls8JuyyV1mWboOPbKcHVQGJrubezakw99VXn5Gm6xb5wHURr9FB7KWRe-T0TOqU7cQENvghVR-jIY4k7s0I7SpDxz8u-ZaApEdOcFzhiw6IlQtqpZB_KuuKDKz1tF2J50']], cert=('localhost.crt', 'localhost.key'), verify='RootCA.crt')
+        mock_post.assert_called_with('https://localhost:25565/service-worker/receive-mails', json=[['Registration-Code for meter[123] installation', 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtc2IiLCJhdWQiOiIxMjMiLCJleHAiOjE3MDIyOTYwMDAsInV1aWQiOiIxMjMiLCJjb2RlIjoiQUFBQUFBQUFBQUFBQUE9PSIsInVybCI6Imh0dHBzOi8vbG9jYWxob3N0OjUwMDAvbWV0ZXIifQ.ufFgjBJQwrntaop1wItVXr59MX9beQBYH6RLStCr-8ygbMkaSrr0dFsEeplUAGTfVyFiJqkVGN2liqG2k7nFi1uDIHWsNDZOf8WT2xcyqQ_EzElMOzIdQc9BGlfeUTQSku6cIKPVSG1zIeUWj3MYfM9wZ49wiESWmzTNB6N1JhfUVogZXyD_px2AwcJzCsPfw2FDtxkAY1fKmLOOMk7wXi5xvJf5rS37fgYnw2okdqFSFPP4Rx7mu5URuSzTzc0QBn0KW_un1QDojcZ51nQ0sfD6TLxuKmI1fV3D0O5-vDs6rjVY2mkLxRoOrFUHYxtudkVvWUn4ZCBippiNwPpNB1U9qsv8XI5TJxBS_VqcxBxL5N4LS1XcjzKi-KGNJ-I3z6KokVybwatGFRGrOkOwaAzqqy4uONfa0SoUjT-X-AA-b40PY4sMwQhg-OzB0qtUHscEND12tyHCOhm-ViBp3Qt4eZmCNY5zGjsPpqKsvWG18k7RKA7UAgRtHOWoXo7TJYNd-QXFKFCwLCmskTgvFKF9mkrYOX07IoSHIao8PHQxW6fGvvUL90YTp3elxmUBDI4e0Vwbl0g1SfyWunpBW_FN-d1V-nxOc3kUwM4I2kEgl82wcXPJndvr4a9rWywpGvTvBQldyAXKQP357MmbIMd2bZ5r6ytR_ldVmh5Tvgg']], cert=('localhost.crt', 'localhost.key'), verify='RootCA.crt')
     
+    @patch('requests.post')
+    @patch('api_requests.uuid4')
+    def test_place_order(self, mock_uuid4, mock_post):
+        mock_uuid4.return_value = '875e85c2-fb32-4de3-bd2f-bb7b3b6da423'
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.return_value = "875e85c2-fb32-4de3-bd2f-bb7b3b6da423"
+        mock_post.return_value = mock_response
+        api_requests.place_order()
+        mock_post.assert_called_with('https://localhost:25565/meter/order/', json={'uuid': '875e85c2-fb32-4de3-bd2f-bb7b3b6da423'}, cert=('localhost.crt', 'localhost.key'), verify='RootCA.crt')
+
+
     @patch('requests.post')
     def test_swap_cert(self, mock_post):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
         assert api_requests.swap_cert(1,2)
-    
-    @patch('requests.post')
-    def test_place_order(self, mock_post):
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_post.return_value = mock_response
-        assert api_requests.place_order()
 
     @patch('requests.post')
     def test_send_service_worker_mails(self, mock_post):
@@ -42,3 +47,36 @@ class API_TEST(TestCase):
         mock_post.return_value = mock_response
         api_requests.send_service_worker_mails('a')
         mock_post.assert_called_with('https://localhost:25565/service-worker/receive-mails', json='a', cert=('localhost.crt', 'localhost.key'), verify='RootCA.crt')
+    
+    def test_sign_cert(self):
+        csr = b'''-----BEGIN CERTIFICATE REQUEST-----
+MIIEuzCCAqMCAQAwTzELMAkGA1UEBhMCREUxETAPBgNVBAgMCE1hbm5oZWltMREw
+DwYDVQQHDAhNYW5uaGVpbTEMMAoGA1UECgwDTVNCMQwwCgYDVQQDDANhYmMwggIi
+MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC9D1Yhah13UeO85TRaN3Jp1azQ
+gt+kPpullq9e2NbxWROF0myue7mqUGHTOYhi/lQDPe+z3u8115boJ4i27xHZrcw6
+Fi3Gb/wKXmclwSckLygF+KTU4cZN0Oiiz0eekjm+HgMY7ASbV6aTPiyciYIZZ0bM
+2zD9iGDrjg7tDJducRQ4pLfgEv+adABuQrVLYtrT4lY/tniAineQs1M6St/WxgAk
+zoEPwEYVmQw2CJ2wHiDFMVfPNT3FDzl8xcOsueRAP7HbytRGz0KegtYBVqpxRp3j
+1YSU0u0S6DdZ0aIoOMAN7j7n9WDmNLVJxbakhBMzH0bkzzcwWBjRhU9F8Hge4iG0
+HCJ4cDrWsLS6N7f+iatvzsWwjHaTtzZDMGQ6A4+7RfQe6gQ2+HuJLCkP3RELiC3j
+FOvqbEJ4e+DptSYVXzc+kKkakbh1YC/TJioR0pU1J2IY81us5NZx+L1qbV1ZV5Gj
+FAu7tkP2j7aej6i4VWtMG7z/LJFl7g66Wm+aEAZJiSVAt3m11N4SLNZHZOBrr1fJ
+M+dwsSZGlbFfY+PlEgNP/XQKPDaWCZ6IDZ0syzRZVhhj/Z0wr2Owvy6t9QiQAN7I
+RxFrTR+iEWeDPPuS+vssuebQGS6pNUHoRQsexZQfD1iOKp6KOOAn+XVAaNVYLwkt
+ylNqHHUnSoV+1orOTwIDAQABoCcwJQYJKoZIhvcNAQkOMRgwFjAUBgNVHREEDTAL
+gglsb2NhbGhvc3QwDQYJKoZIhvcNAQELBQADggIBABJXcDB7p6gECfw90ReJ3bJ/
+7FNxmx/stbYHVqEoN4lFYvR53ejAEWLBIlsPzcLoOfi5eZTmhW+eRKxlhGO71gR/
+6yf9foBdivBr2Mwnozad4FaczNqo1ekmfMBDhigAVDQqdWHBxlrmykLYoILfRxQq
+O/Tuswl4xsp0NNiInw/Hj0VA5MwHyjn9RjxUy6YDJq6ZYD3xRwfssi9qJRjOLscU
+FcrRGIB1gpuZe4zBWYD5QNooLWIZ+EDykyKqJbOXRw5+m2jnR2BwXCjTKGs6rvG3
+qLLXLsU/B5s9Y2AgD/ub/lftpuicPVnKX4Zx9xZmY/SKHvD8IaedkMfrbVoOKBzT
+h82q7hYb1G5iAgEi0ipW7PNtw7zIVrsJXJr4ROxye9nUtu1pVz3K5OLbevt6XZxS
+iQmlECEuqz3bwTcRLBZJ1qepUNYjeFvb/yr3cGo0ebsVwjsbtyEwF2+Y0eifB0UP
+LV924QP63c5R6++Ojz9PK9GCh78Fe024rWCoLKzsaL2UgVpV2QFWWSRJtEv6sI1v
+YhcWKl8xbqxv5jHOBScpPnykrEwCYKse6xgbZmihgOLOssMGPY1dWItBJ9KvkisF
+hmohv8KR+jCxhdR4SV2ClNR25lTq2KlFWGglxOpYu0Yakz/y6Hy2jjdnS4Gd6HZJ
+fFztaTuSszUEFOg8hs13\n-----END CERTIFICATE REQUEST-----
+'''
+        assert api_requests.sign_cert(csr)
+
+    def 
