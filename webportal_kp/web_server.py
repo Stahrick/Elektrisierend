@@ -370,32 +370,31 @@ def home():
 @app.route('/profile/', methods=['GET', 'POST'])
 def edit_profile():
     user_data = check_session(session.get('uuid'))
+    print(user_data)
     if user_data:
         if request.method == 'POST' and request.form:
             # checks if post request with correct data value pairs
             print(request.form)
-            username = request.form['username']
-            email = request.form['email']
-            phone = request.form['phone']
-            iban = request.form['iban']
-            if update_user_data(username, email, phone, iban):
-                # trys to update database and redirects to profile if it did
-                # updates values for account that owns the cookie
-                return redirect(url_for('profile'))
-            else:
-                # returns error if it cant update
-                return render_template('edit_profile', profile=user_data, error='Cant update your Profile')
+            first_name = request.form.get('first_name') if request.form.get('first_name') else None
+            last_name = request.form.get('last_name') if request.form.get('last_name') else None
+            email = request.form.get('email') if request.form.get('email') else None 
+            phone = request.form.get('phone') if request.form.get('phone') else None 
+            iban = request.form.get('iban') if request.form.get('iban') else None 
+            if not update_user_data(user_data['_id'], first_name=first_name, last_name=last_name, email=email, phone=phone, iban=iban):
+                print("HAHAHAH ERROR HANDLING ;)\n\n\n\n\n\n\n")
+                ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
+                em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
+                return render_template('edit_profile.html', profile=user_data, ctr=ctr, em=em, errors=['Error: Invalid Data input'])
+            return redirect(url_for('edit_profile'))
         ctr = db_ctr_handler.get_contract_by_id(user_data['contract_id'])
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
-        hist_data = get_hist_data(ctr['em_id'])['data']
-        return render_template('edit_profile.html', profile=user_data,ctr = ctr, h_data=hist_data, em=em)
+        return render_template('edit_profile.html', profile=user_data, ctr=ctr, em=em)
     return redirect(url_for('login'))
 
 
 @app.route('/data/', methods=['POST'])
 def accept_em_data():
     if request.environ['peercert']:
-        # TODO certs
         if request.method == 'POST' and 'em' in request.form and 'consumption' in request.form:
             r_em = request.form
             em = db_elmo_handler.get_Em_by_id(r_em['_id'])
