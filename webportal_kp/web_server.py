@@ -121,7 +121,7 @@ def check_register(username, pw,
         missed_reqs = pw_policy.test_password(pw)  # TODO how do i get this out of here
         invalid_data.extend(missed_reqs)
     print("hallo")
-    if db_acc_handler.get_account_by_username(username) or db_elmo_handler.get_Em_by_id(em_id):
+    if ( username and db_acc_handler.get_account_by_username(username)) or db_elmo_handler.get_Em_by_id(em_id):
         invalid_data.append("Occupied username")
 
     if invalid_data:
