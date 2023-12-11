@@ -25,7 +25,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
 csrf = CSRFProtect(app)
-
 load_dotenv()
 pw = getenv('StromiPW')
 username = getenv('StromiUser')
@@ -37,10 +36,8 @@ db_hist_handler = HistDataHandler(username, pw, dbname)
 pw_policy = PasswordPolicy(min_length=12, min_entropy=0.0000001)
 
 
-
 # TODO: login, register, logout logic; fingerprint, css, database, password requirements
 # support, "email confirm"
-
 class PeerCertWSGIRequestHandler(werkzeug.serving.WSGIRequestHandler):
     """
     We subclass this class so that we can gain access to the connection
@@ -275,6 +272,7 @@ def get_hist_data(em_id):
 def login():
     print([i for i in request.form])
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        app.logger.info(str(request.form))
         username = request.form['username']
         password = request.form['password']
         valid = check_login(username, password)
@@ -302,6 +300,7 @@ def register():
     # {"username": "testo", "first_name": "Shadow", "last_name": "Sama", "email":"cum@me.com", "iban":"DE123654", "phone":"+49112", "city":"Madenheim", "zip_code":"69069", "address":"Wallstreet 3", "em_id":"DEADBEEF4269", "em_reading":911.69}
     print([i for i in request.form])
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'email' in request.form and 'iban' in request.form and 'phone' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form and 'state' in request.form:
+        app.logger.info(str(request.form))
         username = request.form['username']
         password = request.form['password']
         first_name = request.form['first_name']
@@ -329,6 +328,7 @@ def reset_password():
     if request.method == 'GET':
         return render_template('forgot_password.html')
     elif request.method == 'POST':
+        app.logger.info(str(request.form))
         username = request.form.get("username", "")
         code = request.form.get("code", "")
         new_pw = request.form.get("password", "")
@@ -374,7 +374,7 @@ def edit_profile():
     if user_data:
         if request.method == 'POST' and request.form:
             # checks if post request with correct data value pairs
-            print(request.form)
+            app.logger.info(str(request.form))
             first_name = request.form.get('first_name') if request.form.get('first_name') else None
             last_name = request.form.get('last_name') if request.form.get('last_name') else None
             email = request.form.get('email') if request.form.get('email') else None 
@@ -396,6 +396,7 @@ def edit_profile():
 def accept_em_data():
     if request.environ['peercert']:
         if request.method == 'POST' and 'em' in request.form and 'consumption' in request.form:
+            app.logger.info(str(request.form))
             r_em = request.form
             em = db_elmo_handler.get_Em_by_id(r_em['_id'])
             if em:
@@ -425,6 +426,7 @@ def accept_em_data():
 def get_user_for_msb():
     if request.method == 'POST' and request.environ["peercert"]:
         input = request.json
+        app.logger.info(str(request.json))
         if 'contract_id' in input:
             acc = db_acc_handler.get_account_by_ctr_id(input['contract_id'])
             if acc and acc[0]:
@@ -451,6 +453,7 @@ def get_user_for_msb():
     if request.method == 'GET' and 'contract_id' in request.json and request.environ['peercert']:
         print(1)
         input = request.json
+        app.logger.info(str(request.json))
         print(2)
         print(input['contract_id'])
         user = db_acc_handler.get_account_by_ctr_id(input['contract_id'])

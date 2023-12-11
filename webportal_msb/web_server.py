@@ -9,6 +9,7 @@ from config import kp_url, meter_url, mycert, root_ca
 from passlib.hash import argon2
 from api_requests import send_registration_mail
 import json as JSON
+import logging
 
 import ssl
 import werkzeug.serving
@@ -214,6 +215,7 @@ def create_em(em: Em):
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        app.logger.info(str(request.form))
         username = request.form['username']
         password = request.form['password']
         valid = check_login(username, password)
@@ -257,6 +259,7 @@ def edit_contract():
     user_data = check_session(session.get('uuid'))
     if user_data and session.get('role') == 'office':
         if request.method == 'POST' and request.form and 'contract_id' in request.form:
+            app.logger.info(str(request.form))
             print(request.form.to_dict())
             d = request.form.to_dict()
             print(d)
@@ -390,6 +393,7 @@ def handle_support_case():
 def new_contract():
     print("i am not atomic", request.environ['peercert'])
     if request.environ['peercert']:
+        app.logger.info(str(request.form))
         if True:  # if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
             print("\n\n\n\n", request.form.to_dict())
             _id = request.form['id']
@@ -416,6 +420,7 @@ def new_em():
         print("i am atomic", request.environ['peercert'])
         data = request.json
         if True:  # if 'date' in request.form and 'first_name' in request.form and 'last_name' in request.form and 'phone' in request.form and 'email' in request.form and 'iban' in request.form and 'state' in request.form and 'city' in request.form and 'zip_code' in request.form and 'address' in request.form and 'em_id' in request.form:
+            app.logger.info(str(request.json))
             consumption = data['consumption']
             em_id = data['em_id']
             send_registration_mail(em_id)
