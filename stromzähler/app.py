@@ -93,4 +93,4 @@ if __name__ == "__main__":
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH, cafile=root_ca)
     ssl_context.load_cert_chain(certfile=context[0], keyfile=context[1], password=None)
     ssl_context.verify_mode = ssl.CERT_OPTIONAL
-    app.run(host='0.0.0.0', port=25565, debug=True, ssl_context=ssl_context, request_handler=PeerCertWSGIRequestHandler)
+    app.run(host='0.0.0.0', port=25565, debug=False, ssl_context=ssl_context, request_handler=PeerCertWSGIRequestHandler)
