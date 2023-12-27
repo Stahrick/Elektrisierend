@@ -150,4 +150,4 @@ if __name__ == "__main__":
     #     csr = f.read()
     # print(sign_cert(csr))
     #gen_rsa_keypair()
-    send_registration_mail("932511e7-4a78-4d13-a932-031acd1a845d")
+    send_registration_mail("5780abd6-2a40-48ef-a21d-25b5fcd9224a")

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from flask_wtf.csrf import CSRFProtect
+from flask_talisman import Talisman
 from os import urandom, getenv
 from database.AccountDB import AccountHandler
 from database.ContractDB import ContractHandler
@@ -25,6 +26,14 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
 csrf = CSRFProtect(app)
+# csp = {
+#     'default-src': [
+#         '\'self\'',
+#         'https://cdn.jsdelivr.net/npm/*'
+#     ]
+# }
+# Talisman(app, content_security_policy=csp)
+
 load_dotenv()
 pw = getenv('StromiPW')
 username = getenv('StromiUser')
@@ -391,22 +400,27 @@ def edit_profile():
 
 
 @app.route('/data/', methods=['POST'])
+@csrf.exempt
 def accept_em_data():
+    print("Meter data incoming")
     if request.environ['peercert']:
-        if request.method == 'POST' and 'em' in request.form and 'consumption' in request.form:
-            app.logger.info(str(request.form))
-            r_em = request.form
+        data = request.json
+        print("Peercert is present")
+        if request.method == 'POST' and 'em' in data and 'em_consumption' in data["em"]:
+            print("If clause passed")
+            app.logger.info(str(data))
+            r_em = data["em"]
             em = db_elmo_handler.get_Em_by_id(r_em['_id'])
             if em:
                 h_data_old = db_hist_handler.get_HistData_by_id(em['hist_id'])
-                em.em_consumption = request.form['consumption']
-                data = h_data_old['data'].append(em.em_consumption)
-                success = db_elmo_handler.update_Em_by_id(r_em['_id'], {"em_consumption": request.form['consumption']})
+                em["em_consumption"] = r_em['em_consumption']
+                data = h_data_old['data'].append(em["em_consumption"])
+                success = db_elmo_handler.update_Em_by_id(r_em['_id'], {"em_consumption": r_em['em_consumption']})
                 success2 = db_hist_handler.update_HistData_by_id(em['hist_id'], {"data": data})
                 if success and success2:
                     return
             else:  # create, dont care
-                e = Em(None, r_em['consumption'], None)
+                e = Em(None, r_em['em_consumption'], None)
                 em = db_elmo_handler.create_Em(e)
                 if em:
                     h = HistData([], _id=em.hist_id)

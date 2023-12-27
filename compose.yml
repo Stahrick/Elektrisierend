@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./meter_data/save_meters.json:/app/save_meters.json
+      - ./meter_data/metercerts:/app/metercerts/
     networks:
       stromi_net:
   msb:

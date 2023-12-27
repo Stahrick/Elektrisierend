@@ -4,7 +4,7 @@ from database.EMDB import EmHandler
 import requests
 from dotenv import load_dotenv
 from os import getenv
-from config import kp_url
+from config import kp_url, mycert, root_ca
 
 load_dotenv()
 pw = getenv('MSBPW')
@@ -31,10 +31,10 @@ def get_meter_data():
     if request.method == 'POST' and 'uuid' in data and 'consumption' in data:
         em = db_elmo_handler.get_Em_by_id(data['uuid'])
         if em:
-            em.em_consumption = data['consumption']
+            em["em_consumption"] = data['consumption']
             success = db_elmo_handler.update_Em_by_id(data['uuid'],{"em_consumption": data['consumption']})
             if success:
-                response = requests.post(f"{kp_url}/data/",json={"em": em})
+                response = requests.post(f"{kp_url}/data/", json={"em": em}, cert=mycert, verify=root_ca)
                 if response.status_code == 200:
                     make_response("success",200)
                 else:

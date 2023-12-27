@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from uuid import uuid4
 import requests
-from config import kp_url, meter_url, mycert, root_ca
+from config import kp_url, meter_url, mycert, root_ca, meter_pub_url, own_pub_url
 from passlib.hash import argon2
 from api_requests import send_registration_mail
 import json as JSON
@@ -17,6 +17,7 @@ import OpenSSL
 
 from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from flask_wtf.csrf import CSRFProtect
+from flask_talisman import Talisman
 from os import urandom, getenv
 from urllib.parse import urlparse, parse_qs
 from database.AccountDB import AccountHandler
@@ -34,6 +35,28 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(16)
 app.config['SESSION_COOKIE_SECURE'] = True
 csrf = CSRFProtect(app)
+
+csp = {
+    'default-src': [
+        '\'self\''
+    ],
+    'style-src': [
+        '\'self\'',
+        'https://cdn.jsdelivr.net',
+        "'unsafe-hashes'",
+        "'sha256-j4JAlSf1UhbPOz6pFEoFNl8p7PRFU+vQgXNm3x98nnw='",
+        "'sha256-PAofSwCaPtTey5U5TlqtY5+DJ4nknzdGCjUwtk0KrSQ='",
+        "'sha256-35M54KCmQRWPfQvvEQdUtrikoRPgR1NAveTVnDGb91o='"
+    ],
+    'script-src': [
+        '\'self\'',
+        'https://cdn.jsdelivr.net'
+    ],
+    'img-src': '*',
+    'img-src data': 'unsafe-eval',
+    'object-src': '*'
+}
+Talisman(app, content_security_policy=csp)
 
 load_dotenv()
 pw = getenv('MSBPW')
