@@ -45,13 +45,7 @@ def sign_cert(csr):
 
     # Parse the certificate
     tmp = x509.load_pem_x509_certificate(cert_data)
-
-    # Extract the public key from the certificate
-    public_key = tmp.public_key()
     
-    issuer_key_identifier = tmp.extensions.get_extension_for_oid(x509.ExtensionOID.AUTHORITY_KEY_IDENTIFIER)
-    print(issuer_key_identifier)
-
     extension = tmp.extensions.get_extension_for_class(x509.AuthorityKeyIdentifier)
 
     # Access the attributes of the AuthorityKeyIdentifier extension
@@ -86,22 +80,6 @@ def sign_cert(csr):
         # Our certificate will be valid for 10 days
         datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=365)
     )
-    #cert = cert.add_extension(
-    #    x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
-    #    critical=False
-    #    Sign our certificate with our private key
-    #)
-    #cert = cert.add_extension(
-    #    x509.KeyUsage(digital_signature=True, key_encipherment=True, data_encipherment=True, content_commitment=True, key_agreement=True, key_cert_sign=False, crl_sign=False, encipher_only=False, decipher_only=False),
-    #    critical=True
-    #)
-    #cert = cert.add_extension(
-    #    x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),
-    #    critical=False
-    #)
-
-    #authority_key_identifier = x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer.public_key())
-    #cert = cert.add_extension(authority_key_identifier, critical=False)
     cert = cert.add_extension(
         x509.AuthorityKeyIdentifier(key_identifier=key_identifier, authority_cert_issuer=a_issuer, authority_cert_serial_number=serial_number),  # Replace 'authority_key_identifier' with your object
         critical=False
