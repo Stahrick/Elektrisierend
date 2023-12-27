@@ -5,14 +5,14 @@ import os
 from uuid import uuid4
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.x509.oid import NameOID
+from cryptography.x509.oid import NameOID, ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives import serialization
 import datetime
 from cryptography.hazmat.primitives.asymmetric import rsa
 import jwt
-from config import meter_url, own_url, mycert
+from config import meter_url, own_url, mycert, root_ca
 
 def place_order():
     new_uuid = str(uuid4())
@@ -39,6 +39,30 @@ def sign_cert(csr):
     #    public_exponent=65537,
     #    key_size=2048,
     #)
+
+    with open(mycert[0], 'rb') as cert_file:
+        cert_data = cert_file.read()
+
+    # Parse the certificate
+    tmp = x509.load_pem_x509_certificate(cert_data)
+
+    # Extract the public key from the certificate
+    public_key = tmp.public_key()
+    
+    issuer_key_identifier = tmp.extensions.get_extension_for_oid(x509.ExtensionOID.AUTHORITY_KEY_IDENTIFIER)
+    print(issuer_key_identifier)
+
+    extension = tmp.extensions.get_extension_for_class(x509.AuthorityKeyIdentifier)
+
+    # Access the attributes of the AuthorityKeyIdentifier extension
+    authority_key_identifier = extension.value
+
+    # Access individual attributes if needed
+    key_identifier = authority_key_identifier.key_identifier
+    a_issuer = authority_key_identifier.authority_cert_issuer
+    serial_number = authority_key_identifier.authority_cert_serial_number
+
+    issuer = tmp.issuer
     csr_data = x509.load_pem_x509_csr(csr)
     subject = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, csr_data.subject.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value ),
@@ -48,13 +72,6 @@ def sign_cert(csr):
         x509.NameAttribute(NameOID.COMMON_NAME, csr_data.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value ),
     ])
 
-    issuer = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, u"DE"),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"Mannheim"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, u"Mannheim"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"Strömender Strauß"),
-        x509.NameAttribute(NameOID.COMMON_NAME, u"Strömi Strömison"),
-    ])
     cert = x509.CertificateBuilder().subject_name(
         subject
     ).issuer_name(
@@ -68,12 +85,36 @@ def sign_cert(csr):
     ).not_valid_after(
         # Our certificate will be valid for 10 days
         datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=365)
-    ).add_extension(
-        x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
-        critical=False,
-    # Sign our certificate with our private key
-    ).sign(key, hashes.SHA256())
+    )
+    #cert = cert.add_extension(
+    #    x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
+    #    critical=False
+    #    Sign our certificate with our private key
+    #)
+    #cert = cert.add_extension(
+    #    x509.KeyUsage(digital_signature=True, key_encipherment=True, data_encipherment=True, content_commitment=True, key_agreement=True, key_cert_sign=False, crl_sign=False, encipher_only=False, decipher_only=False),
+    #    critical=True
+    #)
+    #cert = cert.add_extension(
+    #    x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),
+    #    critical=False
+    #)
+
+    #authority_key_identifier = x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer.public_key())
+    #cert = cert.add_extension(authority_key_identifier, critical=False)
+    cert = cert.add_extension(
+        x509.AuthorityKeyIdentifier(key_identifier=key_identifier, authority_cert_issuer=a_issuer, authority_cert_serial_number=serial_number),  # Replace 'authority_key_identifier' with your object
+        critical=False
+    )
+    cert = cert.sign(key, hashes.SHA256())
     # Write our certificate out to disk.
+    cert_string = ''
+    with open(mycert[0], 'r') as f:
+        cert_string = f.read()
+    root_string = ''
+    with open(root_ca, 'r') as f:
+        root_string = f.read()
+    print(root_string + cert_string + cert.public_bytes(serialization.Encoding.PEM).decode('utf-8'))
     return cert.public_bytes(serialization.Encoding.PEM).decode('utf-8')
 
 
