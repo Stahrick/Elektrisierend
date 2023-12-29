@@ -44,7 +44,7 @@ class HistData:
             
 
     def dict(self):
-        return {k: str(v) for k, v in asdict(self).items()}
+        return {k: str(v) if not type(v) == list else v for k, v in asdict(self).items()}
 
 @dataclass
 class Account:
