@@ -41,7 +41,6 @@ class HistData:
     def __post_init__(self):
         if not self._id:
             self._id = str(uuid4())
-            
 
     def dict(self):
         return {k: str(v) if not type(v) == list else v for k, v in asdict(self).items()}

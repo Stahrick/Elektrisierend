@@ -377,6 +377,9 @@ def home():
         hist_data = get_hist_data(ctr['em_id'])['data']
         if len(hist_data) > 2880:
             hist_data = hist_data[len(hist_data)-2880:len(hist_data)]
+        forecast = hist_data[-1]-hist_data[-2] if len(hist_data) > 1 else "not enough data to calculate"
+
+
         chunk = [[] for _ in range(30)]
         j = 0
         C = 96 #calculated for 15 min intervals on a monthly chart
@@ -404,9 +407,6 @@ def home():
                 break
             hist_data = hist_data[C:]
         outlist = [sum(c) for c in chunk if c]"""
-        print(chunk)
-        print(outlist)
-        forecast = outlist[-1]-outlist[-2] if len(outlist) > 1 else "not enough data to calculate"
         resp = make_response(render_template('home.html',  forecast = forecast, h_data=outlist, em=em))
         resp.headers['charset'] = 'utf-8'
         return resp
