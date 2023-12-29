@@ -28,6 +28,13 @@ class ContractHandler:
             return self.db.get_item_by_id(self.collection, id)  
         except:
             return False 
+    
+    def get_contract_by_em_id(self, em_id):
+        try:
+            return self.db.get_items(self.collection, {"em_id" : em_id})
+        except:
+            return None   
+        
     def get_all(self):
         return self.db.get_items_all(self.collection)
     

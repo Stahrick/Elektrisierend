@@ -32,12 +32,13 @@ function get_value(value){
 var ctx = document.getElementById("HistoricalDataChart");
 var inpdata = JSON.parse(document.getElementById("input_data").innerHTML)
 var l = inpdata.length
-var months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"] //this would normally be dynamic but thats just out of scope :)
-months = months.slice(months.length-l)
+var days = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]
+//var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] //this would normally be dynamic but thats just out of scope :)
+//months = months.slice(months.length-l)
 var myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
-    labels: months,
+    labels: days,
     datasets: [{
       label: "Verbrauch",
       lineTension: 0.3,

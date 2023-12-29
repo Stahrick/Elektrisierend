@@ -133,6 +133,13 @@ def check_register(username, pw,
     if ( username and db_acc_handler.get_account_by_username(username)) or db_elmo_handler.get_Em_by_id(em_id):
         invalid_data.append("Occupied username")
 
+    if em_id:
+        if db_elmo_handler.get_Em_by_id(em_id):
+            if db_ctr_handler.get_contract_by_em_id(em_id) and db_ctr_handler.get_contract_by_em_id(em_id)[0]:
+                invalid_data.append("electricity meter already in use")
+        else:
+            invalid_data.append("electricity meter not found in our database, please check again if this is your actual provider?")
+
     if invalid_data:
         return False, invalid_data
     # TODO check for em_id?
@@ -141,7 +148,7 @@ def check_register(username, pw,
 
     if not em_id:
         em_id = create_em()
-    if not em_id:
+    if not em_id:#something went wrong when creating em
         return False, []
     contract = Contract(date, iban, em_id, ctr_state, ctr_city, ctr_zip_code, ctr_address)
     contract_db = db_ctr_handler.create_contract(contract)
@@ -365,11 +372,42 @@ def home():
         em = db_elmo_handler.get_Em_by_id(ctr['em_id'])
         print(em)
         print()
-        hist_data =  [int(i) if i else 0 for i in ((get_hist_data(ctr['em_id'])['data'])).strip('][').split(', ')]
-        if len(hist_data)>12:
-            hist_data = hist_data[-12:]
-        forecast = hist_data[-1]-hist_data[-2] if len(hist_data) > 1 else "not enough data to calculate"
-        resp = make_response(render_template('home.html',  forecast = forecast, h_data=hist_data, em=em))
+        #whats happening because it looks nicer (just one month):
+        #simulation where 96 minutes equal one day
+        hist_data = get_hist_data(ctr['em_id'])['data']
+        if len(hist_data) > 2880:
+            hist_data = hist_data[len(hist_data)-2880:len(hist_data)]
+        chunk = [[] for _ in range(30)]
+        j = 0
+        C = 96 #calculated for 15 min intervals on a monthly chart
+        while True:#theres no way you could do this in a more performant way! no way!
+            for date in hist_data[:C]:
+                chunk[j].append(date)
+            j +=1
+            if C >= len(hist_data): 
+                break
+            hist_data = hist_data[C:]
+        outlist = [c[-1] for c in chunk if c]
+        
+        #what should actually be happening to show full value for a year
+        """hist_data = get_hist_data(ctr['em_id'])['data'][:34560]
+        if len(hist_data) > 34560:
+            hist_data = hist_data[len(hist_data)-34560:len(hist_data)]
+        chunk = [[] for i in range(12)]
+        j = 0
+        C = 2880
+        while True:
+            for date in hist_data[:C]:
+                chunk[j].append(date)
+            j +=1
+            if C >= len(hist_data): #calculated for 15 min intervals
+                break
+            hist_data = hist_data[C:]
+        outlist = [sum(c) for c in chunk if c]"""
+        print(chunk)
+        print(outlist)
+        forecast = outlist[-1]-outlist[-2] if len(outlist) > 1 else "not enough data to calculate"
+        resp = make_response(render_template('home.html',  forecast = forecast, h_data=outlist, em=em))
         resp.headers['charset'] = 'utf-8'
         return resp
     return redirect(url_for('login'))
@@ -414,11 +452,12 @@ def accept_em_data():
             if em:
                 h_data_old = db_hist_handler.get_HistData_by_id(em['hist_id'])
                 em["em_consumption"] = r_em['em_consumption']
-                data = h_data_old['data'].append(em["em_consumption"])
+                #no hehe
+                data = h_data_old['data'] + [em["em_consumption"]] if h_data_old['data'] else [em['em_consumption']]
                 success = db_elmo_handler.update_Em_by_id(r_em['_id'], {"em_consumption": r_em['em_consumption']})
                 success2 = db_hist_handler.update_HistData_by_id(em['hist_id'], {"data": data})
                 if success and success2:
-                    return
+                    return make_response("successful", 200)
             else:  # create, dont care
                 e = Em(None, r_em['em_consumption'], None)
                 em = db_elmo_handler.create_Em(e)

@@ -3,6 +3,8 @@
 *log.txt
 *.key
 *.pem
+*.pub
+*.crt
 .env
 *.json
 register.html
